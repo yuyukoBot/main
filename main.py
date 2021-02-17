@@ -12,7 +12,7 @@ import DiscordUtils
 from discord.ext import commands
 import utils.json_loader
 updateinfos = "・コマンド追加"
-release = "0.1"
+release = "0.2"
 status = "Beta"
 
 intents = discord.Intents.default()

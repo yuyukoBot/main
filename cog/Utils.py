@@ -1,6 +1,6 @@
 import asyncio, discord, re
 from   discord.ext import commands
-from  cog import Nullify
+from  utils import Nullify
 
 def setup(bot):
 	# This module isn't actually a cog - but it is a place

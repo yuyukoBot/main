@@ -1,6 +1,5 @@
 
 import datetime, pytz
-from  cog import FuzzySearch
 
 
 def setup(bot):

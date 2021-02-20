@@ -299,7 +299,7 @@ class Moderation(commands.Cog):
 
 
     @commands.command(name="addrole", aliases=["ar"], description="```ユーザーに役職を付与します```", pass_context=True)
-    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(manage_roles=True)
     async def addrole(self,ctx, member: discord.Member, *, role: discord.Role = None):
 
         await member.add_roles(role)

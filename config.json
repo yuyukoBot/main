@@ -1,0 +1,10 @@
+{
+  "TOKEN": "NzU3ODA3MTQ1MjY0NjExMzc4.X2lw5g.Po4yVaE6oYQN-KxsFnEpryz5ZHE",
+  "prefix": "y/",
+  "module": ["cog.info","cog.admin","cog.other","jishaku","cog.moderation","cog.help","cog.fun"],
+  "http_timeout": 5
+
+
+
+
+}

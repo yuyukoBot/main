@@ -2,7 +2,7 @@ import asyncio
 import discord
 import re
 from discord.ext import commands
-from cog import Nullify
+from utils import Nullify
 
 
 def setup(bot):

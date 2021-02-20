@@ -40,7 +40,7 @@ bot.load_extension('cog.moderation')
 bot.load_extension('cog.fun')
 bot.load_extension('cog.monitor')
 bot.load_extension('cog.setting')
-
+bot.load_extension('cog.music')
 
 @bot.event
 async def on_command(ctx):

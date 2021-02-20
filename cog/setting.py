@@ -257,6 +257,71 @@ class log(commands.Cog):
                     await sleep(5)
                     await self.unmute_members(message.guild, [message.author])
 
+    @commands.Cog.listener()
+    async def on_member_join(self,member):
+        # On member joins we find a channel called general and if it exists,
+        # send an embed welcoming them to our guild
+        role = discord.utils.get(member.guild.roles, name="shhh")
+        channel = discord.utils.get(member.guild.text_channels, name="メインチャット")
+        if channel:
+            embed = discord.Embed(
+                description=f'ようこそ{member.mention}さん。{member.guild}へ、#mcid でmcidを記入してください',
+                color=0x5d00ff,
+
+            )
+
+            embed.set_thumbnail(url=member.avatar_url)
+            embed.add_field(name="ユーザー名", value=member.name)
+            embed.add_field(name="ユーザーid", value=member.id)
+            embed.add_field(name="Joined", value=member.joined_at)
+            embed.add_field(name="Created", value=member.created_at)
+            embed.add_field(name="User Serial", value=len(list(member.guild.members)))
+            embed.timestamp = datetime.datetime.utcnow()
+
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self,member):
+        # On member remove we find a channel called general and if it exists,
+        # send an embed saying goodbye from our guild-
+        channel = discord.utils.get(member.guild.text_channels, name="メインチャット")
+        if channel:
+            embed = discord.Embed(
+                description=f'さようなら{member.name}さん',
+                color=0x5d00ff,
+            )
+            embed.set_thumbnail(url=member.avatar_url)
+            embed.add_field(name="ユーザー名", value=member.name)
+            embed.add_field(name="ユーザーid", value=member.id)
+            embed.timestamp = datetime.datetime.utcnow()
+
+            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_update(self,before, after):
+        if before.display_name != after.display_name:
+            e = discord.Embed(title="ニックネームが変わりました", color=0x5d00ff)
+
+            fields = [("Before", before.display_name, False),
+                      ("After", after.display_name, False)]
+
+            for name, value, inline in fields:
+                e.add_field(name=name, value=value, inline=inline)
+            e.timestamp = datetime.datetime.utcnow()
+
+            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
+            await channel.send(embed=e)
+
+        elif before.roles != after.roles:
+            e = discord.Embed(title='役職が付与(剥奪)されました', color=0x5d00ff)
+
+            fields = [("Before", ", ".join([r.mention for r in before.roles]), False),
+                      ("After", ", ".join([r.mention for r in after.roles]), False)]
+            for name, value, inline in fields:
+                e.add_field(name=name, value=value, inline=inline)
+            e.timestamp = datetime.datetime.utcnow()
+            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
+            await channel.send(embed=e)
 
 
 def setup(bot):

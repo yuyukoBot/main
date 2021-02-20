@@ -75,7 +75,7 @@ class infoCog(commands.Cog):
 
 
 
-    @commands.command(name="serverinfo",usage='')
+    @commands.command(aliases=["si"],name="serverinfo",usage='')
     @commands.guild_only()
     async def guildinfo(self, ctx, *, guild_id: int = None):
         """Shows info about the current server."""

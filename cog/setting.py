@@ -261,8 +261,8 @@ class log(commands.Cog):
     async def on_member_join(self,member):
         # On member joins we find a channel called general and if it exists,
         # send an embed welcoming them to our guild
-        role = discord.utils.get(member.guild.roles, name="shhh")
-        channel = discord.utils.get(member.guild.text_channels, name="メインチャット")
+
+        channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
         if channel:
             embed = discord.Embed(
                 description=f'ようこそ{member.mention}さん。{member.guild}へ、#mcid でmcidを記入してください',
@@ -284,7 +284,7 @@ class log(commands.Cog):
     async def on_member_remove(self,member):
         # On member remove we find a channel called general and if it exists,
         # send an embed saying goodbye from our guild-
-        channel = discord.utils.get(member.guild.text_channels, name="メインチャット")
+        channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
         if channel:
             embed = discord.Embed(
                 description=f'さようなら{member.name}さん',
@@ -296,6 +296,8 @@ class log(commands.Cog):
             embed.timestamp = datetime.datetime.utcnow()
 
             await channel.send(embed=embed)
+
+
 
     @commands.Cog.listener()
     async def on_member_update(self,before, after):
@@ -322,6 +324,24 @@ class log(commands.Cog):
             e.timestamp = datetime.datetime.utcnow()
             channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
             await channel.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_guild_join(self,guild):
+        server = commands.get_guild(759386170689585213)
+        admin = commands.server.get_channel(773778830678556735)
+        e = discord.Embed(title="サーバー参加")
+        e.add_field(name="サーバー名",value=f'{guild.name}({guild.id})')
+        e.add_field(name="サーバー所有者",value=guild.owner)
+        bm = 0
+        ubm = 0
+        for m in guild.members:
+            if m.bot:
+                bm = bm + 1
+            else:
+                ubm = ubm + 1
+        e.add_field(name="メンバー数",
+                    value=f"{len(guild.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
+        e.set_thumbnail(url=f'{guild.icon_url}')
 
 
 def setup(bot):

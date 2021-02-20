@@ -50,7 +50,7 @@ async def on_command(ctx):
     e.add_field(name="実行チャンネル", value=ctx.channel.name)
     e.set_thumbnail(url=ctx.guild.icon_url)
     e.timestamp = ctx.message.created_at
-    ch = bot.get_channel(803558816834650152)
+    ch = bot.get_channel(797335889431756800)
 
     await ch.send(embed=e)
 

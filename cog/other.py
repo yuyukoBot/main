@@ -1,50 +1,14 @@
-import textwrap
-from discord import Intents
-import typing
-import aiohttp
-from datetime import datetime, timedelta
-from typing import Optional
-
-from typing import Union
-import time
-
-import platform
-from discord.ext import commands
-from platform import python_version
-from discord import __version__ as discord_version
-from asyncio import sleep
-import json
-from discord.utils import get
-
-from collections import OrderedDict, deque, Counter
-import datetime
-import os
-
+import asyncio
 import codecs
+import datetime
+import time
+from datetime import datetime
 
-import aiohttp
+import discord
+import discordlists
 from bs4 import BeautifulSoup
-import asyncio, discord
-import random
-import secrets
-from io import BytesIO
-import ast
-import psutil
-import functools
-import inspect
-from discord.ext.commands import clean_content
-from discord import Embed
-from discord.ext.commands import Cog
-import sys
-import json
-import traceback
-import wikipedia
-import io
-from contextlib import redirect_stdout
-import re
-
-import tracemalloc
-
+from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
 
 class everyone(commands.Cog):
     """
@@ -53,6 +17,53 @@ class everyone(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.api = discordlists.Client(self.bot)
+        self.api.set_auth("bots.ondiscord.xyz", "dsag38_auth_token_fda6gs") # Set authorisation token for a bot list
+        self.api.set_auth("discordbots.group", "qos56a_auth_token_gfd8g6") # Set authorisation token for a bot list
+        self.api.start_loop()  # Posts the server count automatically every 30 minutes
+
+    @cog_ext.cog_slash(name="test")
+    async def _test(self, ctx: SlashContext):
+        embed = discord.Embed(title="embed test")
+        await ctx.send(content="test", embeds=[embed])
+
+    @commands.command()
+    async def post(self, ctx: commands.Context):
+        """
+        Manually posts guild count using discordlists.py (BotBlock)
+        """
+        try:
+            result = await self.api.post_count()
+        except Exception as e:
+            await ctx.send("Request failed: `{}`".format(e))
+            return
+
+        await ctx.send("Successfully manually posted server count ({:,}) to {:,} lists."
+                       "\nFailed to post server count to {:,} lists.".format(self.api.server_count,
+                                                                             len(result["success"].keys()),
+                                                                             len(result["failure"].keys())))
+
+             
+    @commands.command()
+    async def get(self, ctx: commands.Context, bot_id: int = None):
+        """
+        Gets a bot using discordlists.py (BotBlock)
+        """
+        if bot_id is None:
+            bot_id = self.bot.user.id
+        try:
+            result = (await self.api.get_bot_info(bot_id))[1]
+        except Exception as e:
+            await ctx.send("Request failed: `{}`".format(e))
+            return
+
+        await ctx.send("Bot: {}#{} ({})\nOwners: {}\nServer Count: {}".format(
+            result['username'], result['discriminator'], result['id'],
+            ", ".join(result['owners']) if result['owners'] else "Unknown",
+            "{:,}".format(result['server_count']) if result['server_count'] else "Unknown"
+        ))
+
+    
 
     @commands.command(pass_context=True)
     async def translate(self, ctx, to_language, *, msg):

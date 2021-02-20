@@ -14,6 +14,7 @@ import utils.json_loader
 updateinfos = "・コマンド追加"
 release = "0.2"
 status = "Beta"
+from discord_slash import SlashCommand, SlashContext
 
 intents = discord.Intents.default()
 intents.members = True
@@ -28,7 +29,7 @@ ver = "2.1"
 token = config["TOKEN"]
 prefix = config["prefix"]
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents)
-
+slash = SlashCommand(bot, override_type = True)
 bot.load_extension('jishaku')
 bot.load_extension('cog.info')
 bot.load_extension('cog.admin')

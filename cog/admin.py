@@ -33,7 +33,7 @@ import traceback
 from contextlib import redirect_stdout
 import asyncio
 from asyncio import sleep as _sleep
-
+from utils import Nullify
 
 class AdminCog(commands.Cog, name="Admin"):
     """
@@ -121,38 +121,15 @@ class AdminCog(commands.Cog, name="Admin"):
                         pass
         return extensions
 
-    @commands.command(pass_context=True)
-    async def reboot(self, ctx, force=None):
-        """Reboots the bot (owner only)."""
-        if not await Utils.is_owner_reply(ctx): return
-
-        quiet = False
-        if force and force.lower() == 'force':
-            quiet = True
-        # Save the return channel and flush settings
-        self.settings.setGlobalStat("ReturnChannel", ctx.channel.id)
-        if not quiet:
-            message = await ctx.send("Flushing settings to disk...")
-        # Flush settings asynchronously here
-        l = asyncio.get_event_loop()
-        await self.bot.loop.run_in_executor(None, self.settings.flushSettings)
-        if not quiet:
-            msg = 'Flushed settings to disk.\nRebooting...'
-            await message.edit(content=msg)
-        # Logout, stop the event loop, close the loop, quit
-        for task in asyncio.Task.all_tasks():
-            try:
-                task.cancel()
-            except:
-                continue
-        try:
-            await self.bot.logout()
-            self.bot.loop.stop()
-            self.bot.loop.close()
-        except:
-            pass
-        # Kill this process
-        os._exit(2)
+    @commands.command(description="BOTを再起動するよ！\n制作者しか使えないね！\n※何故か使えません。")
+    async def reboot(self,ctx):
+        if ctx.message.author.id == 478126443168006164:
+            e = discord.Embed(title="再起動", description="BOTを再起動するよ～！", color=ctx.author.color)
+            await ctx.send(embed=e)
+            os.system("python main.py")
+        else:
+            e = discord.Embed(title="実行エラー", description="あなたはこのコマンドを実行する権限を持っていません", color=ctx.author.color)
+            await ctx.send(embed=e)
 
     @commands.command(hidden=True)
     @commands.is_owner()

@@ -15,7 +15,7 @@ from discord.ext import commands
 from platform import python_version
 from discord import __version__ as discord_version
 from asyncio import sleep
-from cog import ProgressBar,DisplayName,ReadableTime
+from cog import ProgressBar,DisplayName
 from discord.utils import get
 
 from collections import OrderedDict, deque, Counter
@@ -319,61 +319,42 @@ class infoCog(commands.Cog):
             name="メモリ", value=f"全てのメモリ容量:{allmem}GB\n使用量:{used}GB({memparcent}%)\n空き容量{ava}GB({100 - memparcent}%)")
         await ctx.reply(embed=embed)
 
-    @commands.command(pass_context=True)
-    async def hostinfo(self, ctx):
-        """List info about the bot's host environment."""
 
-        message = await ctx.channel.send('Gathering info...')
-
-        # cpuCores    = psutil.cpu_count(logical=False)
-        # cpuThred    = psutil.cpu_count()
-        cpuThred = os.cpu_count()
-        cpuUsage = psutil.cpu_percent(interval=1)
-        memStats = psutil.virtual_memory()
-        memPerc = memStats.percent
-        memUsed = memStats.used
-        memTotal = memStats.total
-        memUsedGB = "{0:.1f}".format(((memUsed / 1024) / 1024) / 1024)
-        memTotalGB = "{0:.1f}".format(((memTotal / 1024) / 1024) / 1024)
-        currentOS = platform.platform()
-        system = platform.system()
-        release = platform.release()
-        version = platform.version()
-        processor = platform.processor()
-        botMember = DisplayName.memberForID(self.bot.user.id, ctx.message.guild)
-        botName = DisplayName.name(botMember)
-        currentTime = int(time.time())
-        timeString = ReadableTime.getReadableTimeBetween(self.startTime, currentTime)
-        pythonMajor = sys.version_info.major
-        pythonMinor = sys.version_info.minor
-        pythonMicro = sys.version_info.micro
-        pythonRelease = sys.version_info.releaselevel
-        pyBit = struct.calcsize("P") * 8
-        process = subprocess.Popen(['git', 'rev-parse', '--short', 'HEAD'], shell=False, stdout=subprocess.PIPE)
-        git_head_hash = process.communicate()[0].strip()
-
-        threadString = 'thread'
-        if not cpuThred == 1:
-            threadString += 's'
-
-        msg = '***{}\'s*** **Home:**\n'.format(botName)
-        msg += '```\n'
-        msg += 'OS       : {}\n'.format(currentOS)
-        msg += 'Hostname : {}\n'.format(platform.node())
-        msg += 'Language : Python {}.{}.{} {} ({} bit)\n'.format(pythonMajor, pythonMinor, pythonMicro, pythonRelease,
-                                                                 pyBit)
-        msg += 'Commit   : {}\n\n'.format(git_head_hash.decode("utf-8"))
-        msg += ProgressBar.center('{}% of {} {}'.format(cpuUsage, cpuThred, threadString), 'CPU') + '\n'
-        msg += ProgressBar.makeBar(int(round(cpuUsage))) + "\n\n"
-        msg += ProgressBar.center('{} ({}%) of {}GB used'.format(memUsedGB, memPerc, memTotalGB), 'RAM') + '\n'
-        msg += ProgressBar.makeBar(int(round(memPerc))) + "\n\n"
-        msg += '{} uptime```'.format(timeString)
-
-        await message.edit(content=msg)
 
     @commands.command(name="userinfo", aliases=["ui"], description="ユーザーの情報")
     async def userinfo(self, ctx, *, user: Union[discord.Member, discord.User] = None):
         """`誰でも`"""
+
+        def rv(content):
+            if content == 'None': return 'なし'
+            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
+            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
+                                                                                   "`メンバーをキック`").replace(
+                "`ban_members`", "`メンバーをBan`")
+            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
+                "`manage_guild`", "`サーバー管理`")
+            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
+                "`priority_speaker`", "`優先スピーカー`")
+            value = value.replace("`stream`", "`不明`").replace("`read_messages`", "`メッセージを読む`").replace(
+                "`send_messages`", "`メッセージを送信`")
+            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
+                                                                                  "`メッセージの管理`").replace("`embed_links`",
+                                                                                                        "`埋め込みリンク`")
+            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
+                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
+                                                                                                 "`全員宛メンション`")
+            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
+                                                                              "`サーバーインサイトを見る`").replace("`connect`",
+                                                                                                        "`接続`")
+            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
+                                                                                               "`メンバーをミュート`").replace(
+                "`deafen_members`", "`メンバーのスピーカーをミュート`")
+            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
+                "`change_nickname`", "`ニックネームの変更`")
+            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
+                "`manage_webhooks`", "`webhookの管理`")
+            value = value.replace("`manage_emojis`", "`絵文字の管理`")
+            return value
 
         user = user or ctx.author
         e = discord.Embed(color=0xb300ff)
@@ -428,12 +409,12 @@ class infoCog(commands.Cog):
         e.add_field(name='Avatar Link', value=user.avatar_url, inline=False)
         if user.avatar:
             e.set_thumbnail(url=user.avatar_url)
-        e.add_field(name="権限", value=f'`{",".join([row[0] for row in list(user.guild_permissions) if row[1]])}`',
-                        inline=False)
+
         if isinstance(user, discord.User):
             e.set_footer(text='This member is not in this server.')
 
-
+        pers = [f"`{c}`" for c in dict(user.guild_permissions) if dict(user.guild_permissions)[c] is True]
+        e.add_field(name=f"権限({len(pers)})", value=rv(",".join(pers)))
 
 
 
@@ -449,6 +430,26 @@ class infoCog(commands.Cog):
         async for i in ctx.channel.history(limit=num):
             await ctx.send(f"{i.author.name}#{i.author.discriminator}: {i.content}")
 
+
+
+    @commands.command()
+    async def emojiinfo(self,ctx, *, emj: commands.EmojiConverter = None):
+
+        if emj is None:
+            await ctx.send("einfo-needarg")
+        else:
+            embed = discord.Embed(
+                title=emj.name, description=f"id:{emj.id}")
+            embed.add_field(name="einfo-animated", value=emj.animated)
+            embed.add_field(name="einfo-manageout", value=emj.managed)
+            if emj.user:
+                embed.add_field(name="einfo-adduser",
+                                value=str(emj.user))
+            embed.add_field(name="url", value=emj.url)
+            embed.set_footer(text="einfo-addday")
+            embed.set_thumbnail(url=emj.url)
+            embed.timestamp = emj.created_at
+            await ctx.send(embed=embed)
 
     @commands.command(name="user")
     async def user(self, ctx, *, user: Union[discord.Member, discord.User] = None):

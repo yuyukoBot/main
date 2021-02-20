@@ -84,21 +84,39 @@ class Moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
-        name="ban",
-        description="A command which bans a given user",
-        usage="<user> [reason]",
-    )
-    @commands.guild_only()
-    @commands.has_guild_permissions(ban_members=True)
-    async def ban(self, ctx, member: discord.Member, *, reason=None):
-        await ctx.guild.ban(user=member, reason=reason)
+    @commands.command()
+    async def ban(self, ctx, member_id: int, reason=None):
+        embed = discord.Embed(description='ユーザーをBANしますか？')
+        mes = await ctx.send(embed=embed)
+        [self.bot.loop.create_task(mes.add_reaction(i))
+         for i in ("\u2705", "\u274c")]
 
-        # Using our past episodes knowledge can we make the log channel dynamic?
-        embed = discord.Embed(
-            title=f"{ctx.author.name} banned: {member.name}", description=reason
-        )
-        await ctx.send(embed=embed)
+        def check(react, usr):
+            return (
+                    react.message.channel == mes.channel
+                    and usr == ctx.author
+                    and react.message.id == mes.id
+                    and react.me
+            )
+
+        reaction, user = await self.bot.wait_for('reaction_add', check=check)
+        if reaction.emoji == '\u2705':
+            await ctx.guild.ban(discord.Object(member_id), reason=reason)
+            await ctx.send("BANしました")
+        else:
+            await ctx.send("キャンセルしました")
+
+    @commands.command()
+    async def delm(self, ctx, ctxid):
+        if ctx.message.author.permissions_in(
+                ctx.message.channel).manage_messages is True or ctx.author.id == 478126443168006164:
+            print(
+                f'{ctx.message.author.name}({ctx.message.guild.name})_' + ctx.message.content)
+            dctx = await ctx.message.channel.fetch_message(ctxid)
+            print(
+                f'{ctx.message.author.name}さんのコマンド実行で、{ctx.message.guild.name}でメッセージ"{dctx.content}"が削除されました。')
+            await dctx.delete()
+            await ctx.message.delete()
 
     @commands.guild_only()
     @commands.command(no_pm=True)

@@ -317,7 +317,9 @@ class infoCog(commands.Cog):
         embed.add_field(name="OS", value=f"{platform.system()} {platform.release()}({platform.version()})")
         embed.add_field(
             name="メモリ", value=f"全てのメモリ容量:{allmem}GB\n使用量:{used}GB({memparcent}%)\n空き容量{ava}GB({100 - memparcent}%)")
+        embed.set_footer(text="何かあれば`Butachaan#0001`まで")
         await ctx.reply(embed=embed)
+
 
 
 

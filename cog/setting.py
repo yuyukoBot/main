@@ -261,11 +261,12 @@ class log(commands.Cog):
     async def on_member_join(self,member):
         # On member joins we find a channel called general and if it exists,
         # send an embed welcoming them to our guild
+        shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
 
         channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
         if channel:
             embed = discord.Embed(
-                description=f'ようこそ{member.mention}さん。{member.guild}へ、#mcid でmcidを記入してください',
+                description='新規参加',
                 color=0x5d00ff,
 
             )
@@ -275,6 +276,7 @@ class log(commands.Cog):
             embed.add_field(name="ユーザーid", value=member.id)
             embed.add_field(name="Joined", value=member.joined_at)
             embed.add_field(name="Created", value=member.created_at)
+            embed.add_field(name="共通鯖数",value=shared)
             embed.add_field(name="User Serial", value=len(list(member.guild.members)))
             embed.timestamp = datetime.datetime.utcnow()
 

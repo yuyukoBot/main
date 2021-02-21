@@ -23,7 +23,7 @@ import sys
 import json
 import traceback
 import asyncio
-
+from discord.utils import get
 
 
 def to_emoji(c):
@@ -84,6 +84,7 @@ class Moderation(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.has_guild_permissions(ban_members=True)
     @commands.command()
     async def ban(self, ctx, member_id: int, reason=None):
         embed = discord.Embed(description='ユーザーをBANしますか？')
@@ -119,7 +120,7 @@ class Moderation(commands.Cog):
             await ctx.message.delete()
 
     @commands.guild_only()
-    @commands.command(no_pm=True)
+    @commands.has_guild_permissions(ban_members=True)
     async def banlist(self, ctx):
         """```banされた人が確認できます``` """
         try:
@@ -137,18 +138,22 @@ class Moderation(commands.Cog):
         e.description = f'```bf\n{total}```'
         await ctx.send(embed=e)
 
-    @commands.command(name="unban", description="```banを解除する```")
-    @commands.bot_has_permissions(ban_members=True)
-    async def unban(self, ctx, user: discord.User):
-        """`BANの権限`"""
-        if user.bot:
-            return await ctx.say("owner.bot")
-        if await self.bot.is_owner(user):
-            return await ctx.say("owner.you")
-        if not await self.bot.is_banned(user.id):
-            return await ctx.say("owner.yet")
-        self.bot.db.execute("UPDATE users SET banned = 0 WHERE user_id = ?", (user.id,))
-        await ctx.say("owner.done")
+    @commands.command(pass_context=True)
+    @commands.has_guild_permissions(ban_members=True)
+    async def unban(self,ctx, *, member: int = 0):
+
+        if member == 0 or not isinstance(int(member),
+                                         int):  # Checks if member id doesn't equal to 0 or is not an integer
+            embed = discord.Embed(description=":x: Input a **Valid User ID**", color=0xff0000)
+            return await commands.say(embed=embed)
+
+        guild = ctx.message.guild  # Gets guild object
+        members = get(guild.bans(),
+                      id=member)  # Gets user by id in the ban list, guild.bans() is an iterable, and id is the object we need to find
+        await guild.unban(user=members, reason=None)
+        embed = discord.Embed(description=":white_check_mark: **%s** has been **Unbanned!**" % member.name,
+                              color=0x00ff00)
+        return await commands.say(embed=embed)
 
     @commands.bot_has_permissions(ban_members=True)
     @commands.command(aliases=['hban'], pass_context=True)

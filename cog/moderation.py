@@ -120,7 +120,7 @@ class Moderation(commands.Cog):
             await ctx.message.delete()
 
     @commands.guild_only()
-    @commands.has_guild_permissions(ban_members=True)
+    @commands.command(no_pm=True)
     async def banlist(self, ctx):
         """```banされた人が確認できます``` """
         try:
@@ -140,7 +140,7 @@ class Moderation(commands.Cog):
 
     @commands.command(pass_context=True)
     @commands.has_guild_permissions(ban_members=True)
-    async def unban(self,ctx, *, member: int = 0):
+    async def unban(ctx, *, member: int = 0):
 
         if member == 0 or not isinstance(int(member),
                                          int):  # Checks if member id doesn't equal to 0 or is not an integer

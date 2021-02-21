@@ -337,7 +337,7 @@ class infoCog(commands.Cog):
                 "`manage_guild`", "`サーバー管理`")
             value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
                 "`priority_speaker`", "`優先スピーカー`")
-            value = value.replace("`stream`", "`不明`").replace("`read_messages`", "`メッセージを読む`").replace(
+            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
                 "`send_messages`", "`メッセージを送信`")
             value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
                                                                                   "`メッセージの管理`").replace("`embed_links`",

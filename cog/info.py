@@ -304,6 +304,8 @@ class infoCog(commands.Cog):
                               url="https://cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png?size=1024",
                               color=0x5d00ff)
         embed.set_author(name="y/info")
+        embed.add_field(name="最終起動時間", value=self.bot.StartTime.strftime(
+            '%Y{0}%m{1}%d{2} %H{3}%M{4}%S{5}').format(*'年月日時分秒'))
         embed.add_field(name="サーバー数", value=guild_count)
         embed.add_field(name="ユーザー数", value=member_count)
         embed.add_field(name="command",value=command_count + " (in {})".format(cog_count))

@@ -28,7 +28,7 @@ ver = "2.1"
 
 token = config["TOKEN"]
 prefix = config["prefix"]
-bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents)
+bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
 slash = SlashCommand(bot, override_type = True)
 bot.load_extension('jishaku')
 bot.load_extension('cog.info')
@@ -53,6 +53,7 @@ async def on_command(ctx):
     ch = bot.get_channel(797335889431756800)
 
     await ch.send(embed=e)
+
 
 
 
@@ -82,6 +83,10 @@ async def on_ready():
     for allguild in bot.guilds:
         print(allguild)
     print("正常に起動しました。")
+
+
+
+
 
 bot.remove_command('help')
 @bot.command()

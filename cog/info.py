@@ -419,12 +419,8 @@ class infoCog(commands.Cog):
         pers = [f"`{c}`" for c in dict(user.guild_permissions) if dict(user.guild_permissions)[c] is True]
         e.add_field(name=f"権限({len(pers)})", value=rv(",".join(pers)))
 
-
-
-
-
-
-
+        shared = sum(g.get_member(user.id) is not None for g in self.bot.guilds)
+        e.add_field(name="共通鯖数",value=shared)
 
         await ctx.send(embed=e)
 

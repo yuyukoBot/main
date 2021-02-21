@@ -61,6 +61,7 @@ class AdminCog(commands.Cog, name="Admin"):
         # remove `foo`
         return content.strip('` \n')
 
+    @commands.is_owner()
     @commands.command(pass_context=True)
     async def cloc(self, ctx):
         """Outputs the total count of lines of code in the currently installed repo."""
@@ -204,8 +205,6 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.send(msg)
 
 
-
-    @commands.is_owner()
     @commands.command(pass_context=True, name='eval')
     async def _eval(self, ctx, *, body: str):
         """Evaluates a code"""
@@ -253,6 +252,7 @@ class AdminCog(commands.Cog, name="Admin"):
              else:
                  self._last_result = ret
                  await ctx.send(f'```py\n{value}{ret}\n```')
+
 
     @commands.command(description="BOTを再起動するよ！\n制作者しか使えないね！\n※何故か使えません。")
     async def run(self,ctx):
@@ -351,6 +351,7 @@ class AdminCog(commands.Cog, name="Admin"):
         else:
             await ctx.reply("私のニックネームを" + name + "に変更したよ。")
 
+    @commands.is_owner()
     @commands.command()
     async def senddm(self,ctx, userid, title, desc):
         try:

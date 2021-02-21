@@ -317,8 +317,8 @@ class infoCog(commands.Cog):
         embed.add_field(name="OS", value=f"{platform.system()} {platform.release()}({platform.version()})")
         embed.add_field(
             name="メモリ", value=f"全てのメモリ容量:{allmem}GB\n使用量:{used}GB({memparcent}%)\n空き容量{ava}GB({100 - memparcent}%)")
-        embed.set_footer(text="何かあれば`Butachaan#0001`まで")
-        await ctx.reply(embed=embed)
+        embed.set_footer(text="何かあればButachaan#0001まで")
+        await ctx.send(embed=embed)
 
 
 
@@ -488,7 +488,7 @@ class infoCog(commands.Cog):
         if isinstance(user, discord.User):
             e.set_footer(text='This member is not in this server.')
 
-        await ctx.reply(embed=e)
+        await ctx.send(embed=e)
 
     @commands.command(name="roleinfo", aliases=["ri", "role"], description="```役職の情報```")
     async def roleinfo(self, ctx, *, role: commands.RoleConverter = None):
@@ -594,7 +594,7 @@ class infoCog(commands.Cog):
         avatar = user.avatar_url_as(static_format='png')
         embed.set_author(name=str(user), url=avatar)
         embed.set_image(url=avatar)
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=['e'])
     async def emoji(self, ctx, emojiname: str):
@@ -610,7 +610,7 @@ class infoCog(commands.Cog):
                 await ctx.send(file=f)
                 os.remove(tempEmojiFile)
         else:
-            await ctx.reply(':x: Konnte das angegebene Emoji leider nicht finden :(')
+            await ctx.send(':x: Konnte das angegebene Emoji leider nicht finden :(')
 
     @commands.command(aliases=['emotes'])
     async def emojis(self, ctx):
@@ -621,7 +621,7 @@ class infoCog(commands.Cog):
                 await ctx.send(msg)
                 msg = ''
             msg += str(emoji)
-        await ctx.reply(msg)
+        await ctx.send(msg)
 
     @commands.command(name="messageinfo", aliases=["msg", "message"], description="```メッセージの情報```")
     async def messageinfo(self, ctx, target: Union[commands.MessageConverter, None]):
@@ -692,7 +692,7 @@ class infoCog(commands.Cog):
         try:
             await ctx.replay(embed=e, mentions_author=False)
         except:
-            await ctx.reply(embed=e)
+            await ctx.send(embed=e)
 
     @commands.command(name="channelinfo", aliases=["chinfo", "channel"], description="```チャンネルの情報```")
     async def channelinfo(self, ctx, target=None):
@@ -790,7 +790,7 @@ class infoCog(commands.Cog):
                     mbs = mbs + f"`{c.name}({chtype})`,"
             if mbs != "":
                 e.add_field(name=f"所属するチャンネル({len(target.channels)}チャンネル)", value=mbs, inline=False)
-            await ctx.reply(embed=e)
+            await ctx.send(embed=e)
 
 
 

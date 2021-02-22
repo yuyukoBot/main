@@ -20,11 +20,16 @@ from discord_slash import SlashCommand, SlashContext
 intents = discord.Intents.default()
 intents.members = True
 
+with open('./config.json', 'r') as cjson:
+    config = json.load(cjson)
+datebase = config["datebase"]
+user = config["user"]
+password = config["password"]
 
 async def main():
     # Establish a connection to an existing database named "test"
     # as a "postgres" user.
-    conn = await asyncpg.connect(user='pigman', password='Vj27gEKx')
+    conn = await asyncpg.connect(database=datebase ,user=user, password=password)
     # Execute a statement to create a new table.
     await conn.execute('''
         CREATE TABLE users(
@@ -51,8 +56,7 @@ async def main():
 asyncio.get_event_loop().run_until_complete(main())
 
 
-with open('./config.json', 'r') as cjson:
-    config = json.load(cjson)
+
 
 ver = "2.1"
 

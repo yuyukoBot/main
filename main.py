@@ -29,7 +29,7 @@ password = config["password"]
 async def main():
     # Establish a connection to an existing database named "test"
     # as a "postgres" user.
-    conn = await asyncpg.connect(database=database ,user='pigman', password='Vj27gEKx')
+    conn = await asyncpg.connect(database=database ,user=user, password=password)
 
 
     # Insert a record into the created table.

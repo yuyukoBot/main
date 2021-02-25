@@ -693,7 +693,7 @@ class infoCog(commands.Cog):
         except:
             await ctx.send(embed=e)
 
-    @commands.command(name="channelinfo", aliases=["chinfo", "channel"], description="```チャンネルの情報```")
+    @commands.command(name="channelinfo", aliases=["chinfo"], description="```チャンネルの情報```")
     async def channelinfo(self, ctx, target=None):
         """`誰でも`"""
         if target is None:

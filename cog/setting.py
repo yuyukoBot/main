@@ -216,43 +216,7 @@ class log(commands.Cog):
 
 
 
-    @channel.command(aliases=['t', 'tp'], description='チャンネルにトピックを設定します')
-    async def topic(self, ctx, *, topicWord=None):
-        """
-        引数に渡した文字列でテキストチャンネルのトピックを設定します。
-        30秒以内に👌(ok_hand)のリアクションをつけないと実行されませんので、素早く対応ください。
-        """
-        self.command_author = ctx.author
-        # トピックがない場合は実施不可
-        if topicWord is None:
-            await ctx.message.delete()
-            await ctx.channel.send('トピックを指定してください。\nあなたのコマンド：`{0}`'.format(ctx.message.clean_content))
-            return
 
-        # 念の為、確認する
-        original_topic = ''
-        if ctx.channel.topic is not None:
-            original_topic = f'このチャンネルには、トピックとして既に**「{ctx.channel.topic}」**が設定されています。\nそれでも、'
-        confirm_text = f'{original_topic}このチャンネルのトピックに**「{topicWord}」** を設定しますか？ 問題ない場合、30秒以内に👌(ok_hand)のリアクションをつけてください。\nあなたのコマンド：`{ctx.message.clean_content}`'
-        await ctx.message.delete()
-        confirm_msg = await ctx.channel.send(confirm_text)
-
-        def check(reaction, user):
-            return user == self.command_author and str(reaction.emoji) == '👌'
-
-        # リアクション待ち
-        try:
-            reaction, user = await self.bot.wait_for('reaction_add', timeout=self.TIMEOUT_TIME, check=check)
-        except asyncio.TimeoutError:
-            await confirm_msg.reply('→リアクションがなかったので、トピックの設定をキャンセルしました！')
-        else:
-            # チャンネルにトピックを設定する
-            try:
-                await ctx.channel.edit(topic=topicWord)
-            except discord.errors.Forbidden:
-                await confirm_msg.reply('→権限がないため、トピックを設定できませんでした！')
-            else:
-                await confirm_msg.reply(f'チャンネル「{ctx.channel.name}」のトピックに**「{topicWord}」**を設定しました！')
     @channel.command(aliases=['p','pm','pmk', 'pcraft', 'primk'], description='プライベートチャンネルを作成します')
     async def privateMake(self, ctx, channelName=None):
         """
@@ -331,6 +295,43 @@ class log(commands.Cog):
                 await confirm_message.delete()
                 await ctx.channel.send(f'`/channel privateMake`コマンドでプライベートなチャンネルを作成しました！')
 
+    @channel.command(aliases=['t', 'tp'], description='チャンネルにトピックを設定します')
+    async def topic(self, ctx, *, topicWord=None):
+        """
+        引数に渡した文字列でテキストチャンネルのトピックを設定します。
+        30秒以内に👌(ok_hand)のリアクションをつけないと実行されませんので、素早く対応ください。
+        """
+        self.command_author = ctx.author
+        # トピックがない場合は実施不可
+        if topicWord is None:
+            await ctx.message.delete()
+            await ctx.channel.send('トピックを指定してください。\nあなたのコマンド：`{0}`'.format(ctx.message.clean_content))
+            return
+
+        # 念の為、確認する
+        original_topic = ''
+        if ctx.channel.topic is not None:
+            original_topic = f'このチャンネルには、トピックとして既に**「{ctx.channel.topic}」**が設定されています。\nそれでも、'
+        confirm_text = f'{original_topic}このチャンネルのトピックに**「{topicWord}」** を設定しますか？ 問題ない場合、30秒以内に👌(ok_hand)のリアクションをつけてください。\nあなたのコマンド：`{ctx.message.clean_content}`'
+        await ctx.message.delete()
+        confirm_msg = await ctx.channel.send(confirm_text)
+
+        def check(reaction, user):
+            return user == self.command_author and str(reaction.emoji) == '👌'
+
+        # リアクション待ち
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=self.TIMEOUT_TIME, check=check)
+        except asyncio.TimeoutError:
+            await confirm_msg.reply('→リアクションがなかったので、トピックの設定をキャンセルしました！')
+        else:
+            # チャンネルにトピックを設定する
+            try:
+                await ctx.channel.edit(topic=topicWord)
+            except discord.errors.Forbidden:
+                await confirm_msg.reply('→権限がないため、トピックを設定できませんでした！')
+            else:
+                await confirm_msg.reply(f'チャンネル「{ctx.channel.name}」のトピックに**「{topicWord}」**を設定しました！')
 
     @commands.command(aliases=["rcr"], description="役職を作成するよ！\n役職を管理できる人のみ！")
     async def rolecreate(self,ctx, rolename):

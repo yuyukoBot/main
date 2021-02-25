@@ -208,7 +208,7 @@ class Moderation(commands.Cog):
         elif len(args) > 20:
             await ctx.channel.send(f'複数選択の場合、引数は1〜20にしてください。（{len(args)}個与えられています。）')
         else:
-            embed = discord.Embed(tutle=msg)
+            embed = discord.Embed(title=msg)
             for emoji, arg in zip(POLL_CHAR, args):
                 embed.add_field(name=emoji, value=arg)  # inline=False
 

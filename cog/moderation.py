@@ -29,7 +29,7 @@ from discord.utils import get
 def to_emoji(c):
     base = 0x1f1e6
     return chr(base + c)
-
+POLL_CHAR = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','🇯','🇰','🇱','🇲','🇳','🇴','🇵','🇶','🇷','🇸','🇹']
 
 class Moderation(commands.Cog):
     def __init__(self, bot):
@@ -190,41 +190,31 @@ class Moderation(commands.Cog):
 
         await ctx.send(embed=em)
 
-    @commands.command(name="poll", description="```アンケートを取れます```")
-    async def poll(self, ctx, *, question):
-        """`誰でも`"""
+    @commands.command(aliases=['p', 'pl'], description='簡易的な投票機能です（引数が1つの場合と2以上の場合で動作が変わります）')
+    async def poll(self, ctx, arg1=None, *args):
+        """
+        このコマンドを実行すると、リアクションを利用し簡易的な投票ができます。
+        ＊1人1票にはできません。リアクションの制限で20を超える設問は不可能です。
+        """
+        usage = '/pollの使い方\n複数選択（1〜20まで）: \n `/poll 今日のランチは？ お好み焼き カレーライス`\n Yes/No: \n`/poll 明日は晴れる？`'
+        msg = f'🗳 **{arg1}**'
 
-        # a list of messages to delete when we're all done
-        messages = [ctx.message]
-        answers = []
+        if arg1 is None:
+            await ctx.channel.send(usage)
+        elif len(args) == 0:
+            message = await ctx.channel.send(msg)
+            await message.add_reaction('⭕')
+            await message.add_reaction('❌')
+        elif len(args) > 20:
+            await ctx.channel.send(f'複数選択の場合、引数は1〜20にしてください。（{len(args)}個与えられています。）')
+        else:
+            embed = discord.Embed()
+            for emoji, arg in zip(POLL_CHAR, args):
+                embed.add_field(name=emoji, value=arg)  # inline=False
+            message = await ctx.channel.send(msg, embed=embed)
 
-        def check(m):
-            return m.author == ctx.author and m.channel == ctx.channel and len(m.content) <= 100
-
-        for i in range(20):
-            messages.append(await ctx.send(f'Say poll option or ```{ctx.prefix}cancel to publish poll.```'))
-
-            try:
-                entry = await self.bot.wait_for('message', check=check, timeout=60.0)
-            except asyncio.TimeoutError:
-                break
-
-            messages.append(entry)
-
-            if entry.clean_content.startswith(f'{ctx.prefix}cancel'):
-                break
-
-            answers.append((to_emoji(i), entry.clean_content))
-
-        try:
-            await ctx.channel.delete_messages(messages)
-        except:
-            pass  # oh well
-
-        answer = '\n'.join(f'{keycap}: {content}' for keycap, content in answers)
-        actual_poll = await ctx.send(f'{ctx.author} asks: {question}\n\n{answer}')
-        for emoji, _ in answers:
-            await actual_poll.add_reaction(emoji)
+            for emoji, arg in zip(POLL_CHAR, args):
+                await message.add_reaction(emoji)
 
     @poll.error
     async def poll_error(self, ctx, error):

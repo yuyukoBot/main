@@ -144,6 +144,8 @@ class infoCog(commands.Cog):
         if guild.afk_channel:
             e.add_field(name="AFKチャンネル", value=f"{guild.afk_channel.name}({str(guild.afk_channel.id)})")
             e.add_field(name="AFKタイムアウト", value=str(guild.afk_timeout / 60))
+        else:
+            e.add_field(name="AFKチャンネル",value="設定されていません")
 
 
 

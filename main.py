@@ -159,7 +159,7 @@ async def help(ctx):
     e5.add_field(name="**load/unload/reload <extension名>**", value="ファイルをロード/アンロード/リロードします",
                  inline=False)
     e5.add_field(name="**eval <コード>**", value="コードを評価します")
-    e4.add_field(name="**changestatus <status>**", value="幽々子のステータスを変えます")
+    e5.add_field(name="**changestatus <status>**", value="幽々子のステータスを変えます")
     e5.add_field(name="**changenick <名前>**", value="ユーザーのニックネームを変えます")
     e5.add_field(name="**set_playing <game名>**", value="幽々子のplaying statuを変えます")
     e5.add_field(name="**announce <内容>**", value="運営がアナウンスをします")
@@ -176,8 +176,8 @@ async def help(ctx):
     e7.add_field(name="**feedback <内容>**", value="フィートバックを送ります")
     e8 = discord.Embed(title="setting", description="logなどのsetting", color=0x5d00ff)
     e8.add_field(name="**log_setting**",value="ログチャンネルを作成します")
-    e8.add_field(name="**new(delete) channnel <role> <チャンネル名>**",value="チャンネルを作成(削除)します")
-    e8.add_field(name="**new(delete) category <role> <チャンネル名>**",value="カテゴリーを作成(削除)します")
+    e8.add_field(name="**ch make <名前>**", value="チャンネルを作成します")
+    e8.add_field(name="**ch topic <内容>**", value="トピックに書き込みます")
     e8.add_field(name="**allrole(roleallremove)**",value="指定した役職を全メンバーに付与（剥奪)します")
     e8.add_field(name="**rolecreate(roledelete) <名前>**",value="役職を追加(消去)します")
 

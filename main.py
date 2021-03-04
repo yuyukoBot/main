@@ -56,19 +56,6 @@ async def on_command(ctx):
 
     await ch.send(embed=e)
 
-@bot.command()
-async def config(ctx, config_name, config_arg):
-    if config_name == 'langage':
-        if config_arg == 'ja':
-            set_langage = 'ja'
-            config_output = '言語を日本語に設定しました'
-        elif config_arg == 'en':
-            set_langage = 'en'
-            config_output = '言語を英語に設定しました'
-        else:
-            config_output = '構文エラー。jpまたはenを指定してください。'
-
-    await ctx.send(config_output)
 
 
 

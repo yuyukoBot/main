@@ -383,7 +383,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             scope.clear_intersection(arg_dict)
 
     @commands.is_owner()
-    @commands.command(name="shell")
+    @commands.command(name="shell",aliases=["sh"])
     async def shell(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
         Executes statements in the system shell.

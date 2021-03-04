@@ -127,10 +127,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
 
-
-
-
-    # Command-invocation commands
+    @commands.is_owner()
     @commands.command(name="su")
     async def su(self, ctx: commands.Context, target: discord.User, *, command_string: str):
         """
@@ -159,9 +156,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
         return await alt_ctx.command.invoke(alt_ctx)
 
-
-
-
+    @commands.is_owner()
     @commands.command(name="py", aliases=["python"])
     async def python(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
@@ -211,6 +206,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         finally:
             scope.clear_intersection(arg_dict)
 
+    @commands.is_owner()
     @commands.command(name="py_inspect", aliases=["pyi", "python_inspect", "pythoninspect"])
     async def python_inspect(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
@@ -244,7 +240,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         finally:
             scope.clear_intersection(arg_dict)
 
-    # Shell-related commands
+    @commands.is_owner()
     @commands.command(name="shell")
     async def shell(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
@@ -272,6 +268,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
                 await interface.add_line(f"\n[status] Return code {reader.close_code}")
 
+    @commands.is_owner()
     @commands.command(name="git")
     async def git(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
@@ -280,6 +277,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
         return await ctx.invoke(self.shell, argument=Codeblock(argument.language, "git " + argument.content))
 
+    @commands.is_owner()
     @commands.command(name="pip")
     async def pip(self, ctx: commands.Context, *, argument: codeblock_converter):
         """

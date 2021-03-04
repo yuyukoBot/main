@@ -36,7 +36,6 @@ import asyncio
 from asyncio import sleep as _sleep
 
 
-
 class AdminCog(commands.Cog, name="Admin"):
     """
     管理者用の機能です。

@@ -61,6 +61,8 @@ class AdminCog(commands.Cog, name="Admin"):
         # remove `foo`
         return content.strip('` \n')
 
+
+
     @commands.is_owner()
     @commands.command(pass_context=True)
     async def cloc(self, ctx):

@@ -162,7 +162,8 @@ class log(commands.Cog):
         """
         # サブコマンドが指定されていない場合、メッセージを送信する。
         if ctx.invoked_subcommand is None:
-            await ctx.send('このコマンドにはサブコマンドが必要です。')
+            e = discord.Embed(title="コマンドリスト",color=0x5d00ff)
+            e.add_field(name="`channel make <チャンネル名>")
 
     @channel.command(aliases=['c', 'm', 'mk', 'craft'], description='チャンネルを作成します')
     async def make(self, ctx, channelName=None):
@@ -431,15 +432,28 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
         elif before.roles != after.roles:
-            e = discord.Embed(title='役職が付与(剥奪)されました', color=0x5d00ff)
-
-            fields = [("Before", ", ".join([r.mention for r in before.roles]), False),
-                      ("After", ", ".join([r.mention for r in after.roles]), False)]
-            for name, value, inline in fields:
-                e.add_field(name=name, value=value, inline=inline)
-            e.timestamp = datetime.datetime.utcnow()
+            embed = discord.Embed(
+                colour=discord.Colour.red(),
+                title='Member Roles Updated'
+            )
+            _old = before.roles
+            _new = before.roles
+            _changed = None
+            for role in _new:
+                if not role in _old:
+                    _changed = [role, True]
+                    break
+            for role in _old:
+                if role not in _new:
+                    _changed = [role, False]
+                    break
+            embed.set_author(name=after, icon_url=after.avatar_url)
+            if _changed[1]:
+                embed.add_field(name='Role Added:', value=_changed[0].mention)
+            else:
+                embed.add_field(name='Role Removed:', value=_changed[0].mention)
             channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
-            await channel.send(embed=e)
+            await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_join(self,guild):

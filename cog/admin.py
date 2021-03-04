@@ -24,7 +24,7 @@ import time
 import platform
 from discord.ext import commands
 import io
-
+from jishaku.codeblocks import Codeblock, codeblock_converter
 from discord.ext.commands import clean_content
 from discord import Embed
 from discord.ext.commands import Cog
@@ -34,6 +34,16 @@ import traceback
 from contextlib import redirect_stdout
 import asyncio
 from asyncio import sleep as _sleep
+
+from jishaku.exception_handling import ReplResponseReactor
+from jishaku.flags import JISHAKU_RETAIN, SCOPE_PREFIX
+from jishaku.functools import AsyncSender
+from jishaku.models import copy_context_with
+from jishaku.modules import ExtensionConverter
+from jishaku.paginators import PaginatorInterface, WrappedFilePaginator, WrappedPaginator
+from jishaku.repl import AsyncCodeExecutor, Scope, all_inspections, get_var_dict_from_ctx
+from jishaku.shell import ShellReader
+
 
 class AdminCog(commands.Cog, name="Admin"):
     """
@@ -61,7 +71,32 @@ class AdminCog(commands.Cog, name="Admin"):
         # remove `foo`
         return content.strip('` \n')
 
+    @commands.command(name="shell", aliases=["sh"])
+    async def shell(self, ctx: commands.Context, *, argument: codeblock_converter):
+        """
+        Executes statements in the system shell.
 
+        This uses the system shell as defined in $SHELL, or `/bin/bash` otherwise.
+        Execution can be cancelled by closing the paginator.
+        """
+
+        async with ReplResponseReactor(ctx.message):
+            with self.submit(ctx):
+                with ShellReader(argument.content) as reader:
+                    prefix = "```" + reader.highlight
+
+                    paginator = WrappedPaginator(prefix=prefix, max_size=1975)
+                    paginator.add_line(f"{reader.ps1} {argument.content}\n")
+
+                    interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+                    self.bot.loop.create_task(interface.send_to(ctx))
+
+                    async for line in reader:
+                        if interface.closed:
+                            return
+                        await interface.add_line(line)
+
+                await interface.add_line(f"\n[status] Return code {reader.close_code}")
 
     @commands.is_owner()
     @commands.command(pass_context=True)

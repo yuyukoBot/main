@@ -127,6 +127,38 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
 
+    @commands.command(name="load")
+    async def load(self, ctx: commands.Context, *extensions: ExtensionConverter):
+        """
+        Loads or reloads the given extension names.
+
+        Reports any extensions that failed to load.
+        """
+
+        paginator = WrappedPaginator(prefix='', suffix='')
+
+        for extension in itertools.chain(*extensions):
+            method, icon = (
+                (self.bot.reload_extension, "\N{CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS}")
+                if extension in self.bot.extensions else
+                (self.bot.load_extension, "\N{INBOX TRAY}")
+            )
+
+            try:
+                method(extension)
+            except Exception as exc:  # pylint: disable=broad-except
+                traceback_data = ''.join(traceback.format_exception(type(exc), exc, exc.__traceback__, 1))
+
+                paginator.add_line(
+                    f"{icon}\N{WARNING SIGN} `{extension}`\n```py\n{traceback_data}\n```",
+                    empty=True
+                )
+            else:
+                paginator.add_line(f"{icon} `{extension}`", empty=True)
+
+        for page in paginator.pages:
+            await ctx.send(page)
+
     @commands.is_owner()
     @commands.command(name="su")
     async def su(self, ctx: commands.Context, target: discord.User, *, command_string: str):

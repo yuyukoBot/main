@@ -157,15 +157,7 @@ class AdminCog(commands.Cog, name="Admin"):
         except Exception:
             ctx.send('Error when trying to send fam')
 
-    @commands.command(name="load", description="```loadします```")
-    async def load(self, ctx, *, module):
-        """`admin`"""
-        try:
-            self.bot.load_extension(module)
-        except Exception:
-            await ctx.send(f'```py\n{traceback.format_exc()}\n```')
-        else:
-            await ctx.send(f'`{module}をloadしました` ')
+
 
     @commands.is_owner()
     @commands.command(name="reload", description="```reloadします```")

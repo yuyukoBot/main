@@ -159,31 +159,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         for page in paginator.pages:
             await ctx.send(page)
 
-    @commands.is_owner()
-    @commands.command(name="source", aliases=["src"])
-    async def source(self, ctx: commands.Context, *, command_name: str):
-        """
-        Displays the source code for a command.
-        """
 
-        command = self.bot.get_command(command_name)
-        if not command:
-            return await ctx.send(f"Couldn't find command `{command_name}`.")
-
-        try:
-            source_lines, _ = inspect.getsourcelines(command.callback)
-        except (TypeError, OSError):
-            return await ctx.send(f"Was unable to retrieve the source for `{command}` for some reason.")
-
-        # getsourcelines for some reason returns WITH line endings
-        source_lines = ''.join(source_lines).split('\n')
-
-        paginator = WrappedPaginator(prefix='```py', suffix='```', max_size=1985)
-        for line in source_lines:
-            paginator.add_line(line)
-
-        interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
-        await interface.send_to(ctx)
 
     @commands.is_owner()
     @commands.command(name="su")

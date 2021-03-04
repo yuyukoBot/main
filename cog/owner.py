@@ -127,6 +127,77 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
 
+    @commands.command(name="source", aliases=["src"])
+    async def source(self, ctx: commands.Context, *, command_name: str):
+        """
+        Displays the source code for a command.
+        """
+
+        command = self.bot.get_command(command_name)
+        if not command:
+            return await ctx.send(f"Couldn't find command `{command_name}`.")
+
+        try:
+            source_lines, _ = inspect.getsourcelines(command.callback)
+        except (TypeError, OSError):
+            return await ctx.send(f"Was unable to retrieve the source for `{command}` for some reason.")
+
+        # getsourcelines for some reason returns WITH line endings
+        source_lines = ''.join(source_lines).split('\n')
+
+        paginator = WrappedPaginator(prefix='```py', suffix='```', max_size=1985)
+        for line in source_lines:
+            paginator.add_line(line)
+
+        interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+        await interface.send_to(ctx)
+
+    __cat_line_regex = re.compile(r"(?:\.\/+)?(.+?)(?:#L?(\d+)(?:\-L?(\d+))?)?$")
+
+    @commands.command(name="cat")
+    async def cat(self, ctx: commands.Context, argument: str):
+        """
+        Read out a file, using syntax highlighting if detected.
+
+        Lines and linespans are supported by adding '#L12' or '#L12-14' etc to the end of the filename.
+        """
+
+        match = self.__cat_line_regex.search(argument)
+
+        if not match:  # should never happen
+            return await ctx.send("Couldn't parse this input.")
+
+        path = match.group(1)
+
+        line_span = None
+
+        if match.group(2):
+            start = int(match.group(2))
+            line_span = (start, int(match.group(3) or start))
+
+        if not os.path.exists(path) or os.path.isdir(path):
+            return await ctx.send(f"`{path}`: No file by that name.")
+
+        size = os.path.getsize(path)
+
+        if size <= 0:
+            return await ctx.send(f"`{path}`: Cowardly refusing to read a file with no size stat"
+                                  f" (it may be empty, endless or inaccessible).")
+
+        if size > 50 * (1024 ** 2):
+            return await ctx.send(f"`{path}`: Cowardly refusing to read a file >50MB.")
+
+        try:
+            with open(path, "rb") as file:
+                paginator = WrappedFilePaginator(file, line_span=line_span, max_size=1985)
+        except UnicodeDecodeError:
+            return await ctx.send(f"`{path}`: Couldn't determine the encoding of this file.")
+        except ValueError as exc:
+            return await ctx.send(f"`{path}`: Couldn't read this file, {exc}")
+
+        interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+        await interface.send_to(ctx)
+
     @commands.command(name="load")
     async def load(self, ctx: commands.Context, *extensions: ExtensionConverter):
         """

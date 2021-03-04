@@ -414,30 +414,32 @@ class log(commands.Cog):
 
             await channel.send(embed=embed)
 
-
-
     @commands.Cog.listener()
-    async def on_member_update(self,before, after):
-        if before.display_name != after.display_name:
-            e = discord.Embed(title="ニックネームが変わりました", color=0x5d00ff)
+    async def on_member_edit(self, b_member: discord.Member, a_member: discord.Member):
+        try:
+            channel = discord.utils.get(b_member.guild.text_channels, name="幽々子ログ")
 
-            fields = [("Before", before.display_name, False),
-                      ("After", after.display_name, False)]
+        except (KeyError, AttributeError):
+            return
+        if not channel:
+            return
 
-            for name, value, inline in fields:
-                e.add_field(name=name, value=value, inline=inline)
-            e.timestamp = datetime.datetime.utcnow()
+        if b_member.nick != a_member.nick:
+            embed = discord.Embed(
+                colour=discord.Colour.red(),
+                title='Nickname Updated')
+            embed.set_author(name=a_member, icon_url=a_member.avatar_url)
+            embed.add_field(name='Before:', value=b_member.nick)
+            embed.add_field(name='After:', value=a_member.nick, inline=False)
+            embed.set_footer(text='Timezone: UTC+0', icon_url=self.bot.user.avatar_url)
 
-            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
-            await channel.send(embed=e)
-
-        elif before.roles != after.roles:
+        elif b_member.roles != a_member.roles:
             embed = discord.Embed(
                 colour=discord.Colour.red(),
                 title='Member Roles Updated'
             )
-            _old = before.roles
-            _new = before.roles
+            _old = b_member.roles
+            _new = b_member.roles
             _changed = None
             for role in _new:
                 if not role in _old:
@@ -447,13 +449,22 @@ class log(commands.Cog):
                 if role not in _new:
                     _changed = [role, False]
                     break
-            embed.set_author(name=after, icon_url=after.avatar_url)
+            embed.set_author(name=a_member, icon_url=a_member.avatar_url)
             if _changed[1]:
                 embed.add_field(name='Role Added:', value=_changed[0].mention)
             else:
                 embed.add_field(name='Role Removed:', value=_changed[0].mention)
-            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
-            await channel.send(embed=embed)
+
+        elif b_member.pending and not a_member.pending:
+            embed = discord.Embed(
+                title='Verification',
+                colour=discord.Colour.red()
+            )
+            embed.set_author(name=a_member, icon_url=a_member.avatar_url)
+            embed.description = 'Member has successfully been verified.'
+        else:
+            return
+        await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_join(self,guild):

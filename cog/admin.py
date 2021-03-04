@@ -378,7 +378,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.reply(msg)
 
     @commands.is_owner()
-    @commands.command(name="system_shutdown", aliases=["sh"], description="```botを停止します```")
+    @commands.command(name="system_shutdown", description="```botを停止します```")
     async def system_shutdown(self, ctx):
         """`admin`"""
 

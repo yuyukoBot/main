@@ -154,6 +154,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
     __cat_line_regex = re.compile(r"(?:\.\/+)?(.+?)(?:#L?(\d+)(?:\-L?(\d+))?)?$")
 
+    @commands.is_owner()
     @commands.command(name="cat")
     async def cat(self, ctx: commands.Context, argument: str):
         """
@@ -198,6 +199,42 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
         await interface.send_to(ctx)
 
+    @commands.is_owner()
+    @commands.command(name="curl")
+    async def curl(self, ctx: commands.Context, url: str):
+        """
+        Download and display a text file from the internet.
+
+        This command is similar to jsk cat, but accepts a URL.
+        """
+
+        # remove embed maskers if present
+        url = url.lstrip("<").rstrip(">")
+
+        async with ReplResponseReactor(ctx.message):
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    data = await response.read()
+                    hints = (
+                        response.content_type,
+                        url
+                    )
+                    code = response.status
+
+            if not data:
+                return await ctx.send(f"HTTP response was empty (status code {code}).")
+
+            try:
+                paginator = WrappedFilePaginator(io.BytesIO(data), language_hints=hints, max_size=1985)
+            except UnicodeDecodeError:
+                return await ctx.send(f"Couldn't determine the encoding of the response. (status code {code})")
+            except ValueError as exc:
+                return await ctx.send(f"Couldn't read response (status code {code}), {exc}")
+
+            interface = PaginatorInterface(ctx.bot, paginator, owner=ctx.author)
+            await interface.send_to(ctx)
+
+    @commands.is_owner()
     @commands.command(name="load")
     async def load(self, ctx: commands.Context, *extensions: ExtensionConverter):
         """

@@ -128,6 +128,7 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
 
+    @commands.is_owner()
     @commands.command(name="source", aliases=["src"])
     async def source(self, ctx: commands.Context, *, command_name: str):
         """

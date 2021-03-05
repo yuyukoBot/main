@@ -153,7 +153,12 @@ async def help(ctx):
     e8.add_field(name="**ch topic <内容>**", value="トピックに書き込みます")
     e8.add_field(name="**allrole(roleallremove)**",value="指定した役職を全メンバーに付与（剥奪)します")
     e8.add_field(name="**rolecreate(roledelete) <名前>**",value="役職を追加(消去)します")
-
+    e9 = discord.Embed(title="owner only", color=0x5d00ff)
+    e9.add_field(name="**src <コマンド名>**",value="コマンドのソースを表示します")
+    e9.add_field(name="**cat <ファイル名>**", value="ファイルに書かれた内容を表示します")
+    e9.add_field(name="**curl <URL>**", value="サイトのソースを表示します")
+    e9.add_field(name="**py <code>**",value="コードを評価します")
+    e9.add_field(name="**shell <argument>**",value="shellコマンドを実行します")
 
     e2.set_thumbnail(
         url="https://images-ext-2.discordapp.net/external/svQAPh7v9BBNiUgs3Fx4e27C1yhQ1KMp5h1KOhkKH3U/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png")
@@ -171,13 +176,17 @@ async def help(ctx):
     e8.set_thumbnail(
         url="https://images-ext-2.discordapp.net/external/svQAPh7v9BBNiUgs3Fx4e27C1yhQ1KMp5h1KOhkKH3U/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png")
 
+    e9.set_thumbnail(
+        url="https://images-ext-2.discordapp.net/external/svQAPh7v9BBNiUgs3Fx4e27C1yhQ1KMp5h1KOhkKH3U/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png"
+    )
+
     paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx)
     paginator.add_reaction('<:outline_fast_rewind_black_24dp:809040685881229373>', "first")
     paginator.add_reaction('<:arrowleftbox:809036770070233088>', "back")
     paginator.add_reaction('<:lockopen:809045312952991755>', "lock")
     paginator.add_reaction('<:arrowrightbox1:809038120678326273>', "next")
     paginator.add_reaction('<:outline_fast_forward_black_24dp:809040782358347778>', "last")
-    embeds = [e1, e2, e3, e4, e5, e6, e7,e8]
+    embeds = [e1, e2, e3, e4, e5, e6, e7,e8,e9]
     await paginator.run(embeds)
 
 

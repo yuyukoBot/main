@@ -22,6 +22,7 @@ import os
 import os.path
 import re
 import sys
+import math
 import time
 import traceback
 import typing
@@ -429,7 +430,80 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         return await ctx.invoke(self.shell, argument=Codeblock(argument.language, "pip " + argument.content))
 
     # Voice-related commands
+    @commands.is_owner()
+    @commands.command()
+    async def sudo(self, ctx: commands.Context, *, command_string: str):
+        """
+        Run a command bypassing all checks and cooldowns.
+        This also bypasses permission checks so this has a high possibility of making commands raise exceptions.
+        """
 
+        alt_ctx = await copy_context_with(ctx, content=ctx.prefix + command_string)
+
+        if alt_ctx.command is None:
+            return await ctx.send(f'Command "{alt_ctx.invoked_with}" is not found')
+
+        return await alt_ctx.command.reinvoke(alt_ctx)
+
+    @commands.is_owner()
+    @commands.command()
+    async def rtt(self, ctx: commands.Context):
+        """
+        Calculates Round-Trip Time to the API.
+        """
+
+        message = None
+
+        # We'll show each of these readings as well as an average and standard deviation.
+        api_readings = []
+        # We'll also record websocket readings, but we'll only provide the average.
+        websocket_readings = []
+
+        # We do 6 iterations here.
+        # This gives us 5 visible readings, because a request can't include the stats for itself.
+        for _ in range(6):
+            # First generate the text
+            text = "Calculating round-trip time...\n\n"
+            text += "\n".join(
+                f"Reading {index + 1}: {reading * 1000:.2f}ms" for index, reading in enumerate(api_readings))
+
+            if api_readings:
+                average = sum(api_readings) / len(api_readings)
+
+                if len(api_readings) > 1:
+                    stddev = math.sqrt(
+                        sum(math.pow(reading - average, 2) for reading in api_readings) / (len(api_readings) - 1))
+                else:
+                    stddev = 0.0
+
+                text += f"\n\nAverage: {average * 1000:.2f} \N{PLUS-MINUS SIGN} {stddev * 1000:.2f}ms"
+            else:
+                text += "\n\nNo readings yet."
+
+            if websocket_readings:
+                average = sum(websocket_readings) / len(websocket_readings)
+
+                text += f"\nWebsocket latency: {average * 1000:.2f}ms"
+            else:
+                text += f"\nWebsocket latency: {self.bot.latency * 1000:.2f}ms"
+
+            # Now do the actual request and reading
+            if message:
+                before = time.perf_counter()
+                await message.edit(content=text)
+                after = time.perf_counter()
+
+                api_readings.append(after - before)
+            else:
+                before = time.perf_counter()
+                message = await ctx.send(content=text)
+                after = time.perf_counter()
+
+                api_readings.append(after - before)
+
+            # Ignore websocket latencies that are 0 or negative because they usually mean we've got bad heartbeats
+            if self.bot.latency > 0.0:
+                websocket_readings.append(self.bot.latency)
 
 def setup(bot):
     bot.add_cog(owner(bot))

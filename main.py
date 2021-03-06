@@ -95,7 +95,56 @@ async def on_guild_join(guild):
 
     ch = bot.get_channel(817642658599141417)
     await ch.send(embed=e)
+    e1 = discord.Embed(title="幽々子の導入ありがとうございます",
+                       description="詳しくは`y/help`でご確認ください\n`幽々子ログ`というチャンネルを作ると自動的にログチャンネルとなります", color=0x5d00ff)
+    try:
+        await guild.system_channel.send(embed=e1)
+    except:
+        for ch in guild.text_channels:
+            try:
+                await ch.send(embed=e1)
+                return
+            except:
+                continue
 
+@bot.event
+async def on_guild_remove(guild):
+        e = discord.Embed(title="サーバー退出")
+        if guild.icon:
+            e.set_thumbnail(url=guild.icon_url)
+        e.add_field(name="サーバー名", value=f'`{guild.name}({guild.id})`')
+        e.add_field(name="サーバーowner", value=guild.owner)
+        e.add_field(name="AFKチャンネル", value=guild.afk_channel)
+        bm = 0
+        ubm = 0
+        for m in guild.members:
+            if m.bot:
+                bm = bm + 1
+            else:
+                ubm = ubm + 1
+        e.add_field(name="メンバー数",
+                    value=f"{len(guild.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
+        e.add_field(name="チャンネル数",
+                    value=f'{("<:categorie:798883839124308008>")}:{len(guild.categories)}\n{(":speech_balloon:")}:{len(guild.text_channels)}\n{(":mega:")}:{len(guild.voice_channels)}')
+
+        e.add_field(name="絵文字", value=len(guild.emojis))
+        e.add_field(name="地域", value=str(guild.region))
+        e.add_field(name="認証度", value=str(guild.verification_level))
+        if guild.afk_channel:
+            e.add_field(name="AFKチャンネル", value=f"{guild.afk_channel.name}({str(guild.afk_channel.id)})")
+            e.add_field(name="AFKタイムアウト", value=str(guild.afk_timeout / 60))
+
+        if guild.system_channel:
+            e.add_field(name="システムチャンネル", value=f"{guild.system_channel}\n({str(guild.system_channel.id)})")
+        try:
+
+            e.add_field(name="welcome", value=guild.system_channel_flags.join_notifications)
+            e.add_field(name="boost", value=guild.system_channel_flags.premium_subscriptions)
+        except:
+            pass
+
+        ch = bot.get_channel(817642658599141417)
+        await ch.send(embed=e)
 
 @bot.event
 async def on_ready():

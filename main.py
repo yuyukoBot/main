@@ -106,6 +106,17 @@ async def on_guild_join(guild):
                 return
             except:
                 continue
+@bot.command()
+async def notice(ctx, ch: int=None):
+    if ctx.author.guild_permissions.administrator or ctx.author.id == 478126443168006164:
+        tchid = ch or ctx.channel.id
+        tch = bot.get_channel(tchid)
+        fch = bot.get_channel(757777897992880211)
+        await fch.follow(destination=tch)
+        await ctx.send("フォローが完了しました。")
+    else:
+        await ctx.send("権限がありません")
+
 
 @bot.event
 async def on_guild_remove(guild):

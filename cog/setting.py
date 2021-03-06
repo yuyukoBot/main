@@ -425,6 +425,8 @@ class log(commands.Cog):
                 await confirm_message.delete()
                 await ctx.channel.send(f'`/channel privateMake`コマンドでプライベートなチャンネルを作成しました！')
 
+
+
     @channel.command(aliases=['t', 'tp'], description='チャンネルにトピックを設定します')
     async def topic(self, ctx, *, topicWord=None):
         """
@@ -516,7 +518,7 @@ class log(commands.Cog):
             )
 
             embed.set_thumbnail(url=member.avatar_url)
-            embed.add_field(name="ユーザー名", value=member.name)
+            embed.add_field(name="ユーザー名", value=member.mention)
             embed.add_field(name="ユーザーid", value=member.id)
             embed.add_field(name="Joined", value=member.joined_at)
             embed.add_field(name="Created", value=member.created_at)
@@ -544,6 +546,44 @@ class log(commands.Cog):
             await channel.send(embed=embed)
 
     @commands.Cog.listener()
+    async def on_guild_update(self, before, after):
+
+        if before.name != after.name:
+            e = discord.Embed(title="サーバーの名前が変りました", color=0x5d00ff)
+            e.add_field(name="変更前", value=f'`{before.name}`')
+            e.add_field(name="変更後", value=f'`{after.name}`')
+            e.add_field(name="AFKチャンネル", value=after.afk_channel)
+            e.add_field(name="地域", value=after.region)
+            channel = discord.utils.get(after.channels, name="幽々子ログ")
+            await channel.send(embed=e)
+
+        if before.region != after.region:
+            e1 = discord.Embed(title="サーバーの地域が変りました", color=0x5d00ff)
+            e1.add_field(name="変更前", value=f'`{before.region}`')
+            e1.add_field(name="変更後", value=f'`{after.region}`')
+            e1.add_field(name="サーバー名", value=after.name)
+            e1.add_field(name="AFKチャンネル", value=after.afk_channel)
+            channel = discord.utils.get(after.channels, name="幽々子ログ")
+            await channel.send(embed=e1)
+
+        if before.afk_channel != after.afk_channel:
+            e2 = discord.Embed(title="AFKチャンネルが変りました", color=0x5d00ff)
+            e2.add_field(name="変更前", value=f'`{before.afk_channel}`')
+            e2.add_field(name="変更前", value=f'`{after.afk_channel}`')
+            e2.add_field(name="サーバー名", value=after.name)
+            channel = discord.utils.get(after.channels, name="幽々子ログ")
+            await channel.send(embed=e2)
+
+        if before.owner != after.owner:
+            e3 = discord.Embed(title="サーバーの所有者が変りました", color=0x5d00ff)
+            e3.add_field(name="変更前", value=f'`{before.owner}`')
+            e3.add_field(name="変更前", value=f'`{after.owner}`')
+            e3.add_field(name="サーバー名", value=after.name)
+            channel = discord.utils.get(after.channels, name="幽々子ログ")
+            await channel.send(embed=e3)
+
+
+    @commands.Cog.listener()
     async def on_member_update(self, before, after):
         if before.nick != after.nick:
             e = discord.Embed(title='ニックネームが変わりました', color=0x5d00ff)
@@ -565,23 +605,6 @@ class log(commands.Cog):
                 channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
                 await channel.send(embed=e1)
 
-    @commands.Cog.listener()
-    async def on_guild_join(self,guild):
-        server = commands.get_guild(759386170689585213)
-        admin = commands.server.get_channel(773778830678556735)
-        e = discord.Embed(title="サーバー参加")
-        e.add_field(name="サーバー名",value=f'{guild.name}({guild.id})')
-        e.add_field(name="サーバー所有者",value=guild.owner)
-        bm = 0
-        ubm = 0
-        for m in guild.members:
-            if m.bot:
-                bm = bm + 1
-            else:
-                ubm = ubm + 1
-        e.add_field(name="メンバー数",
-                    value=f"{len(guild.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
-        e.set_thumbnail(url=f'{guild.icon_url}')
 
 
 def setup(bot):

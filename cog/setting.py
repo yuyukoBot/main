@@ -137,12 +137,19 @@ class log(commands.Cog):
         await ch.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_guild_channel_update(self,before, after):
+    async def on_guild_channel_update(self, before, after):
         channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
-        embed = discord.Embed(title="Channel Name Updated", description="チャンネルがアップデートしました", color=0x5d00ff)
-        embed.add_field(name="Old name", value=f"The old name was: {before}.", inline=True)
-        embed.add_field(name="New name", value=f"The old name was: {after}.", inline=False)
-        await channel.send(embed=embed)
+        if before.name != after.name:
+            embed = discord.Embed(title="channel nameを変更しました",color=0x5d00ff)
+            embed.add_field(name="設定前", value=before, inline=True)
+            embed.add_field(name="設定後", value=after, inline=False)
+            await channel.send(embed=embed)
+
+        if before.topic != after.topic:
+            e = discord.Embed(title="チャンネルのトピックが変わりました", color=0x5d00ff)
+            e.add_field(name="設定前", value=before.topic)
+            e.add_field(name="設定後", value=after.topic)
+            await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_voice_state_update(before, after):

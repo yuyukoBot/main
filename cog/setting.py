@@ -143,13 +143,87 @@ class log(commands.Cog):
             embed = discord.Embed(title="channel nameを変更しました",color=0x5d00ff)
             embed.add_field(name="設定前", value=before, inline=True)
             embed.add_field(name="設定後", value=after, inline=False)
+            embed.add_field(name="現在のチャンネル名", value=after.name)
+            embed.add_field(name="現在のトピック", value=after.topic)
+            embed.add_field(name="nsfwかどうか", value=after.nsfw)
+            embed.add_field(name="現在のカテゴリー", value=after.category)
+            embed.add_field(name="低速モード", value=after.slowmode_delay)
+            embed.add_field(name="タイプ", value=after.type)
             await channel.send(embed=embed)
 
         if before.topic != after.topic:
             e = discord.Embed(title="チャンネルのトピックが変わりました", color=0x5d00ff)
             e.add_field(name="設定前", value=before.topic)
             e.add_field(name="設定後", value=after.topic)
+            e.add_field(name="現在のチャンネル名", value=after.name)
+            e.add_field(name="現在のトピック", value=after.topic)
+            e.add_field(name="nsfwかどうか", value=after.nsfw)
+            e.add_field(name="現在のカテゴリー", value=after.category)
+            e.add_field(name="低速モード", value=after.slowmode_delay)
+            e.add_field(name="タイプ", value=after.type)
             await channel.send(embed=e)
+
+        if before.nsfw != after.nsfw:
+            e1 = discord.Embed(title="nsfwに設定(解除)しました", color=0x5d00ff)
+            e1.add_field(name="設定前", value=before.nsfw)
+            e1.add_field(name="設定後", value=after.nsfw)
+            e1.add_field(name="現在のチャンネル名",value=after.name)
+            e1.add_field(name="現在のトピック",value=after.topic)
+            e1.add_field(name="nsfwかどうか",value=after.nsfw)
+            e1.add_field(name="現在のカテゴリー", value=after.category)
+            e1.add_field(name="低速モード", value=after.slowmode_delay)
+            e1.add_field(name="タイプ", value=after.type)
+            await channel.send(embed=e1)
+
+        if before.category != after.category:
+            e2 = discord.Embed(title="別のカテゴリーに移動しました", color=0x5d00ff)
+            e2.add_field(name="設定前", value=before.category)
+            e2.add_field(name="設定後", value=after.category)
+            e2.add_field(name="現在のチャンネル名",value=after.name)
+            e2.add_field(name="現在のトピック",value=after.topic)
+            e2.add_field(name="nsfwかどうか",value=after.nsfw)
+            e2.add_field(name="現在のカテゴリー",value=after.category)
+            e2.add_field(name="低速モード", value=after.slowmode_delay)
+            e2.add_field(name="タイプ", value=after.type)
+            await channel.send(embed=e2)
+
+
+        if before.slowmode_delay != after.slowmode_delay:
+            e4 = discord.Embed(title="低速モードを設定しました", color=0x5d00ff)
+            e4.add_field(name="設定前", value=f'{before.slowmode_delay}秒')
+            e4.add_field(name="設定後", value=f'{after.slowmode_delay}秒')
+            e4.add_field(name="現在のチャンネル名",value=after.name)
+            e4.add_field(name="現在のトピック",value=after.topic)
+            e4.add_field(name="nsfwかどうか",value=after.nsfw)
+            e4.add_field(name="現在のカテゴリー", value=after.category)
+            e4.add_field(name="低速モード",value=after.slowmode_delay)
+            e4.add_field(name="タイプ", value=after.type)
+            await channel.send(embed=e4)
+
+        if before.type != after.type:
+            e5 = discord.Embed(title="チャンネルのタイプを変更しました", color=0x5d00ff)
+            e5.add_field(name="設定前", value=before.type)
+            e5.add_field(name="設定後", value=after.type)
+            e5.add_field(name="現在のチャンネル名",value=after.name)
+            e5.add_field(name="現在のトピック",value=after.topic)
+            e5.add_field(name="nsfwかどうか",value=after.nsfw)
+            e5.add_field(name="現在のカテゴリー", value=after.category)
+            e5.add_field(name="低速モード",value=after.slowmode_delay)
+            e5.add_field(name="タイプ",value=after.type)
+            await channel.send(embed=e5)
+
+
+        if before.sync_permissions  != after.sync_permissions :
+            e6 = discord.Embed(title="チャンネルを同期させました", color=0x5d00ff)
+            e6.add_field(name="設定前", value=before.sync_permissions)
+            e6.add_field(name="設定後", value=after.sync_permissions )
+            e6.add_field(name="現在のチャンネル名",value=after.name)
+            e6.add_field(name="現在のトピック",value=after.topic)
+            e6.add_field(name="nsfwかどうか",value=after.nsfw)
+            e6.add_field(name="現在のカテゴリー", value=after.category)
+            e6.add_field(name="低速モード",value=after.slowmode_delay)
+            e6.add_field(name="タイプ",value=after.type)
+            await channel.send(embed=e6)
 
     @commands.Cog.listener()
     async def on_voice_state_update(before, after):

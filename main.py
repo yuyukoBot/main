@@ -52,7 +52,7 @@ async def on_command(ctx):
     e.add_field(name="実行チャンネル", value=ctx.channel.name)
     e.set_thumbnail(url=ctx.guild.icon_url)
     e.timestamp = ctx.message.created_at
-    ch = bot.get_channel(817642658599141417)
+    ch = bot.get_channel(797335889431756800)
 
     await ch.send(embed=e)
 
@@ -93,7 +93,7 @@ async def on_guild_join(guild):
     except:
         pass
 
-    ch = bot.get_channel(761607914418208819)
+    ch = bot.get_channel(817642658599141417)
     await ch.send(embed=e)
 
 

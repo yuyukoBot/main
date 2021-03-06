@@ -76,10 +76,10 @@ class log(commands.Cog):
     async def on_guild_role_update(self, before, after):
         print("1")
         if before.name != after.name:
-            embed = discord.Embed(title="Role " + before.name + " renamed to " + after.name + ".", color=0x5d00ff)
+            embed = discord.Embed(title="役職の名前が変わりました", color=0x5d00ff)
 
 
-            embed.add_field(name="名前", value=after.name)
+            embed.add_field(name="名前", value=f'{after.name}({after.id})')
             embed.add_field(name="位置", value=after.position)
             if bool(after.hoist):
                 embed.add_field(name="個別表示ですか", value="はい")
@@ -113,8 +113,8 @@ class log(commands.Cog):
         if before.hoist != after.hoist:
             e1 = discord.Embed(title="役職を個別表示(非表示)にしました", color=0x5d00ff)
 
-            e1.add_field(name="設定前", value=before.hoist)
-            e1.add_field(name="設定後", value=after.hoist)
+            e1.add_field(name="設定前", value=f'`{before.hoist}`')
+            e1.add_field(name="設定後", value=f'`{after.hoist}`')
             e1.add_field(name="id", value=after.id)
             e1.add_field(name="名前", value=f'{after.name}({after.id})')
             e1.add_field(name="位置", value=after.position)
@@ -134,8 +134,8 @@ class log(commands.Cog):
         if before.mentionable != after.mentionable:
             e2 = discord.Embed(title="役職をメンション可能(不可能)にしました", color=0x5d00ff)
 
-            e2.add_field(name="設定前", value=before.hoist)
-            e2.add_field(name="設定後", value=after.hoist)
+            e2.add_field(name="設定前", value=f'`{before.mentionable}`')
+            e2.add_field(name="設定後", value=f'`{after.mentionable}`')
             e2.add_field(name="id", value=after.id)
             e2.add_field(name="名前", value=f'{after.name}({after.id})')
             e2.add_field(name="位置", value=after.position)
@@ -199,8 +199,8 @@ class log(commands.Cog):
         channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
         if before.name != after.name:
             embed = discord.Embed(title="channel nameを変更しました",color=0x5d00ff)
-            embed.add_field(name="設定前", value=before, inline=True)
-            embed.add_field(name="設定後", value=after, inline=False)
+            embed.add_field(name="設定前", value=f'`{before.name}`', inline=True)
+            embed.add_field(name="設定後", value=f'`{after.name}`', inline=False)
             embed.add_field(name="現在のチャンネル名", value=after.name)
             embed.add_field(name="現在のトピック", value=after.topic)
             embed.add_field(name="nsfwかどうか", value=after.nsfw)
@@ -211,8 +211,8 @@ class log(commands.Cog):
 
         if before.topic != after.topic:
             e = discord.Embed(title="チャンネルのトピックが変わりました", color=0x5d00ff)
-            e.add_field(name="設定前", value=before.topic)
-            e.add_field(name="設定後", value=after.topic)
+            e.add_field(name="設定前", value=f'`{before.topic}`')
+            e.add_field(name="設定後", value=f'`{after.topic}`')
             e.add_field(name="現在のチャンネル名", value=after.name)
             e.add_field(name="現在のトピック", value=after.topic)
             e.add_field(name="nsfwかどうか", value=after.nsfw)
@@ -223,8 +223,8 @@ class log(commands.Cog):
 
         if before.nsfw != after.nsfw:
             e1 = discord.Embed(title="nsfwに設定(解除)しました", color=0x5d00ff)
-            e1.add_field(name="設定前", value=before.nsfw)
-            e1.add_field(name="設定後", value=after.nsfw)
+            e1.add_field(name="設定前", value=f'`{before.nsfw}`')
+            e1.add_field(name="設定後", value=f'`{after.nsfw}`')
             e1.add_field(name="現在のチャンネル名",value=after.name)
             e1.add_field(name="現在のトピック",value=after.topic)
             e1.add_field(name="nsfwかどうか",value=after.nsfw)
@@ -235,8 +235,8 @@ class log(commands.Cog):
 
         if before.category != after.category:
             e2 = discord.Embed(title="別のカテゴリーに移動しました", color=0x5d00ff)
-            e2.add_field(name="設定前", value=before.category)
-            e2.add_field(name="設定後", value=after.category)
+            e2.add_field(name="設定前", value=f'`{before.category}`')
+            e2.add_field(name="設定後", value=f'`{after.category}`')
             e2.add_field(name="現在のチャンネル名",value=after.name)
             e2.add_field(name="現在のトピック",value=after.topic)
             e2.add_field(name="nsfwかどうか",value=after.nsfw)
@@ -248,7 +248,7 @@ class log(commands.Cog):
 
         if before.slowmode_delay != after.slowmode_delay:
             e4 = discord.Embed(title="低速モードを設定しました", color=0x5d00ff)
-            e4.add_field(name="設定前", value=f'{before.slowmode_delay}秒')
+            e4.add_field(name="設定前", value=f'`{before.slowmode_delay}秒`')
             e4.add_field(name="設定後", value=f'{after.slowmode_delay}秒')
             e4.add_field(name="現在のチャンネル名",value=after.name)
             e4.add_field(name="現在のトピック",value=after.topic)
@@ -543,33 +543,27 @@ class log(commands.Cog):
 
             await channel.send(embed=embed)
 
-
-
     @commands.Cog.listener()
-    async def on_member_update(self,before, after):
-        if before.display_name != after.display_name:
-            e = discord.Embed(title="ニックネームが変わりました", color=0x5d00ff)
-
-            fields = [("Before", before.display_name, False),
-                      ("After", after.display_name, False)]
-
-            for name, value, inline in fields:
-                e.add_field(name=name, value=value, inline=inline)
-            e.timestamp = datetime.datetime.utcnow()
-
-            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
+    async def on_member_update(self, before, after):
+        if before.nick != after.nick:
+            e = discord.Embed(title='ニックネームが変わりました', color=0x5d00ff)
+            e.add_field(name="変更前", value=f'`{before.nick}`')
+            e.add_field(name="変更後", value=f'`{after.nick}`')
+            channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
             await channel.send(embed=e)
 
-        elif before.roles != after.roles:
-            e = discord.Embed(title='役職が付与(剥奪)されました', color=0x5d00ff)
-
-            fields = [("Before", ", ".join([r.mention for r in before.roles]), False),
-                      ("After", ", ".join([r.mention for r in after.roles]), False)]
-            for name, value, inline in fields:
-                e.add_field(name=name, value=value, inline=inline)
-            e.timestamp = datetime.datetime.utcnow()
-            channel = discord.utils.get(after.guild.text_channels, name="幽々子ログ")
-            await channel.send(embed=e)
+        if before.roles != after.roles:
+            e1 = discord.Embed(title="アップデーtp")
+            if len(before.roles) > len(after.roles):
+                e1.add_field(name="変更内容", value="役職除去")
+                e1.add_field(name="役職", value=list(
+                    set(before.roles) - set(after.roles))[0])
+            else:
+                e1.add_field(name="変更内容", value="役職付与")
+                e1.add_field(name="役職", value=list(
+                    set(after.roles) - set(before.roles))[0])
+                channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
+                await channel.send(embed=e1)
 
     @commands.Cog.listener()
     async def on_guild_join(self,guild):

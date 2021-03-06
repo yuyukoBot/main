@@ -495,9 +495,15 @@ class infoCog(commands.Cog):
         if role is None:
             await ctx.send(ctx._("roleinfo-howto"))
         elif role.guild == ctx.guild:
-            embed = discord.Embed(title=role.name, description=f"id:{role.id}", color=role.colour)
-            embed.add_field(name="別表示", value=role.hoist)
-            embed.add_field(name="メンション", value=role.mentionable)
+            embed = discord.Embed(title=role.name, description=f"id:{role.id}", color=0x5d00ff)
+            if role.hoist:
+                embed.add_field(name="別表示", value="はい")
+            else:
+                embed.add_field(name="別表示", value="いいえ")
+            if role.mentionable:
+               embed.add_field(name="メンション可能", value="はい")
+            else:
+                embed.add_field(name="メンション可能",value='いいえ')
 
             embed.add_field(name='メンバー数', value=str(len(role.members)))
             embed.add_field(name='カラーコード', value=str(role.color))
@@ -727,7 +733,7 @@ class infoCog(commands.Cog):
                 else:
                     e = discord.Embed(name="チャンネル情報", description=f"{target.name}(タイプ:アナウンス(フォロー不可))\nID:{target.id}")
             else:
-                e = discord.Embed(name="チャンネル情報", description=f"{target.name}(タイプ:テキスト)\nID:{target.id}")
+                e = discord.Embed(name="チャンネル情報", description=f"{target.name}(タイプ:テキスト)\nID:{target.id}", color=0x5d00ff)
             e.timestamp = target.created_at
             if target.category:
                 e.add_field(name="所属するカテゴリ", value=f"{target.category.name}({target.category.id})")
@@ -735,6 +741,7 @@ class infoCog(commands.Cog):
             if not target.slowmode_delay == 0:
                 e.add_field(name="スローモードの時間", value=f"{target.slowmode_delay}秒")
             e.add_field(name="NSFW指定有無", value=target.is_nsfw())
+
             mbs = ""
             for m in target.members:
                 if len(mbs + f"`{m.name}`,") >= 1020:

@@ -67,7 +67,7 @@ async def on_ready():
     print(bot.user.id)
 
     print("起動時の情報を送信しています… / Owner")
-    channel = bot.get_channel(809946025090351154)
+    channel = bot.get_channel(813379637228863509)
     e = discord.Embed(title="起動成功 - 詳細情報", description="起動処理が正常に終了しました。")
     e.add_field(name="バージョン情報", value=f"Ver:{ver}\nRelease:{release}\nStatus:{status}")
     e.add_field(name="更新情報", value=f"```\n{updateinfos}```")

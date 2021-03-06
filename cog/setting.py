@@ -73,26 +73,84 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_guild_role_update(self,before, after):
+    async def on_guild_role_update(self, before, after):
         print("1")
         if before.name != after.name:
             embed = discord.Embed(title="Role " + before.name + " renamed to " + after.name + ".", color=0x5d00ff)
 
-            embed.set_author(name="名前が変りました")
-            embed.add_field(name="id", value=after.id)
+
             embed.add_field(name="名前", value=after.name)
             embed.add_field(name="位置", value=after.position)
+            if bool(after.hoist):
+                embed.add_field(name="個別表示ですか", value="はい")
+            else:
+                embed.add_field(name="個別表示ですか", value="いいえ")
+
+            if bool(after.mentionable):
+                embed.add_field(name="メンション可能", value="はい")
+            else:
+                embed.add_field(name="メンション可能", value="いいえ")
             channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
             await channel.send(embed=embed)
 
         if before.color != after.color:
-            e = discord.Embed(title="Role " + before.name + " change to " + after.name + ".", color=0x5d00ff)
-            e.set_author(name="色が変りました")
+            e = discord.Embed(title="役職の色が変わりました", color=0x5d00ff)
             e.add_field(name="id", value=after.id)
-            e.add_field(name="名前", value=after.name)
+            e.add_field(name="名前", value=f'{after.name}({after.id})')
             e.add_field(name="位置", value=after.position)
+            if bool(after.hoist):
+                e.add_field(name="個別表示ですか", value="はい")
+            else:
+                e.add_field(name="個別表示ですか", value="いいえ")
+
+            if bool(after.mentionable):
+                e.add_field(name="メンション可能", value="はい")
+            else:
+                e.add_field(name="メンション可能", value="いいえ")
             channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
             await channel.send(embed=e)
+
+        if before.hoist != after.hoist:
+            e1 = discord.Embed(title="役職を個別表示(非表示)にしました", color=0x5d00ff)
+
+            e1.add_field(name="設定前", value=before.hoist)
+            e1.add_field(name="設定後", value=after.hoist)
+            e1.add_field(name="id", value=after.id)
+            e1.add_field(name="名前", value=f'{after.name}({after.id})')
+            e1.add_field(name="位置", value=after.position)
+            if bool(after.hoist):
+                e1.add_field(name="個別表示ですか", value="はい")
+            else:
+                e1.add_field(name="個別表示ですか", value="いいえ")
+
+            if bool(after.mentionable):
+                e1.add_field(name="メンション可能", value="はい")
+            else:
+                e1.add_field(name="メンション可能", value="いいえ")
+
+            channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+            await channel.send(embed=e1)
+
+        if before.mentionable != after.mentionable:
+            e2 = discord.Embed(title="役職をメンション可能(不可能)にしました", color=0x5d00ff)
+
+            e2.add_field(name="設定前", value=before.hoist)
+            e2.add_field(name="設定後", value=after.hoist)
+            e2.add_field(name="id", value=after.id)
+            e2.add_field(name="名前", value=f'{after.name}({after.id})')
+            e2.add_field(name="位置", value=after.position)
+            if bool(after.hoist):
+                e2.add_field(name="個別表示ですか", value="はい")
+            else:
+                e2.add_field(name="個別表示ですか", value="いいえ")
+
+            if bool(after.mentionable):
+                e2.add_field(name="メンション可能", value="はい")
+            else:
+                e2.add_field(name="メンション可能", value="いいえ")
+
+            channel = discord.utils.get(before.guild.channels, name="幽々子ログ")
+            await channel.send(embed=e2)
 
     @commands.Cog.listener()
     async def on_message_edit(self,before, after):
@@ -213,17 +271,7 @@ class log(commands.Cog):
             await channel.send(embed=e5)
 
 
-        if before.sync_permissions  != after.sync_permissions :
-            e6 = discord.Embed(title="チャンネルを同期させました", color=0x5d00ff)
-            e6.add_field(name="設定前", value=before.sync_permissions)
-            e6.add_field(name="設定後", value=after.sync_permissions )
-            e6.add_field(name="現在のチャンネル名",value=after.name)
-            e6.add_field(name="現在のトピック",value=after.topic)
-            e6.add_field(name="nsfwかどうか",value=after.nsfw)
-            e6.add_field(name="現在のカテゴリー", value=after.category)
-            e6.add_field(name="低速モード",value=after.slowmode_delay)
-            e6.add_field(name="タイプ",value=after.type)
-            await channel.send(embed=e6)
+
 
     @commands.Cog.listener()
     async def on_voice_state_update(before, after):

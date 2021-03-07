@@ -582,6 +582,24 @@ class log(commands.Cog):
             channel = discord.utils.get(after.channels, name="幽々子ログ")
             await channel.send(embed=e3)
 
+    @commands.Cog.listener()
+    async def on_member_ban(self, guild, user):
+        bl = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+        e = discord.Embed(title="ユーザーがBANされました", color=0x5d00ff)
+        e.add_field(name="対象者", value=str(user))
+        e.add_field(name="実行者", value=str(bl[0].user))
+        e.set_footer(text=f"{guild.name}/{guild.id}")
+        channel = discord.utils.get(guild.channels, name="幽々子ログ")
+        await channel.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_member_unban(self, guild, user):
+        bl = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+        e = discord.Embed(title="ユーザーのban解除", color=0x5d00ff)
+        e.add_field(name="ユーザー名", value=str(user))
+        e.add_field(name="Banしたときの実行者", value=str(bl[0].user))
+        channel = discord.utils.get(guild.channels, name="幽々子ログ")
+        await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):

@@ -249,11 +249,33 @@ class infoCog(commands.Cog):
 
         await ctx.send(embed=e)
 
-    @commands.command(name="info", description="豆腐botの")
+    @commands.command()
+    async def debug(self, ctx):
+        mem = psutil.virtual_memory()
+        allmem = str(mem.total / 1000000000)[0:3]
+        used = str(mem.used / 1000000000)[0:3]
+        ava = str(mem.available / 1000000000)[0:3]
+        memparcent = mem.percent
+
+        pythonVersion = platform.python_version()
+        dpyVersion = discord.__version__
+        e = discord.Embed(title="ステータス",
+                          url="https://cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png?size=1024",
+                          color=0x5d00ff)
+        e.add_field(name="プロセッサ", value="Intel(R) Core(TM) i7 CPU")
+        e.add_field(name="discord.pyのバージョン", value=dpyVersion)
+        e.add_field(name="Pythonのバージョン", value=pythonVersion)
+        e.add_field(name="OS", value=f"```{platform.system()} {platform.release()}({platform.version()})```")
+        e.add_field(
+            name="メモリ",
+            value=f"```全てのメモリ容量:{allmem}GB\n使用量:{used}GB({memparcent}%)\n空き容量{ava}GB({100 - memparcent}%)```")
+
+        await ctx.send(embed=e)
+
+    @commands.command(name="info")
     async def info(self, ctx):
 
         """`誰でも`"""
-
 
         pythonVersion = platform.python_version()
         dpyVersion = discord.__version__
@@ -266,12 +288,6 @@ class infoCog(commands.Cog):
             member_count = "{:,} ({:,} unique)".format(len(total_members), len(unique_members))
 
         guild_count = "{:,}".format(len(self.bot.guilds))
-        mem = psutil.virtual_memory()
-
-        allmem = str(mem.total / 1000000000)[0:3]
-        used = str(mem.used / 1000000000)[0:3]
-        ava = str(mem.available / 1000000000)[0:3]
-        memparcent = mem.percent
 
         cog_amnt = 0
         empty_cog = 0
@@ -309,20 +325,18 @@ class infoCog(commands.Cog):
 
         embed.add_field(name="サーバー数", value=guild_count)
         embed.add_field(name="ユーザー数", value=member_count)
-        embed.add_field(name="command",value=command_count + " (in {})".format(cog_count))
+        embed.add_field(name="command", value=command_count + " (in {})".format(cog_count))
 
         embed.set_thumbnail(
             url="https://cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png?size=1024")
         embed.add_field(name="Channels bot can see:", value=channels)
         embed.add_field(name="discord.pyのバージョン", value=dpyVersion)
         embed.add_field(name="Pythonのバージョン", value=pythonVersion)
-        embed.add_field(name="プロセッサ", value="Intel(R) Xeon(R) CPU E5-2660 v3 @ 2.60GHz")
-        embed.add_field(name="OS", value=f"{platform.system()} {platform.release()}({platform.version()})")
-        embed.add_field(
-            name="メモリ", value=f"全てのメモリ容量:{allmem}GB\n使用量:{used}GB({memparcent}%)\n空き容量{ava}GB({100 - memparcent}%)")
+        embed.add_field(name="導入",
+                        value="https://discord.com/api/oauth2/authorize?client_id=757807145264611378&permissions=0&scope=bot")
+
         embed.set_footer(text="何かあればButachaan#0001まで")
         await ctx.send(embed=embed)
-
 
 
 

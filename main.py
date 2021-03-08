@@ -44,6 +44,7 @@ bot.load_extension('cog.monitor')
 bot.load_extension('cog.setting')
 bot.load_extension('cog.owner')
 bot.load_extension('cog.user_setting')
+bot.load_extension('cog.globalchat')
 
 @bot.event
 async def on_command(ctx):

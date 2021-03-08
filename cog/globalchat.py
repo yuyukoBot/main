@@ -10,7 +10,7 @@ class GlobalChat(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(administrator=True)
     async def globalchatstart(self, ctx, channel):
         guild_id = ctx.message.guild.id
         channel_id = int(channel.strip('<>#'))
@@ -32,7 +32,7 @@ class GlobalChat(commands.Cog):
                 await ctx.send(':white_check_mark: **Channel has been added to global chat!**')
 
     @commands.command()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(administrator=True)
     async def globalchatstop(self, ctx):
         guild_id = ctx.message.guild.id
 

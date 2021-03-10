@@ -10,7 +10,7 @@ import datetime
 import asyncio
 import random
 from discord.ext import commands
-
+import sqlite3
 
 from logging import DEBUG, getLogger
 logger = getLogger(__name__)
@@ -504,29 +504,29 @@ class log(commands.Cog):
                     await self.unmute_members(message.guild, [message.author])
 
     @commands.Cog.listener()
-    async def on_member_join(self,member):
-        # On member joins we find a channel called general and if it exists,
-        # send an embed welcoming them to our guild
-        shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
+    async def on_member_join(self, member):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {member.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {member.guild.id}")
+            result1 = cursor.fetchone()
+            members = len(list(member.guild.members))
+            mention = member.mention
+            user = member.name
+            guild = member.guild
+            e = discord.Embed(title="新規参加",
+                              description=str(result1[0]).format(members=members, mention=mention, user=user,
+                                                                 guild=guild))
+            e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
+            e.set_thumbnail(url=f"{member.avatar_url}")
+            e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
+            channel = self.bot.get_channel(id=int(result[0]))
 
-        channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
-        if channel:
-            embed = discord.Embed(
-                description='新規参加',
-                color=0x5d00ff,
-
-            )
-
-            embed.set_thumbnail(url=member.avatar_url)
-            embed.add_field(name="ユーザー名", value=member.mention)
-            embed.add_field(name="ユーザーid", value=member.id)
-            embed.add_field(name="Joined", value=member.joined_at)
-            embed.add_field(name="Created", value=member.created_at)
-            embed.add_field(name="共通鯖数",value=shared)
-            embed.add_field(name="User Serial", value=len(list(member.guild.members)))
-            embed.timestamp = datetime.datetime.utcnow()
-
-            await channel.send(embed=embed)
+            await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_member_remove(self,member):
@@ -627,6 +627,46 @@ class log(commands.Cog):
     async def welcome(self,ctx):
         e = discord.Embed(title="welcome-setting",description="`y/welcome channel <#チャンネル名>`\n`y/welcome text <参加メッセージ>`\n`y/welcome addrole <ロール>`")
         await ctx.send(embed=e)
+
+    @welcome.command()
+    async def channel(self, ctx, channel: discord.TextChannel):
+        if ctx.message.author.guild_permissions.manage_messages:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+            cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {ctx.guild.id}")
+            result = cursor.fetchone()
+            if result is None:
+                sql = ("INSERT INTO welcome(guild_id,channel_id) VALUES(?,?)")
+                val = (ctx.guild.id, channel.id)
+                await ctx.send(f"Channel has been set to {channel.mention}")
+            elif result is not None:
+                sql = ("UPDATE welcome SET channel_id = ? WHERE guild_id = ?")
+                val = (channel.id, ctx.guild.id)
+                await ctx.send(f"Channel has been updated to {channel.mention}")
+            cursor.execute(sql, val)
+            db.commit()
+            cursor.close()
+            db.close()
+
+    @welcome.command()
+    async def text(self, ctx, *, text):
+        if ctx.message.author.guild_permissions.manage_messages:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+            cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {ctx.guild.id}")
+            result = cursor.fetchone()
+            if result is None:
+                sql = ("INSERT INTO welcome(guild_id,msg) VALUES(?,?)")
+                val = (ctx.guild.id, text)
+                await ctx.send(f"Message has been set to `{text}`")
+            elif result is not None:
+                sql = ("UPDATE welcome SET msg = ? WHERE guild_id = ?")
+                val = (text, ctx.guild.id)
+                await ctx.send(f"Message has been updated to {text}")
+            cursor.execute(sql, val)
+            db.commit()
+            cursor.close()
+            db.close()
 
 
 def setup(bot):

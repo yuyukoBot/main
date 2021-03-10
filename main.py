@@ -195,7 +195,25 @@ async def on_ready():
         print(allguild)
     print("正常に起動しました。")
 
+@bot.command()
+@commands.is_owner()
+async def sql(ctx, *, code):
+    try:
+        returned=bot.cursor.execute(code)
+    except Exception as e:
+        if ctx.message != None:
+            await ctx.message.add_reaction("❌")
+            embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```",color=0x5d00ff)
+            await ctx.send(embed=embed)
+        else:
+            embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```",color=0x5d00ff)
+            await ctx.send(embed=embed)
 
+    else:
+        if ctx.message != None:
+            await ctx.message.add_reaction("⭕")
+            if code.lower().startswith("select"):
+                await ctx.send(embed=discord.Embed(description=f"{returned.fetchall()}",color=0x5d00ff))
 
 
 

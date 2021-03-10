@@ -10,8 +10,9 @@ import asyncio
 import random
 import datetime
 import DiscordUtils
-import asyncpg
+
 from discord.ext import commands
+import sqlite3
 import utils.json_loader
 updateinfos = "・コマンド追加"
 release = "0.2"
@@ -44,7 +45,7 @@ bot.load_extension('cog.monitor')
 bot.load_extension('cog.setting')
 bot.load_extension('cog.owner')
 bot.load_extension('cog.user_setting')
-bot.load_extension('cog.globalchat')
+
 
 @bot.event
 async def on_command(ctx):
@@ -161,6 +162,15 @@ async def on_guild_remove(guild):
 
 @bot.event
 async def on_ready():
+    db = sqlite3.connect()
+    cursor = db.cursor()
+    cursor.execute('''
+       CREATE TABLE IF NOT EXISTS yuyuko(
+       guild_id TEXT,
+       msg TEXT,
+       channel_id TEXT,
+       ''')
+
     print("ログインに成功しました")
     await bot.change_presence(activity = discord.Game(name="起動しています…｜y/help"),status =discord.Status.idle)
     print(bot.user.name)

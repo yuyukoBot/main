@@ -32,7 +32,25 @@ ver = "2.1"
 token = config["TOKEN"]
 prefix = config["prefix"]
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
-slash = SlashCommand(bot, override_type = True)
+
+db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
+bot.db=db
+
+bot.close_=bot.close
+
+async def newclose():
+    db.commit()
+    db.close()
+    await bot.close_()
+
+def savedb():
+    db.commit()
+
+bot.close=newclose
+bot.savedb=savedb
+
+bot.cursor=db.cursor()
+
 bot.load_extension('jishaku')
 bot.load_extension('cog.info')
 bot.load_extension('cog.admin')

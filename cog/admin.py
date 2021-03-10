@@ -204,7 +204,7 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.command(pass_context=True, name='eval')
     async def _eval(self, ctx, *, body: str):
         """Evaluates a code"""
-        if ctx.author.id in [478126443168006164,691300045454180383]:
+        if ctx.author.id in [478126443168006164,602680118519005184]:
 
          env = {
             'bot': self.bot,

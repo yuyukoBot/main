@@ -341,7 +341,7 @@ class infoCog(commands.Cog):
 
 
     @commands.command(name="userinfo", aliases=["ui"], description="ユーザーの情報")
-    async def userinfo(self, ctx, *, user: Union[discord.Member, discord.User] = None):
+    async def userinfo(self, ctx, *, user: Union[discord.Member, discord.User,] = None):
         """`誰でも`"""
 
         def rv(content):

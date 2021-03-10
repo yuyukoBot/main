@@ -623,6 +623,10 @@ class log(commands.Cog):
                 channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
                 await channel.send(embed=e1)
 
+    @commands.group()
+    async def welcome(self,ctx):
+        e = discord.Embed(title="welcome-setting",description="`y/welcome channel <#チャンネル名>`\n`y/welcome text <参加メッセージ>`\n`y/welcome addrole <ロール>`")
+        await ctx.send(embed=e)
 
 
 def setup(bot):

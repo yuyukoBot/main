@@ -623,50 +623,6 @@ class log(commands.Cog):
                 channel = discord.utils.get(after.guild.channels, name="幽々子ログ")
                 await channel.send(embed=e1)
 
-    @commands.group()
-    async def welcome(self,ctx):
-        e = discord.Embed(title="welcome-setting",description="`y/welcome channel <#チャンネル名>`\n`y/welcome text <参加メッセージ>`\n`y/welcome addrole <ロール>`")
-        await ctx.send(embed=e)
-
-    @welcome.command()
-    async def channel(self, ctx, channel: discord.TextChannel):
-        if ctx.message.author.guild_permissions.manage_messages:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {ctx.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                sql = ("INSERT INTO welcome(guild_id,channel_id) VALUES(?,?)")
-                val = (ctx.guild.id, channel.id)
-                await ctx.send(f"Channel has been set to {channel.mention}")
-            elif result is not None:
-                sql = ("UPDATE welcome SET channel_id = ? WHERE guild_id = ?")
-                val = (channel.id, ctx.guild.id)
-                await ctx.send(f"Channel has been updated to {channel.mention}")
-            cursor.execute(sql, val)
-            db.commit()
-            cursor.close()
-            db.close()
-
-    @welcome.command()
-    async def text(self, ctx, *, text):
-        if ctx.message.author.guild_permissions.manage_messages:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {ctx.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                sql = ("INSERT INTO welcome(guild_id,msg) VALUES(?,?)")
-                val = (ctx.guild.id, text)
-                await ctx.send(f"Message has been set to `{text}`")
-            elif result is not None:
-                sql = ("UPDATE welcome SET msg = ? WHERE guild_id = ?")
-                val = (text, ctx.guild.id)
-                await ctx.send(f"Message has been updated to {text}")
-            cursor.execute(sql, val)
-            db.commit()
-            cursor.close()
-            db.close()
 
 
 def setup(bot):

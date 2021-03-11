@@ -180,14 +180,6 @@ async def on_guild_remove(guild):
 
 @bot.event
 async def on_ready():
-    db = sqlite3.connect()
-    cursor = db.cursor()
-    cursor.execute('''
-       CREATE TABLE IF NOT EXISTS yuyuko(
-       guild_id TEXT,
-       msg TEXT,
-       channel_id TEXT,
-       ''')
 
     print("ログインに成功しました")
     await bot.change_presence(activity = discord.Game(name="起動しています…｜y/help"),status =discord.Status.idle)

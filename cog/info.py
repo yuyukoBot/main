@@ -259,10 +259,7 @@ class infoCog(commands.Cog):
         e.add_field(name="features",
                     value=f"```{','.join(guild.features)}```")
 
-        self.bot.cursor.execute(
-            "select * from log where id=?", (guild.id,))
-        gs = self.bot.cursor.fetchone()
-        e.add_field(name="tes", value=gs["channel_id"])
+
 
         paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx)
         paginator.add_reaction('<:outline_fast_rewind_black_24dp:809040685881229373>', "first")

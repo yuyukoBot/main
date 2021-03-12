@@ -434,6 +434,33 @@ class log(commands.Cog):
             channel = self.bot.get_channel(id=int(result[0]))
             await channel.send(embed=e)
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {member.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            cursor.execute(f"SELECT msg FROM log WHERE guild_id = {member.guild.id}")
+            result1 = cursor.fetchone()
+            members = len(list(member.guild.members))
+            mention = member.mention
+            user = member.name
+            guild = member.guild
+            e = discord.Embed(title="新規参加",
+                              description=str(result1[0]).format(members=members, mention=mention, user=user,
+                                                                 guild=guild))
+            e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
+            e.set_thumbnail(url=f"{member.avatar_url}")
+            e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
+            channel = self.bot.get_channel(id=int(result[0]))
+
+            await channel.send(embed=e)
+
+
+
     @commands.command()
     async def setting(self, ctx, channel: discord.TextChannel):
         if ctx.message.author.guild_permissions.manage_messages:

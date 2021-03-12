@@ -202,6 +202,10 @@ class infoCog(commands.Cog):
                 else:
                     rls = f"{rls}\n{r.name}"
             e2.add_field(name="役職", value=rls)
+        else:
+            e2.add_field(name="役職", value="権限がありません")
+
+
 
         e3 = discord.Embed(title="サーバー情報")
         if ctx.author.guild_permissions.manage_guild or ctx.author.id == 478126443168006164:

@@ -205,8 +205,6 @@ class infoCog(commands.Cog):
         else:
             e2.add_field(name="役職", value="権限がありません")
 
-
-
         e3 = discord.Embed(title="サーバー情報")
         if ctx.author.guild_permissions.manage_guild or ctx.author.id == 478126443168006164:
             try:
@@ -223,6 +221,8 @@ class infoCog(commands.Cog):
                            description=f"Level:{guild.premium_tier}\n({guild.premium_subscription_count})")
         e4.add_field(name="ブーストの追加要素",
                      value=f"ginfo-blev{guild.premium_tier}")
+        e.add_field(name="features",
+                    value=f"```{','.join(guild.features)}```")
 
         vml = "ginfo-strlenover"
         if len("\n".join([f"{str(i)}" for i in guild.members])) <= 1024:
@@ -231,39 +231,8 @@ class infoCog(commands.Cog):
 
         e5 = discord.Embed(title="メンバー", description=f"member count:{len(guild.members)}\n```" + vml + "```")
 
-        e6 = discord.Embed(title="サーバー情報")
-        if ctx.author.guild_permissions.manage_guild or ctx.author.id == 478126443168006164:
-            try:
-                vi = await guild.vanity_invite()
-                vi = vi.code
-            except:
-                vi = "NF_VInvite"
-                # invites
-            vil = "ginfo-strlenover"
-            if len("\n".join([
-                f'{i.code},{"ginfo-use-invite"}:{i.uses}/{i.max_uses},{"作成者"}:{i.inviter}'
-                for i in await guild.invites()])) <= 1023:
-                vil = "\n".join([
-                    f'{i.code},{"使用された回数"}:{i.uses}/{i.max_uses},{"ginfo-created-invite"}:{i.inviter}'
-                    for i in await guild.invites()]).replace(vi,
-                                                             f"{self.bot.get_emoji(819875096508104744)}{vi}")
-            e6.add_field(name="サーバー招待", value=vil)
-        e6.add_field(name="サーバー招待", value="権限がありません")
-
-        e7 = discord.Embed(title="サーバー情報")
-        if ctx.author.guild_permissions.ban_members or ctx.author.id == 404243934210949120:
-            vbl = "ginfo-strlenover"
-            bl = []
-            for i in await guild.bans():
-                bl.append(f"{i.user},reason:{i.reason}")
-            if len("\n".join(bl)) <= 1024:
-                vbl = "\n".join(bl)
-            e7.add_field(name="Banされたユーザー", value=vbl)
-        e7.add_field(name="BANされたユーザー", value="権限がありません")
         e.add_field(name="features",
                     value=f"```{','.join(guild.features)}```")
-
-
 
         paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx)
         paginator.add_reaction('<:outline_fast_rewind_black_24dp:809040685881229373>', "first")
@@ -271,7 +240,7 @@ class infoCog(commands.Cog):
         paginator.add_reaction('<:lockopen:809045312952991755>', "lock")
         paginator.add_reaction('<:arrowrightbox1:809038120678326273>', "next")
         paginator.add_reaction('<:outline_fast_forward_black_24dp:809040782358347778>', "last")
-        embeds = [e, e1, e2, e3, e4, e5, e6, e7]
+        embeds = [e, e1, e2, e3, e4, e5]
         await paginator.run(embeds)
 
     @commands.command()

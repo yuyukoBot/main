@@ -50,7 +50,6 @@ class welcome(commands.Cog):
 
             await channel.send(embed=e)
 
-
     @commands.Cog.listener()
     async def on_member_join(self, member):
         db = sqlite3.connect('main.sqlite')
@@ -124,7 +123,7 @@ class welcome(commands.Cog):
             db.close()
 
     @commands.group()
-    async def leave(self,ctx):
+    async def leave(self, ctx):
         await ctx.send('セットアップを完了してください:\nleave channel <#channel>\nleave text <message>')
 
     @leave.command()
@@ -168,7 +167,6 @@ class welcome(commands.Cog):
             db.commit()
             cursor.close()
             db.close()
-
 
 
 def setup(bot):

@@ -29,12 +29,12 @@ class welcome(commands.Cog):
     async def on_member_remove(self, member):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM leave WHERE guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM remove WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
-            cursor.execute(f"SELECT msg FROM leave WHERE guild_id = {member.guild.id}")
+            cursor.execute(f"SELECT msg FROM remove WHERE guild_id = {member.guild.id}")
             result1 = cursor.fetchone()
             members = len(list(member.guild.members))
             mention = member.mention
@@ -54,13 +54,13 @@ class welcome(commands.Cog):
     async def on_member_join(self, member):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM join WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
 
-            cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {member.guild.id}")
+            cursor.execute(f"SELECT msg FROM join WHERE guild_id = {member.guild.id}")
             result1 = cursor.fetchone()
             members = len(list(member.guild.members))
             mention = member.mention
@@ -85,14 +85,14 @@ class welcome(commands.Cog):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT channel_id FROM welcome WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT channel_id FROM join WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO welcome(guild_id,channel_id) VALUES(?,?)")
+                sql = ("INSERT INTO join(guild_id,channel_id) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
                 await ctx.send(f"Channel has been set to {channel.mention}")
             elif result is not None:
-                sql = ("UPDATE welcome SET channel_id = ? WHERE guild_id = ?")
+                sql = ("UPDATE join SET channel_id = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
                 await ctx.send(f"Channel has been updated to {channel.mention}")
             cursor.execute(sql, val)
@@ -107,14 +107,14 @@ class welcome(commands.Cog):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT msg FROM welcome WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT msg FROM join WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO welcome(guild_id,msg) VALUES(?,?)")
+                sql = ("INSERT INTO join(guild_id,msg) VALUES(?,?)")
                 val = (ctx.guild.id, text)
                 await ctx.send(f"Channel has been set to {text}")
             elif result is not None:
-                sql = ("UPDATE welcome SET msg = ? WHERE guild_id = ?")
+                sql = ("UPDATE join SET msg = ? WHERE guild_id = ?")
                 val = (text, ctx.guild.id)
                 await ctx.send(f"Channel has been updated to `{text}`")
             cursor.execute(sql, val)

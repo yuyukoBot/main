@@ -443,15 +443,8 @@ class log(commands.Cog):
         if result is None:
             return
         else:
-            cursor.execute(f"SELECT msg FROM log WHERE guild_id = {member.guild.id}")
-            result1 = cursor.fetchone()
-            members = len(list(member.guild.members))
-            mention = member.mention
-            user = member.name
-            guild = member.guild
-            e = discord.Embed(title="新規参加",
-                              description=str(result1[0]).format(members=members, mention=mention, user=user,
-                                                                 guild=guild))
+
+            e = discord.Embed(title="新規参加")
             e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
             if member.bot:
                 e.add_field(name="Botですか", value="はい")

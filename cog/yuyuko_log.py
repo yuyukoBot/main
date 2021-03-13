@@ -453,6 +453,12 @@ class log(commands.Cog):
                               description=str(result1[0]).format(members=members, mention=mention, user=user,
                                                                  guild=guild))
             e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
+            if member.bot:
+                e.add_field(name="Botですか", value="はい")
+            else:
+                e.add_field(name="Botですか",value="いいえ")
+            shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
+            e.add_field(name="共通鯖数", value=shared)
             e.set_thumbnail(url=f"{member.avatar_url}")
             e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
             channel = self.bot.get_channel(id=int(result[0]))

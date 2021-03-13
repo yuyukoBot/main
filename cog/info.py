@@ -144,15 +144,7 @@ class infoCog(commands.Cog):
         else:
             e.add_field(name="AFKチャンネル", value="設定されていません")
 
-        if "INVITE_SPLASH" in ctx.guild.features:
-            e.add_field(name="招待の背景画像",
-                        value="下に表示")
-            e.set_image(url=ctx.guild.splash_url_as(format="png"))
 
-        if "BANNER" in ctx.guild.features:
-            e.add_field(name="バナー",
-                        value="下に表示")
-            e.set_thumbnail(url=ctx.guild.banner_url_as(format="png"))
 
         emojis = self._getEmojis(guild.emojis)
 

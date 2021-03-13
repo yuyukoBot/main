@@ -459,10 +459,14 @@ class log(commands.Cog):
 
             await channel.send(embed=e)
 
+    @commands.group()
+    async def setting(self,ctx):
+        e = discord.Embed(title="setting",description="y/setting log:指定したチャンネルにログを表示させます")
+        await ctx.send(embed=e)
 
 
-    @commands.command()
-    async def setting(self, ctx, channel: discord.TextChannel):
+    @setting.command()
+    async def log(self, ctx, channel: discord.TextChannel):
         if ctx.message.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()

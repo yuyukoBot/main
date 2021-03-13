@@ -164,84 +164,18 @@ class infoCog(commands.Cog):
         else:
             e.add_field(name="役職", value="多いですよ")
 
-        e1 = discord.Embed(title="manage")
-        if guild.verification_level == discord.VerificationLevel.none:
-            e1.add_field(name="認証レベル", value="なし")
 
-        elif guild.verification_level == discord.VerificationLevel.low:
-            e1.add_field(name="認証レベル",
-                         value="メール認証済み")
-        elif guild.verification_level == discord.VerificationLevel.medium:
-            e1.add_field(name="認証レベル",
-                         value="メール認証済みかつアカウント作成から5分経過")
-        elif guild.verification_level == discord.VerificationLevel.high:
-            e1.add_field(name="認証レベル",
-                         value="メール認証済みかつアカウント作成から5分経過かつサーバー参加後10分経過")
-        elif guild.verification_level == discord.VerificationLevel.extreme:
-            e1.add_field(name="認証レベル",
-                         value="電話番号による認証済み")
 
-        if guild.explicit_content_filter == discord.ContentFilter.disabled:
-            e1.add_field(name="不適切な表現のフィルター",
-                         value="使用しない")
-        elif guild.explicit_content_filter == discord.ContentFilter.no_role:
-            e1.add_field(name="不適切な表現のフィルター",
-                         value="役職を持たないメンバー")
-        elif guild.explicit_content_filter == discord.ContentFilter.all_members:
-            e1.add_field(name="不適切な表現のフィルター",
-                         value="すべてのメンバー")
 
-        e2 = discord.Embed(title="サーバー情報")
-        if ctx.author.guild_permissions.manage_roles or ctx.author.id == 478126443168006164:
-            rl = guild.roles[::-1]
-            rls = ""
-            for r in rl:
-                if len(f"{rls}\n{r.name}") >= 1998:
-                    rls = rls + "\n…"
-                    break
-                else:
-                    rls = f"{rls}\n{r.name}"
-            e2.add_field(name="役職", value=rls)
-        else:
-            e2.add_field(name="役職", value="権限がありません")
 
-        e3 = discord.Embed(title="サーバー情報")
-        if ctx.author.guild_permissions.manage_guild or ctx.author.id == 478126443168006164:
-            try:
-                wdt = await guild.widget()
-                e3.add_field(name="ウィジェット", value=f"URL: {wdt.json_url}")
-
-            except:
-                e3.add_field(name="ウィジェット", value="ウィジェットは無効です。")
-
-        else:
-            e3.add_field(name="ウィジェット", value="権限がありません")
-
-        e4 = discord.Embed(title="サーバー情報",
-                           description=f"Level:{guild.premium_tier}\n({guild.premium_subscription_count})")
-        e4.add_field(name="ブーストの追加要素",
-                     value=f"ginfo-blev{guild.premium_tier}")
-        e.add_field(name="features",
-                    value=f"```{','.join(guild.features)}```")
-
-        vml = "ginfo-strlenover"
-        if len("\n".join([f"{str(i)}" for i in guild.members])) <= 1024:
-            vml = "\n".join([f"{str(i)}" for i in guild.members]).replace(
-                str(ctx.guild.owner), f"👑{str(ctx.guild.owner)}")
-
-        e5 = discord.Embed(title="メンバー", description=f"member count:{len(guild.members)}\n```" + vml + "```")
 
         e.add_field(name="features",
                     value=f"```{','.join(guild.features)}```")
 
-        paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx)
-        paginator.add_reaction('<:outline_fast_rewind_black_24dp:809040685881229373>', "first")
-        paginator.add_reaction('<:arrowleftbox:809036770070233088>', "back")
-        paginator.add_reaction('<:lockopen:809045312952991755>', "lock")
-        paginator.add_reaction('<:arrowrightbox1:809038120678326273>', "next")
-        paginator.add_reaction('<:outline_fast_forward_black_24dp:809040782358347778>', "last")
-        embeds = [e, e1, e2, e3, e4, e5]
-        await paginator.run(embeds)
+
+        await ctx.send(embed=e)
+
+
 
     @commands.command()
     async def server(self, ctx, *, guild_name=None):

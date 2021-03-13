@@ -123,22 +123,22 @@ class welcome(commands.Cog):
             db.close()
 
     @commands.group()
-    async def leave(self, ctx):
+    async def remove(self, ctx):
         await ctx.send('セットアップを完了してください:\nleave channel <#channel>\nleave text <message>')
 
-    @leave.command()
+    @remove.command()
     async def channel(self, ctx, channel: discord.TextChannel):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT channel_id FROM leave WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT channel_id FROM remove WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO leave(guild_id,channel_id) VALUES(?,?)")
+                sql = ("INSERT INTO remove(guild_id,channel_id) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
                 await ctx.send(f"Channel has been set to {channel.mention}")
             elif result is not None:
-                sql = ("UPDATE leave SET channel_id = ? WHERE guild_id = ?")
+                sql = ("UPDATE remove SET channel_id = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
                 await ctx.send(f"Channel has been updated to {channel.mention}")
             cursor.execute(sql, val)
@@ -148,19 +148,19 @@ class welcome(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @leave.command()
+    @remove.command()
     async def text(self, ctx, *, text):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT msg FROM leave WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT msg FROM remove WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO leave(guild_id,msg) VALUES(?,?)")
+                sql = ("INSERT INTO remove(guild_id,msg) VALUES(?,?)")
                 val = (ctx.guild.id, text)
                 await ctx.send(f"Channel has been set to {text}")
             elif result is not None:
-                sql = ("UPDATE leave SET msg = ? WHERE guild_id = ?")
+                sql = ("UPDATE remove SET msg = ? WHERE guild_id = ?")
                 val = (text, ctx.guild.id)
                 await ctx.send(f"Channel has been updated to `{text}`")
             cursor.execute(sql, val)

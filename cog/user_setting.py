@@ -13,7 +13,7 @@ import discord,fnmatch
 from discord.ext import commands
 
 import utils.json_loader
-
+import re
 import random
 import aiohttp
 import json
@@ -36,6 +36,7 @@ import traceback
 from contextlib import redirect_stdout
 import asyncio
 from asyncio import sleep as _sleep
+import sqlite3
 
 class Verified(commands.Cog):
 
@@ -44,6 +45,10 @@ class Verified(commands.Cog):
 
     def is_channel(ctx):
         return ctx.channel.id == 818337568885571624
+
+
+
+
 
     @commands.Cog.listener()
     async def on_member_join(self,member):
@@ -55,6 +60,26 @@ class Verified(commands.Cog):
                                        name="未認証")
             await member.add_roles(unverified)
 
+
+
+    @commands.command()
+    async def verfied(self, ctx, *, user: Union[discord.Member, discord.User,] = None):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT user_id FROM user WHERE guild_id = {ctx.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            sql = ("INSERT INTO user(guild_id,user_id) VALUES(?,?)")
+            val = (ctx.guild.id, user.id)
+            await ctx.send(f"ユーザーを認証しました")
+        elif result is not None:
+            sql = ("UPDATE user SET user_id = ? WHERE guild_id = ?")
+            val = (user.id, ctx.guild.id)
+            await ctx.send(f"{user}を認証")
+        cursor.execute(sql, val)
+        db.commit()
+        cursor.close()
+        db.close()
 
 
     @commands.command()

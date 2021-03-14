@@ -232,7 +232,7 @@ bot.remove_command('help')
 @bot.command()
 async def help(ctx):
     e1 = discord.Embed(title="Helpメニュー", description="`y/help <コマンド>`で確認できます\n```接頭辞:y/```", color=0x5d00ff).add_field(
-        name="`幽々子ログ`というチャンネルを使うと自動でログチャンネルになります`", value="Page 1")
+        name="`y/setting log`と打つとそのチャンネルにログを送信します", value="Page 1")
     e1.set_thumbnail(
         url="https://images-ext-2.discordapp.net/external/svQAPh7v9BBNiUgs3Fx4e27C1yhQ1KMp5h1KOhkKH3U/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/757807145264611378/f6e2d7ff1f8092409983a77952670eae.png")
     e1.add_field(name="導入はこちらから",

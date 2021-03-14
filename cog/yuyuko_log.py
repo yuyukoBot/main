@@ -281,6 +281,8 @@ class log(commands.Cog):
             await channel.send(embed=embed)
 
 
+
+
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         if not message.author.bot:
@@ -300,6 +302,21 @@ class log(commands.Cog):
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e)
 
+    @commands.Cog.listener()
+    async def on_reaction_clear(self,message, reactions):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {message.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            e = discord.Embed(title="リアクションの消去", color=0x5d00ff)
+            e.add_field(name="該当メッセージ", value=message.content or "(本文なし)")
+            e.add_field(name="リアクション", value=[str(i) for i in reactions])
+
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=e)
 
 
     @commands.Cog.listener()
@@ -451,6 +468,31 @@ class log(commands.Cog):
             else:
                 e.add_field(name="Botですか",value="いいえ")
             shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
+            e.add_field(name="共通鯖数", value=shared)
+            e.set_thumbnail(url=f"{member.avatar_url}")
+            e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
+            channel = self.bot.get_channel(id=int(result[0]))
+
+            await channel.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {member.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+
+            e = discord.Embed(title="ユーザー退出")
+            e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
+            if member.bot:
+                e.add_field(name="Botですか", value="はい")
+            else:
+                e.add_field(name="Botですか", value="いいえ")
+            shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
+            e.add_field(name="役職", value=[i.name for i in member.roles])
             e.add_field(name="共通鯖数", value=shared)
             e.set_thumbnail(url=f"{member.avatar_url}")
             e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")

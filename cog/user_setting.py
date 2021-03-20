@@ -6,13 +6,13 @@ import colorsys
 import os
 import random
 import traceback
-from utils.chat_formatting import box,pagify
+
 from cog import Utils
 import asyncio
 import discord,fnmatch
 from discord.ext import commands
 
-import utils.json_loader
+
 import re
 import random
 import aiohttp

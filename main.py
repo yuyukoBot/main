@@ -32,7 +32,7 @@ ver = "2.1"
 
 token = config["TOKEN"]
 prefix = config["prefix"]
-bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
+bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents)
 
 db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
 bot.db=db
@@ -182,14 +182,13 @@ async def on_guild_remove(guild):
 
 @bot.event
 async def on_ready():
-
     print("ログインに成功しました")
     await bot.change_presence(activity = discord.Game(name="起動しています…｜y/help"),status =discord.Status.idle)
     print(bot.user.name)
     print(bot.user.id)
 
     print("起動時の情報を送信しています… / Owner")
-    channel = bot.get_channel(813379637228863509)
+    channel = bot.get_channel(809946025090351154)
     e = discord.Embed(title="起動成功 - 詳細情報", description="起動処理が正常に終了しました。")
     e.add_field(name="バージョン情報", value=f"Ver:{ver}\nRelease:{release}\nStatus:{status}")
     e.add_field(name="更新情報", value=f"```\n{updateinfos}```")

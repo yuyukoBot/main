@@ -2,7 +2,6 @@ import asyncio
 
 import discord
 
-
 async def GetMessage(
     bot, ctx, contentOne="Default Message", contentTwo="\uFEFF", timeout=100
 ):

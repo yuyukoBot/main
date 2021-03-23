@@ -9,10 +9,15 @@ import asyncio
 import random
 import datetime
 import DiscordUtils
+import configparser
 from discord.ext import commands
+from mcstatus import MinecraftServer
 import sqlite3
+
 import utils.json_loader
 updateinfos = "・コマンド追加"
+import time
+from mojang import MojangAPI
 release = "0.2"
 status = "Beta"
 from discord_slash import SlashCommand, SlashContext
@@ -23,6 +28,19 @@ with open('./config.json', 'r') as cjson:
 ver = "2.1"
 token = config["TOKEN"]
 prefix = config["prefix"]
+
+def get_skin(mcid):
+    "Get skin images"
+    uuid=MojangAPI.get_uuid(str(mcid))
+    if not uuid:
+        return "404"
+    else:
+        try:
+            profile = MojangAPI.get_profile(uuid)
+            url=profile.skin_url
+            return url
+        except:
+            return "API error"
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
 db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
 bot.db=db
@@ -49,6 +67,7 @@ bot.load_extension('cog.yuyuko_log')
 bot.load_extension('cog.owner')
 bot.load_extension('cog.user_setting')
 bot.load_extension('cog.welcome_leave')
+bot.load_extension('cog.minecraft')
 @bot.event
 async def on_command(ctx):
     e = discord.Embed(title="コマンド実行", description=f"実行分:`{ctx.message.clean_content}`")

@@ -6,7 +6,7 @@ import colorsys
 import os
 import random
 import traceback
-from utils.chat_formatting import box,pagify
+
 from cog import Utils
 import asyncio
 import discord,fnmatch
@@ -234,6 +234,8 @@ class AdminCog(commands.Cog, name="Admin"):
                  ret = await func()
          except Exception as e:
              value = stdout.getvalue()
+             e = discord.Embed(title=body,description=f'```py\n{value}{traceback.format_exc()}\n```')
+             await ctx.send(embed=e)
              await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
          else:
              value = stdout.getvalue()

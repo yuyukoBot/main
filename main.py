@@ -56,7 +56,7 @@ bot.load_extension('cog.yuyuko_log')
 bot.load_extension('cog.owner')
 bot.load_extension('cog.user_setting')
 bot.load_extension('cog.welcome_leave')
-bot.load_extension('cog.minecraft')
+
 @bot.event
 async def on_command(ctx):
     e = discord.Embed(title="コマンド実行", description=f"実行分:`{ctx.message.clean_content}`")

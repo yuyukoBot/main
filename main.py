@@ -9,7 +9,7 @@ from util.utils import Pag,clean_code
 
 from discord.ext import commands
 from discord_slash import SlashCommand
-from discord_slash import SlashContext
+
 import contextlib
 import io
 import sqlite3
@@ -54,16 +54,6 @@ if __name__ == '__main__':
             bot.load_extension(f"cog.{filename[:-3]}")
 
 
-guild_ids = [759386170689585213]
-
-@slash.slash(
-    name="est",
-    description="Sends message.",
-    guild_ids=guild_ids
-)
-async def est(ctx: SlashContext):
-    embed = discord.Embed(title="embed test")
-    await ctx.send(content='test', embeds=[embed])
 
 @bot.event
 async def on_command(ctx):

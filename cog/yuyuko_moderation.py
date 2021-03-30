@@ -85,8 +85,9 @@ class Moderation(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.has_guild_permissions(ban_members=True)
-    @commands.command()
+    @commands.command(name="ban",description="ユーザーをBANします")
     async def ban(self, ctx, member_id: int, reason=None):
+        """`BANの権限`"""
         embed = discord.Embed(description='ユーザーをBANしますか？')
         mes = await ctx.send(embed=embed)
         [self.bot.loop.create_task(mes.add_reaction(i))
@@ -109,6 +110,7 @@ class Moderation(commands.Cog):
 
     @commands.command()
     async def delm(self, ctx, ctxid):
+        """`メッセージの管理`"""
         if ctx.message.author.permissions_in(
                 ctx.message.channel).manage_messages is True or ctx.author.id == 478126443168006164:
             print(
@@ -120,9 +122,9 @@ class Moderation(commands.Cog):
             await ctx.message.delete()
 
     @commands.guild_only()
-    @commands.command(no_pm=True)
+    @commands.command(no_pm=True,description="banされた人が確認できます")
     async def banlist(self, ctx):
-        """```banされた人が確認できます``` """
+        """`BANの権限`"""
         try:
             bans = await ctx.guild.bans()
         except:
@@ -141,6 +143,7 @@ class Moderation(commands.Cog):
     @commands.command(pass_context=True)
     @commands.has_guild_permissions(ban_members=True)
     async def unban(ctx, *, member: int = 0):
+        """`メッセージの管理`"""
 
         if member == 0 or not isinstance(int(member),
                                          int):  # Checks if member id doesn't equal to 0 or is not an integer
@@ -156,7 +159,7 @@ class Moderation(commands.Cog):
         return await commands.say(embed=embed)
 
     @commands.bot_has_permissions(ban_members=True)
-    @commands.command(aliases=['hban'], pass_context=True)
+    @commands.command(aliases=['hban'],description="ユーザーをBANします",pass_context=True)
     async def hackban(self, ctx, user_id: int):
         """`BANの権限`"""
         author = ctx.message.author
@@ -182,7 +185,7 @@ class Moderation(commands.Cog):
         """`BANの権限`"""
         ban = await ctx.get_ban(name_or_id)
         em = discord.Embed()
-        em.color = await ctx.get_dominant_color(ban.user.avatar_url)
+
         em.set_author(name=str(ban.user), icon_url=ban.user.avatar_url)
         em.add_field(name='Reason', value=ban.reason or 'None')
         em.set_thumbnail(url=ban.user.avatar_url)
@@ -192,10 +195,7 @@ class Moderation(commands.Cog):
 
     @commands.command(aliases=['p', 'pl'], description='簡易的な投票機能です（引数が1つの場合と2以上の場合で動作が変わります）')
     async def poll(self, ctx, arg1=None, *args):
-        """
-        このコマンドを実行すると、リアクションを利用し簡易的な投票ができます。
-        ＊1人1票にはできません。リアクションの制限で20を超える設問は不可能です。
-        """
+
         usage = '/pollの使い方\n複数選択（1〜20まで）: \n `/poll 今日のランチは？ お好み焼き カレーライス`\n Yes/No: \n`/poll 明日は晴れる？`'
         msg = f'🗳 **{arg1}**'
 
@@ -222,7 +222,7 @@ class Moderation(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             return await ctx.send('Missing the question.')
 
-    @commands.command(name="poll2", aliases=["vote"], description="```投票を取ることができます```")
+    @commands.command(name="poll2", aliases=["vote"], description="投票を取ることができます")
     async def quickpoll(self, ctx, *questions_and_choices: str):
         """`誰でも`"""
 
@@ -294,24 +294,26 @@ class Moderation(commands.Cog):
 
 
 
-    @commands.command(name="addrole", aliases=["ar"], description="```ユーザーに役職を付与します```", pass_context=True)
+    @commands.command(name="addrole", aliases=["ar"], description="ユーザーに役職を付与します", pass_context=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def addrole(self,ctx, member: discord.Member, *, role: discord.Role = None):
+        """```メッセージの管理```"""
 
         await member.add_roles(role)
         e = discord.Embed(title="役職付与",description=f'{member.mention} を {role.mention}に付与した',color=0x5d00ff)
         await ctx.send(embed=e)
 
     @commands.has_guild_permissions(manage_roles=True)
-    @commands.command(name="removerole", description="```ユーザーの役職を剥奪します```", pass_context=True)
+    @commands.command(name="removerole", description="ユーザーの役職を剥奪します", pass_context=True)
     async def removerole(self,ctx, member: discord.Member, *, role: discord.Role = None):
+        """```メッセージの管理```"""
         await member.remove_roles(role)
         e = discord.Embed(title="役職剥奪", description=f'{member.mention} を {role.mention}から剥奪した', color=0x5d00ff)
         await ctx.send(embed=e)
 
 
     @commands.guild_only()
-    @commands.command(name="slowmode", aliases=['slowmo'], description="```低速モードを設定します```")
+    @commands.command(name="slowmode", aliases=['slowmo'], description="低速モードを設定します")
     async def slowmode(self, ctx, seconds: int = 0):
         """```メッセージの管理```"""
         if seconds > 120:
@@ -331,39 +333,6 @@ class Moderation(commands.Cog):
                 f"**Set the channel slow mode delay to `{seconds}` {numofsecs}\nTo turn this off, do $slowmode**")
             await confirm.add_reaction("\N{THUMBS UP SIGN}")
 
-    @commands.group(invoke_without_command=True)
-    async def lockdown(self, ctx):
-        """Server/Channel lockdown"""
-        pass
-
-    @lockdown.command(aliases=['channel'])
-    async def chan(self, ctx, channel: discord.TextChannel = None, *, reason=None):
-        if channel is None: channel = ctx.channel
-        try:
-            await channel.set_permissions(ctx.guild.default_role,
-                                          overwrite=discord.PermissionOverwrite(send_messages=False), reason=reason)
-        except:
-            success = False
-        else:
-            success = True
-        emb = await self.format_mod_embed(ctx, ctx.author, success, 'channel-lockdown', 0, channel)
-        await ctx.send(embed=emb)
-
-    @lockdown.command()
-    async def server(self, ctx, server: discord.Guild = None, *, reason=None):
-        if server is None: server = ctx.guild
-        progress = await ctx.send(f'Locking down {server.name}')
-        try:
-            for channel in server.channels:
-                await channel.set_permissions(ctx.guild.default_role,
-                                              overwrite=discord.PermissionOverwrite(send_messages=False), reason=reason)
-        except:
-            success = False
-        else:
-            success = True
-        emb = await self.format_mod_embed(ctx, ctx.author, success, 'server-lockdown', 0, server)
-        progress.delete()
-        await ctx.send(embed=emb)
 
 
 
@@ -400,12 +369,6 @@ class Moderation(commands.Cog):
         else:
             e = discord.Embed(title="実行エラー", description="君はコマンドを実行する権限を持ってないよ～", color=0xff0000)
             await ctx.send(embed=e)
-
-    @commands.has_permissions(manage_channels=True)
-    @commands.command(name="log_setting")
-    async def log_Setting(self,ctx):
-        await ctx.message.guild.create_text_channel("幽々子ログ")
-        await ctx.send("ログチャンネルを作成しましたy")
 
 
 def setup(bot):

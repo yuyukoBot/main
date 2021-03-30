@@ -29,7 +29,7 @@ class log(commands.Cog):
     async def on_guild_channel_delete(self, channel):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {channel.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {channel.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -43,7 +43,7 @@ class log(commands.Cog):
     async def on_guild_channel_update(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -125,7 +125,7 @@ class log(commands.Cog):
     async def on_guild_channel_create(self, channel):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {channel.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {channel.guild.id}")
         result = cursor.fetchone()
         if result is None:
             e = discord.Embed(title="チャンネル作成", timestamp=channel.created_at, color=0x5d00ff)
@@ -143,7 +143,7 @@ class log(commands.Cog):
     async def on_guild_role_update(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -228,7 +228,7 @@ class log(commands.Cog):
     async def on_guild_role_create(self, role):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {role.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {role.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -245,7 +245,7 @@ class log(commands.Cog):
     async def on_guild_role_delete(self, role):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {role.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {role.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -261,7 +261,7 @@ class log(commands.Cog):
     async def on_message_edit(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -288,7 +288,7 @@ class log(commands.Cog):
         if not message.author.bot:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {message.guild.id}")
+            cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {message.guild.id}")
             result = cursor.fetchone()
             if result is None:
                 return
@@ -306,7 +306,7 @@ class log(commands.Cog):
     async def on_reaction_clear(self,message, reactions):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {message.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {message.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -323,7 +323,7 @@ class log(commands.Cog):
     async def on_invite_create(self, invite):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {invite.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {invite.guild.id}")
         result = cursor.fetchone()
         if result is None:
             e = discord.Embed(title="サーバー招待の作成", color=0x5d00ff)
@@ -348,14 +348,47 @@ class log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
+        def rv(content):
+            if content == 'None': return 'なし'
+            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
+            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
+                                                                                   "`メンバーをキック`").replace(
+                "`ban_members`", "`メンバーをBan`")
+            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
+                "`manage_guild`", "`サーバー管理`")
+            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
+                "`priority_speaker`", "`優先スピーカー`")
+            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
+                "`send_messages`", "`メッセージを送信`")
+            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
+                                                                                  "`メッセージの管理`").replace("`embed_links`",
+                                                                                                        "`埋め込みリンク`")
+            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
+                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
+                                                                                                 "`全員宛メンション`")
+            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
+                                                                              "`サーバーインサイトを見る`").replace("`connect`",
+                                                                                                        "`接続`")
+            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
+                                                                                               "`メンバーをミュート`").replace(
+                "`deafen_members`", "`メンバーのスピーカーをミュート`")
+            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
+                "`change_nickname`", "`ニックネームの変更`")
+            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
+                "`manage_webhooks`", "`webhookの管理`")
+            value = value.replace("`manage_emojis`", "`絵文字の管理`")
+            return value
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
+            pers = [f"`{c}`" for c in dict(before.guild_permissions) if dict(before.guild_permissions)[c] is True]
+            pem = [f"`{c}`" for c in dict(after.guild_permissions) if dict(after.guild_permissions)[c] is True]
             if before.nick != after.nick:
+
                 e = discord.Embed(title='ニックネームが変わりました', description=f"変更メンバー:{str(after)}", color=0x5d00ff)
                 e.add_field(name="変更前", value=f'`{before.nick}`')
                 e.add_field(name="変更後", value=f'`{after.nick}`')
@@ -372,14 +405,23 @@ class log(commands.Cog):
                     e1.add_field(name="変更内容", value="役職付与")
                     e1.add_field(name="役職", value=list(
                         set(after.roles) - set(before.roles))[0])
+                    e1.add_field(name="今の権限", value=rv(",".join(pem)))
                     channel = self.bot.get_channel(id=int(result[0]))
                     await channel.send(embed=e1)
+            if before.guild_permissions != after.guild_permissions:
+
+                e2 = discord.Embed(title="アップデート",description=f"変更メンバー:{str(after)}", color=0x5d00ff)
+                e2.add_field(name="変更前",value=rv(",".join(pers)))
+                e2.add_field(name="変更後",value=rv(",".join(pem)))
+                e2.add_field(name="役職",value=after.roles)
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e2)
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {user.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {user.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -393,10 +435,28 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
     @commands.Cog.listener()
+    async def on_voice_state_update(self,member, before, after):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {member.voice}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            if before.member != after.member:
+                e = discord.Embed()
+                e.add_field(name="変更前",value=before.member)
+                e.add_field(name="変更前", value=after.member)
+
+
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e)
+
+    @commands.Cog.listener()
     async def on_guild_update(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {after.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {after.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -439,7 +499,7 @@ class log(commands.Cog):
     async def on_member_unban(self, guild, user):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -455,7 +515,7 @@ class log(commands.Cog):
     async def on_member_join(self, member):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -479,7 +539,7 @@ class log(commands.Cog):
     async def on_member_remove(self, member):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -511,14 +571,14 @@ class log(commands.Cog):
         if ctx.message.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT channel_id FROM log WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT channel_id FROM logs WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO log(guild_id,channel_id) VALUES(?,?)")
+                sql = ("INSERT INTO logs(guild_id,channel_id) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
                 await ctx.send(f"Channel has been set to {channel.mention}")
             elif result is not None:
-                sql = ("UPDATE log SET channel_id = ? WHERE guild_id = ?")
+                sql = ("UPDATE logs SET channel_id = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
                 await ctx.send(f"Channel has been updated to {channel.mention}")
             cursor.execute(sql, val)

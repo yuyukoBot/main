@@ -6,14 +6,10 @@ import colorsys
 import os
 import random
 import traceback
+import inspect
 
-from cog import Utils
 import asyncio
 import discord,fnmatch
-from discord.ext import commands
-
-import utils.json_loader
-
 import random
 import aiohttp
 import json
@@ -35,22 +31,13 @@ from contextlib import redirect_stdout
 import asyncio
 from asyncio import sleep as _sleep
 
-
 class AdminCog(commands.Cog, name="Admin"):
-    """
-    管理者用の機能です。
-    管理者権限が無ければ使えません。
-    """
-
-
 
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
         self.stream = io.StringIO()
         self.channel = None
-
-
 
 
     def cleanup_code(self, content):
@@ -68,7 +55,7 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.is_owner()
     @commands.command(pass_context=True)
     async def cloc(self, ctx):
-        """Outputs the total count of lines of code in the currently installed repo."""
+        """`Bot運営`"""
         # Script pulled and edited from https://github.com/kyco/python-count-lines-of-code/blob/python3/cloc.py
 
         # Get our current working directory - should be the bot's home
@@ -126,8 +113,9 @@ class AdminCog(commands.Cog, name="Admin"):
                         pass
         return extensions
 
-    @commands.command(description="BOTを再起動するよ！\n制作者しか使えないね！\n※何故か使えません。")
+    @commands.command(name="reboot",description="BOTを再起動します")
     async def reboot(self,ctx):
+        """`Bot運営`"""
         if ctx.message.author.id == 478126443168006164:
             e = discord.Embed(title="再起動", description="BOTを再起動するよ～！", color=ctx.author.color)
             await ctx.send(embed=e)
@@ -136,13 +124,10 @@ class AdminCog(commands.Cog, name="Admin"):
             e = discord.Embed(title="実行エラー", description="あなたはこのコマンドを実行する権限を持っていません", color=ctx.author.color)
             await ctx.send(embed=e)
 
-    @commands.command(hidden=True)
+    @commands.command(name="send",description="指定たチャンネルにメッセージを送信します")
     @commands.is_owner()
     async def send(self, ctx, channel, *, message):
-        """Echo a string into a different channel."""
-        """
-        :params channel: channel to echo into
-        :params message: message to echo."""
+        """`Bot運営`"""
 
         if not ctx.message.channel_mention:
             return await ctx.send(
@@ -159,22 +144,12 @@ class AdminCog(commands.Cog, name="Admin"):
 
 
 
-    @commands.is_owner()
-    @commands.command(name="reload", description="```reloadします```")
-    async def reload(self, ctx, *, module):
-        """`admin`"""
-        try:
-            self.bot.unload_extension(module)
-            self.bot.load_extension(module)
-        except Exception as e:
-            await ctx.send(f'**`ERROR:`** {type(e).__name__} - {e}')
-        else:
-            await ctx.send(f"`{module}をreloadしました`")
 
-    @commands.command(name="unload", description="```unloadします```")
+
+    @commands.command(name="unload", description="ファイルをアンロードします")
     @commands.is_owner()
     async def unload(self, ctx, *, module):
-        """`admin`"""
+        """`Bot運営`"""
         try:
             self.bot.unload_extension(module)
         except Exception:
@@ -183,8 +158,9 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(f'`{module}をunloadしました`')
 
     @commands.is_owner()
-    @commands.command(name='listextensions', aliases=['le'])
+    @commands.command(name='listextensions')
     async def list_extensions(self, ctx):
+        """`Bot運営`"""
         extensions_dict = self.bot.extensions
         msg = '```css\n'
 
@@ -201,59 +177,64 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.send(msg)
 
 
-    @commands.command(pass_context=True, name='eval')
+    @commands.command(pass_context=True, name='eval',description="コードを評価します")
     async def _eval(self, ctx, *, body: str):
-        """Evaluates a code"""
-        if ctx.author.id in [478126443168006164,602680118519005184]:
+        """`Bot運営`"""
+        if ctx.author.id in [478126443168006164, 602680118519005184]:
 
-         env = {
-            'bot': self.bot,
-            'ctx': ctx,
-            'channel': ctx.channel,
-            'author': ctx.author,
-            'guild': ctx.guild,
-            'message': ctx.message,
-            '_': self._last_result
-        }
+            env = {
+                'bot': self.bot,
+                'ctx': ctx,
+                'channel': ctx.channel,
+                'author': ctx.author,
+                'guild': ctx.guild,
+                'message': ctx.message,
+                '_': self._last_result
+            }
 
-         env.update(globals())
+            env.update(globals())
 
-         body = self.cleanup_code(body)
-         stdout = io.StringIO()
+            body = self.cleanup_code(body)
+            stdout = io.StringIO()
 
-         to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+            to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
 
-         try:
-             exec(to_compile, env)
-         except Exception as e:
-             return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
+            try:
+                exec(to_compile, env)
+            except Exception as e:
+                return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
 
-         func = env['func']
-         try:
-             with redirect_stdout(stdout):
-                 ret = await func()
-         except Exception as e:
-             value = stdout.getvalue()
-             e = discord.Embed(title=body,description=f'```py\n{value}{traceback.format_exc()}\n```')
-             await ctx.send(embed=e)
-             await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
-         else:
-             value = stdout.getvalue()
-             try:
-                 await ctx.message.add_reaction('<:outline_done_outline_black_18dp:809103360388366357>')
-             except:
-                 pass
+            func = env['func']
+            try:
+                with redirect_stdout(stdout):
+                    ret = await func()
+            except Exception as e:
+                value = stdout.getvalue()
+                e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}{traceback.format_exc()}\n```')
+                await ctx.send(embed=e)
+                await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
+            else:
+                value = stdout.getvalue()
+                try:
 
-             if ret is None:
-                 if value:
-                    await ctx.send(f'```py\n{value}\n```')
-             else:
-                 self._last_result = ret
-                 await ctx.send(f'```py\n{value}{ret}\n```')
+                    await ctx.message.add_reaction('<:outline_done_outline_black_18dp:809103360388366357>')
+                except:
+                    pass
 
+                if ret is None:
+                    if value:
+                        e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}\n```')
+                        await ctx.send(embed=e)
 
-    @commands.command(description="BOTを再起動するよ！\n制作者しか使えないね！\n※何故か使えません。")
-    async def run(self,ctx):
+                else:
+                    self._last_result = ret
+                    e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}{ret}\n```')
+                    await ctx.send(embed=e)
+
+    @commands.command(description="BOTを再起動します")
+    async def ru(self,ctx):
+        """`Bot運営`"""
+
         if ctx.message.author.id == 478126443168006164:
             e = discord.Embed(title="再起動", description="BOTを再起動するよ～！", color=ctx.author.color)
             await ctx.send(embed=e)
@@ -262,7 +243,97 @@ class AdminCog(commands.Cog, name="Admin"):
             e = discord.Embed(title="実行エラー", description="あなたはこのコマンドを実行する権限を持っていません", color=ctx.author.color)
             await ctx.send(embed=e)
 
-    @commands.command(description="コマンドプロンプトのコマンドを実行するよ！\n製作者しか使えないね！")
+    @commands.is_owner()
+    @commands.command(pass_context=True, hidden=True)
+    async def repl(self, ctx):
+        """Launches an interactive REPL session."""
+        variables = {
+            'ctx': ctx,
+            'bot': self.bot,
+            'message': ctx.message,
+            'guild': ctx.guild,
+            'channel': ctx.channel,
+            'author': ctx.author,
+            '_': None,
+        }
+
+        if ctx.channel.id in self.sessions:
+            await ctx.send('Already running a REPL session in this channel. Exit it with `quit`.')
+            return
+
+        self.sessions.add(ctx.channel.id)
+        await ctx.send('Enter code to execute or evaluate. `exit()` or `quit` to exit.')
+
+        def check(m):
+            return m.author.id == ctx.author.id and \
+                   m.channel.id == ctx.channel.id and \
+                   m.content.startswith('`')
+
+        while True:
+            try:
+                response = await self.bot.wait_for('message', check=check, timeout=10.0 * 60.0)
+            except asyncio.TimeoutError:
+                await ctx.send('Exiting REPL session.')
+                self.sessions.remove(ctx.channel.id)
+                break
+
+            cleaned = self.cleanup_code(response.content)
+
+            if cleaned in ('quit', 'exit', 'exit()'):
+                await ctx.send('Exiting.')
+                self.sessions.remove(ctx.channel.id)
+                return
+
+            executor = exec
+            if cleaned.count('\n') == 0:
+                # single statement, potentially 'eval'
+                try:
+                    code = compile(cleaned, '<repl session>', 'eval')
+                except SyntaxError:
+                    pass
+                else:
+                    executor = eval
+
+            if executor is exec:
+                try:
+                    code = compile(cleaned, '<repl session>', 'exec')
+                except SyntaxError as e:
+                    await ctx.send(self.get_syntax_error(e))
+                    continue
+
+            variables['message'] = response
+
+            fmt = None
+            stdout = io.StringIO()
+
+            try:
+                with redirect_stdout(stdout):
+                    result = executor(code, variables)
+                    if inspect.isawaitable(result):
+                        result = await result
+            except Exception as e:
+                value = stdout.getvalue()
+                fmt = f'```py\n{value}{traceback.format_exc()}\n```'
+            else:
+                value = stdout.getvalue()
+                if result is not None:
+                    fmt = f'```py\n{value}{result}\n```'
+                    variables['_'] = result
+                elif value:
+                    fmt = f'```py\n{value}\n```'
+
+            try:
+                if fmt is not None:
+                    if len(fmt) > 2000:
+                        await ctx.send('Content too big to be printed.')
+                    else:
+                        await ctx.send(fmt)
+            except discord.Forbidden:
+                pass
+            except discord.HTTPException as e:
+                await ctx.send(f'Unexpected error: `{e}`')
+
+    @commands.command(description="コマンドプロンプトのコマンドを実行します")
     async def cmd(self,ctx, *, command):
         try:
             if ctx.author.id in [478126443168006164, 691300045454180383]:
@@ -278,9 +349,9 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(embed=e)
 
     @commands.is_owner()
-    @commands.command(hidden=True)
+    @commands.command(name="changestatus",description="ステータスを変更します")
     async def changestatus(self, ctx, status: str):
-        '''Ändert den Online Status vom Bot (BOT OWNER ONLY)'''
+        """`Bot運営`"""
         status = status.lower()
         if status == 'offline' or status == 'off' or status == 'invisible':
             discordStatus = discord.Status.invisible
@@ -293,7 +364,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await self.bot.change_presence(status=discordStatus)
         await ctx.send(f'**:ok:** Ändere Status zu: **{discordStatus}**')
 
-    @commands.command()
+    @commands.command(name="set_playing",description="再生状態を設定します。")
     @commands.is_owner()
     async def set_playing(self, ctx, *, game: str = None):
         """Set the playing status."""
@@ -307,7 +378,8 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.is_owner()
     @commands.command(name="announce", aliases=["ann"], description="アナウンス用")
     async def announce(self, ctx, *, message):
-        """```admin```"""
+        """`Bot運営`"""
+
         await ctx.message.delete()
         ch = self.bot.get_channel(757777897992880211)
         em = discord.Embed(title="お知らせ", color=0x5d00ff)
@@ -327,7 +399,8 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.is_owner()
     @commands.command(name="news")
     async def news(self, ctx, *, message):
-        """```admin```"""
+        """`Bot運営`"""
+
         await ctx.message.delete()
         em = discord.Embed(title="紹介", color=0x5d00ff)
         em.set_author(name="[y/]幽々子",
@@ -352,6 +425,8 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.is_owner()
     @commands.command()
     async def senddm(self,ctx, userid, title, desc):
+        """`Bot運営`"""
+
         try:
             user = await commands.fetch_user(userid)
             e = discord.Embed(title=title, description=desc)
@@ -369,8 +444,8 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(embed=e)
 
     @commands.is_owner()
-    @commands.command(hidden=True, aliases=['guilds'])
-    async def servers(self, ctx):
+    @commands.command(hidden=True)
+    async def listguild(self, ctx):
         '''Listet die aktuellen verbundenen Guilds auf (BOT OWNER ONLY)'''
         msg = '```js\n'
         msg += '{!s:19s} | {!s:>5s} | {} | {}\n'.format('ID', 'Member', 'Name', 'Owner')
@@ -380,9 +455,9 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.reply(msg)
 
     @commands.is_owner()
-    @commands.command(name="system_shutdown", description="```botを停止します```")
+    @commands.command(name="system_shutdown", description="botを停止します")
     async def system_shutdown(self, ctx):
-        """`admin`"""
+        """`Bot運営`"""
 
 
         e = discord.Embed(title="System - shutdown", description="処理中...", color=0x5d00ff)
@@ -404,14 +479,11 @@ class AdminCog(commands.Cog, name="Admin"):
             print(f"[Error] {traceback.format_exc(3)}")
             await msg.edit(embed=e)
 
-    @commands.command(aliases=['archive'])
+    @commands.command()
     @commands.cooldown(1, 60, commands.cooldowns.BucketType.channel)
-    async def log(self, ctx, *limit: int):
-        '''Archiviert den Log des derzeitigen Channels und läd diesen als Attachment hoch
-        Beispiel:
-        -----------
-        :log 100
-        '''
+    async def archive(self, ctx, *limit: int):
+        """`Bot運営`"""
+
         if not limit:
             limit = 10
         else:

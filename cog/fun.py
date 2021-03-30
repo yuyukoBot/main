@@ -68,26 +68,7 @@ class fun(commands.Cog, name="Fun"):
             await ctx.send(f"{slotmachine} No match, you lost 😢")
 
 
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        inviter = await self.tracker.fetch_inviter(member)  # inviter is the member who invited
-        data = await self.bot.invites.find(inviter.id)
-        if data is None:
-            data = {"_id": inviter.id, "count": 0, "userInvited": []}
 
-        data["count"] += 1
-        data["usersInvited"].append(member.id)
-        await self.bot.invites.upsert(data)
-
-        channel = discord.utils.get(member.guild.text_channels, name="幽々子ログ")
-        embed = discord.Embed(
-            title=f"Welcome {member.display_name}",
-            description=f"Invited by: {inviter.mention}\nInvites: {data['count']}",
-            timestamp=member.joined_at
-        )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_footer(text=member.guild.name, icon_url=member.guild.icon_url)
-        await channel.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(fun(bot))

@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-
-"""
-jishaku.cog_base
-~~~~~~~~~~~~~~~~~
-
-The Jishaku cog base, which contains most of the actual functionality of Jishaku.
-
-:copyright: (c) 2020 Devon (Gorialis) R
-:license: MIT, see LICENSE for more details.
-
-"""
-
 import asyncio
 import collections
 import contextlib
@@ -25,12 +12,14 @@ import sys
 import math
 import time
 import traceback
+from discord.utils import escape_mentions
 import typing
-
+from util.config import get_config
 import aiohttp
 import discord
 from discord.ext import commands
-
+start_time = time.time()
+from ping3 import ping
 from jishaku.codeblocks import Codeblock, codeblock_converter
 from jishaku.exception_handling import ReplResponseReactor
 from jishaku.flags import JISHAKU_RETAIN, SCOPE_PREFIX
@@ -51,9 +40,7 @@ CommandTask = collections.namedtuple("CommandTask", "index ctx task")
 
 
 class owner(commands.Cog):  # pylint: disable=too-many-public-methods
-    """
-    The cog that includes Jishaku's Discord-facing default functionality.
-    """
+
 
     load_time = datetime.datetime.now()
 
@@ -128,12 +115,44 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
 
+    @commands.command(brief="Pings an address", usage="ping <address> [pings]")
+    async def ping(self, ctx, address: str, pings: int = 1) -> None:
+        """
+        `誰でも`
+        """
+        timeout = get_config("timeout")
+        address = escape_mentions(address)
+
+        if ping(address, timeout=timeout) is False:
+            await ctx.send(f"Could not ping {address} - unknown host.")
+        elif ping(address, timeout=timeout) is None:
+            await ctx.send(f"Could not ping {address} - timed out.")
+        else:
+            for _ in range(pings):
+                await ctx.send(
+                    f"Received response from {address} in: "
+                    f"{str(int(ping(address, unit='ms')))}ms."
+                )
+                await asyncio.sleep(1)
+
+    @commands.command(pass_context=True)
+    async def uptime(self, ctx):
+        """`誰でも`"""
+        current_time = time.time()
+        difference = int(round(current_time - start_time))
+        text = str(datetime.timedelta(seconds=difference))
+        embed = discord.Embed(colour=ctx.message.author.top_role.colour)
+        embed.add_field(name="Uptime", value=text)
+        embed.set_footer(text="Sponsored by altcointrain.com - Choo!!! Choo!!!")
+        try:
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            await ctx.send("Current uptime: " + text)
+
     @commands.is_owner()
-    @commands.command(name="source", aliases=["src"])
+    @commands.command(name="source", aliases=["src"],descriptino="コマンドのソースを表示します")
     async def source(self, ctx: commands.Context, *, command_name: str):
-        """
-        Displays the source code for a command.
-        """
+        """`Bot運営`"""
 
         command = self.bot.get_command(command_name)
         if not command:
@@ -157,13 +176,9 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
     __cat_line_regex = re.compile(r"(?:\.\/+)?(.+?)(?:#L?(\d+)(?:\-L?(\d+))?)?$")
 
     @commands.is_owner()
-    @commands.command(name="cat")
+    @commands.command(name="cat",description="検出された場合は構文の強調表示を使用して、ファイルを読み取ります。")
     async def cat(self, ctx: commands.Context, argument: str):
-        """
-        Read out a file, using syntax highlighting if detected.
-
-        Lines and linespans are supported by adding '#L12' or '#L12-14' etc to the end of the filename.
-        """
+        """`Bot運営`"""
 
         match = self.__cat_line_regex.search(argument)
 
@@ -202,13 +217,9 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         await interface.send_to(ctx)
 
     @commands.is_owner()
-    @commands.command(name="curl")
+    @commands.command(name="curl",description="テキストファイルを表示する")
     async def curl(self, ctx: commands.Context, url: str):
-        """
-        Download and display a text file from the internet.
-
-        This command is similar to jsk cat, but accepts a URL.
-        """
+        """`Bot運営`"""
 
         # remove embed maskers if present
         url = url.lstrip("<").rstrip(">")
@@ -237,13 +248,9 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             await interface.send_to(ctx)
 
     @commands.is_owner()
-    @commands.command(name="load")
-    async def load(self, ctx: commands.Context, *extensions: ExtensionConverter):
-        """
-        Loads or reloads the given extension names.
-
-        Reports any extensions that failed to load.
-        """
+    @commands.command(name="reload",description="ファイルをリロードします")
+    async def reload(self, ctx: commands.Context, *extensions: ExtensionConverter):
+        """`Bot運営`"""
 
         paginator = WrappedPaginator(prefix='', suffix='')
 
@@ -272,12 +279,10 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
 
     @commands.is_owner()
-    @commands.command(name="su")
+    @commands.command(name="su",description="他の誰かとしてコマンドを実行します。これはメンバーに解決しようとしますが、メンバーが見つからない場合はユーザーを使用します")
     async def su(self, ctx: commands.Context, target: discord.User, *, command_string: str):
         """
-        Run a command as someone else.
-
-        This will try to resolve to a Member, but will use a User if it can't find one.
+       `Bot運営`
         """
 
         if ctx.guild:
@@ -301,11 +306,11 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         return await alt_ctx.command.invoke(alt_ctx)
 
     @commands.is_owner()
-    @commands.command(name="py", aliases=["python"])
+    @commands.command(name="py", aliases=["python"],description="pythonのコードを評価します")
     async def python(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
-        Direct evaluation of Python code.
-        """
+               `BOT運営`
+               """
 
         arg_dict = get_var_dict_from_ctx(ctx, SCOPE_PREFIX)
         arg_dict["_"] = self.last_result
@@ -351,10 +356,10 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             scope.clear_intersection(arg_dict)
 
     @commands.is_owner()
-    @commands.command(name="py_inspect", aliases=["pyi", "python_inspect", "pythoninspect"])
+    @commands.command(name="py_inspect", aliases=["pyi", "python_inspect", "pythoninspect"],description="検査情報を使用したPythonコードの評価")
     async def python_inspect(self, ctx: commands.Context, *, argument: codeblock_converter):
         """
-        Evaluation of Python code with inspect information.
+        `BOT運営`
         """
 
         arg_dict = get_var_dict_from_ctx(ctx, SCOPE_PREFIX)
@@ -383,6 +388,28 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
                         send(await interface.send_to(ctx))
         finally:
             scope.clear_intersection(arg_dict)
+
+    @commands.command()
+    @commands.is_owner()
+    async def sql(self,ctx, *, code):
+        """
+        `BOT運営`
+        """
+        try:
+            returned = self.bot.cursor.execute(code)
+        except Exception as e:
+            if ctx.message != None:
+                await ctx.message.add_reaction("❌")
+                embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```", color=0x5d00ff)
+                await ctx.send(embed=embed)
+            else:
+                embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```", color=0x5d00ff)
+                await ctx.send(embed=embed)
+        else:
+            if ctx.message != None:
+                await ctx.message.add_reaction("⭕")
+                if code.lower().startswith("select"):
+                    await ctx.send(embed=discord.Embed(description=f"{returned.fetchall()}", color=0x5d00ff))
 
     @commands.is_owner()
     @commands.command(name="shell",aliases=["sh"])
@@ -508,4 +535,3 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
 def setup(bot):
     bot.add_cog(owner(bot))
-

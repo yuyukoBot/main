@@ -162,30 +162,7 @@ class everyone(commands.Cog):
         embed.set_footer(text="幽々子")
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def ping(self, ctx):
-        """`誰でも`"""
-        msg = await ctx.send("`Pinging bot latency...`")
-        times = []
-        counter = 0
-        embed = discord.Embed(title="More information:", description="Pinged 4 times and calculated the average.",
-                              colour=discord.Colour(value=0x36393e))
-        for _ in range(3):
-            counter += 1
-            start = time.perf_counter()
-            await msg.edit(content=f"Pinging... {counter}/3")
-            end = time.perf_counter()
-            speed = round((end - start) * 1000)
-            times.append(speed)
-            embed.add_field(name=f"Ping {counter}:", value=f"{speed}ms", inline=True)
 
-        embed.set_author(name="Pong!")
-        embed.add_field(name="Bot latency", value=f"{round(self.bot.latency * 1000)}ms", inline=True)
-        embed.add_field(name="Average speed",
-                        value=f"{round((round(sum(times)) + round(self.bot.latency * 1000)) / 4)}ms")
-        embed.set_footer(text=f"Estimated total time elapsed: {round(sum(times))}ms")
-        await msg.edit(content=f":ping_pong: **{round((round(sum(times)) + round(self.bot.latency * 1000)) / 4)}ms**",
-                       embed=embed)
 
     @commands.command(name="time", description="現在時刻を表示するよ！")
     async def time_(self,ctx):

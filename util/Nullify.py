@@ -46,4 +46,4 @@ def resolve_mentions(string, ctx = None, escape = True, show_mentions = True):
             if show_mentions: name = "@"+name
             string = string[0:m.start()+i_adjust] + name + string[i_adjust+m.end():]
             i_adjust += len(name)-len(m.group(0))
-    return escape_all(string,markdown=False) if escape else string # Catch any missing mentions as needed
+    return escape_all(string,markdown=False) if escape else string # Catch a

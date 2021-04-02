@@ -84,7 +84,16 @@ class ServerSetting(commands.Cog):
     @commands.group()
     async def settings(self, ctx):
         e = discord.Embed(title="__**setting**__")
-        e.add_field(name="__log__",value="指定したチャンネルにログを送信します")
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        log_channel = self.bot.cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {ctx.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            e.add_field(name="__log__", value="指定したチャンネルにログを送信します")
+        else:
+            e.add_field(name="__log__", value=log_channel)
+
+
         e.add_field(name="__welcome_text__",value="指定したチャンネルにウェルカムメッセージを設定します")
         e.add_field(name="__welcome_channel__", value="チャンネルを設定します")
         await ctx.send(embed=e)
@@ -99,11 +108,11 @@ class ServerSetting(commands.Cog):
             if result is None:
                 sql = ("INSERT INTO ServerSetting(log_guild_id,log_channel) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
-                await ctx.send(f"Channel has been set to {channel.mention}")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             elif result is not None:
                 sql = ("UPDATE ServerSetting SET log_channel = ? WHERE log_guild_id = ?")
                 val = (channel.id, ctx.guild.id)
-                await ctx.send(f"Channel has been updated to {channel.mention}")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             cursor.execute(sql, val)
             db.commit()
             cursor.close()

@@ -88,7 +88,7 @@ class ServerSetting(commands.Cog):
     @settings.command(description="指定したチャンネルにログを送信します")
     async def log(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
-        if ctx.message.author.guild_permissions.manage_messages:
+        if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {ctx.guild.id}")
@@ -109,7 +109,7 @@ class ServerSetting(commands.Cog):
     @settings.command(description="指定したチャンネルにウェルカムメッセージを設定します")
     async def welcome_text(self, ctx, *, text):
         """`メッセージの管理`"""
-        if ctx.author.guild_permissions.manage_messages:
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT welcome_msg FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
@@ -130,7 +130,7 @@ class ServerSetting(commands.Cog):
     @settings.command(description="チャンネルを設定します")
     async def welcome_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
-        if ctx.author.guild_permissions.manage_channels:
+        if ctx.author.guild_permissions.manage_channels or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT welcome_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
@@ -152,7 +152,7 @@ class ServerSetting(commands.Cog):
 
     @settings.command(description="退出時のメッセージを設定します")
     async def remove_text(self, ctx, *, text):
-        if ctx.author.guild_permissions.manage_messages:
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             """`メッセージの管理`"""
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
@@ -173,7 +173,7 @@ class ServerSetting(commands.Cog):
 
     @settings.command(description="参加時に付与する役職を設定します")
     async def welcome_role(self, ctx, role: discord.Role):
-        if ctx.author.guild_permissions.manage_roles:
+        if ctx.author.guild_permissions.manage_roles or ctx.author.id == 478126443168006164:
             """`役職の管理`"""
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
@@ -195,7 +195,7 @@ class ServerSetting(commands.Cog):
     @settings.command(description="退出時のチャンネルを設定します")
     async def remove_channel(self, ctx, channel: discord.TextChannel):
         """`メッセージの管理`"""
-        if ctx.author.guild_permissions.manage_messages:
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT remove_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")

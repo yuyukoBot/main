@@ -144,6 +144,14 @@ class HelpCommand(commands.HelpCommand):
         self.paginator.clear()
         await super().prepare_help_command(ctx, command)
 
+    async def send_command_help(self, command):
+        embed = discord.Embed(title=self.get_command_signature(command), description=command.description,
+                              color=0x00ff00)
+        if command.help:
+            embed.add_field(name="ヘルプテキスト：", value=command.help, inline=False)
+        embed.set_footer(text=f"コマンドのヘルプ {self.context.prefix}help コマンド名")
+        await self.get_destination().send(embed=embed)
+
     async def send_bot_help(self, mapping):
         ctx = self.context
         bot = ctx.bot

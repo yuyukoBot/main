@@ -55,6 +55,9 @@ if __name__ == '__main__':
 
 
 
+
+
+
 @bot.event
 async def on_command(ctx):
     e = discord.Embed(title="コマンド実行", description=f"実行分:`{ctx.message.clean_content}`")

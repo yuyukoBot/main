@@ -253,7 +253,7 @@ class ServerSetting(commands.Cog):
             cursor = db.cursor()
 
             cursor.execute("DELETE FROM ServerSetting "
-                           "WHERE guild_id = ? AND log_channel  = ?",
+                           "WHERE log_guild_id = ? AND log_channel  = ?",
                            [int(ctx.guild.id), int(channel.id)])
 
             await ctx.send(f"{channel.mention}を削除しました")

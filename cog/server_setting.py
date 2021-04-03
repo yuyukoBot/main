@@ -212,7 +212,7 @@ class ServerSetting(commands.Cog):
             await ctx.send("権限がありません")
 
 
-    @settings.command()
+    @settings.command(description="入出時のチャンネルをリセットします")
     async def welcome_reset_channel(self,ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
@@ -230,7 +230,7 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @settings.command()
+    @settings.command(description="退出時のチャンネルをリセットします")
     async def remove_reset_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
@@ -248,7 +248,7 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @settings.command()
+    @settings.command(description="ログチャンネルをリセットします")
     async def log_reset(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_channels or ctx.author.id == 478126443168006164:

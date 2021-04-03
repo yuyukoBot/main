@@ -1,7 +1,4 @@
 import discord
-from asyncio import sleep
-
-import json
 from typing import Union
 import logging
 import textwrap
@@ -10,7 +7,6 @@ import datetime
 import asyncio
 import random
 from discord.ext import commands
-import sqlite3
 from logging import DEBUG, getLogger
 from contextlib import redirect_stdout
 import textwrap
@@ -214,6 +210,60 @@ class ServerSetting(commands.Cog):
             db.close()
         else:
             await ctx.send("権限がありません")
+
+
+    @settings.command()
+    async def welcome_reset_channel(self,ctx, channel: discord.TextChannel):
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+
+            cursor.execute("DELETE FROM ServerSetting "
+                                      "WHERE guild_id = ? AND welcome_channel_id = ?",
+                                      [int(ctx.guild.id), int(channel.id)])
+
+            await ctx.send(f"{channel.mention}を削除しました")
+            db.commit()
+            cursor.close()
+            db.close()
+        else:
+            await ctx.send("権限がありません")
+
+    @settings.command()
+    async def remove_reset_channel(self, ctx, channel: discord.TextChannel):
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+
+            cursor.execute("DELETE FROM ServerSetting "
+                           "WHERE guild_id = ? AND remove_channel_id  = ?",
+                           [int(ctx.guild.id), int(channel.id)])
+
+            await ctx.send(f"{channel.mention}を削除しました")
+            db.commit()
+            cursor.close()
+            db.close()
+        else:
+            await ctx.send("権限がありません")
+
+    @settings.command()
+    async def log_reset(self, ctx, channel: discord.TextChannel):
+        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+
+            cursor.execute("DELETE FROM ServerSetting "
+                           "WHERE guild_id = ? AND log_channel  = ?",
+                           [int(ctx.guild.id), int(channel.id)])
+
+            await ctx.send(f"{channel.mention}を削除しました")
+            db.commit()
+            cursor.close()
+            db.close()
+        else:
+            await ctx.send("権限がありません")
+
+
 
 
 

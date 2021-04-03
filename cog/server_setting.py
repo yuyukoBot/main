@@ -190,7 +190,7 @@ class ServerSetting(commands.Cog):
 
     @settings.command(description="退出時のチャンネルを設定します")
     async def remove_channel(self, ctx, channel: discord.TextChannel):
-        """`メッセージの管理`"""
+        """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
@@ -214,6 +214,7 @@ class ServerSetting(commands.Cog):
 
     @settings.command()
     async def welcome_reset_channel(self,ctx, channel: discord.TextChannel):
+        """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
@@ -231,6 +232,7 @@ class ServerSetting(commands.Cog):
 
     @settings.command()
     async def remove_reset_channel(self, ctx, channel: discord.TextChannel):
+        """`チャンネルの管理`"""
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
@@ -248,7 +250,8 @@ class ServerSetting(commands.Cog):
 
     @settings.command()
     async def log_reset(self, ctx, channel: discord.TextChannel):
-        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+        """`チャンネルの管理`"""
+        if ctx.author.guild_permissions.manage_channels or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
 

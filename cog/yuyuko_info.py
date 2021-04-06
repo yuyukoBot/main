@@ -500,6 +500,37 @@ class infoCog(commands.Cog):
     @commands.command(name="roleinfo", aliases=["ri", "role"], description="```役職の情報```")
     async def roleinfo(self, ctx, *, role: commands.RoleConverter = None):
         """`誰でも`"""
+        def rv(content):
+            if content == 'None': return 'なし'
+            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
+            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
+                                                                                   "`メンバーをキック`").replace(
+                "`ban_members`", "`メンバーをBan`")
+            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
+                "`manage_guild`", "`サーバー管理`")
+            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
+                "`priority_speaker`", "`優先スピーカー`")
+            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
+                "`send_messages`", "`メッセージを送信`")
+            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
+                                                                                  "`メッセージの管理`").replace("`embed_links`",
+                                                                                                        "`埋め込みリンク`")
+            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
+                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
+                                                                                                 "`全員宛メンション`")
+            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
+                                                                              "`サーバーインサイトを見る`").replace("`connect`",
+                                                                                                        "`接続`")
+            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
+                                                                                               "`メンバーをミュート`").replace(
+                "`deafen_members`", "`メンバーのスピーカーをミュート`")
+            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
+                "`change_nickname`", "`ニックネームの変更`")
+            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
+                "`manage_webhooks`", "`webhookの管理`")
+            value = value.replace("`manage_emojis`", "`絵文字の管理`")
+            value = value.replace("`use_slash_commands`","`スラッシュコマンドの使用`")
+            return value
         if role is None:
             await ctx.send(ctx._("roleinfo-howto"))
         elif role.guild == ctx.guild:
@@ -521,70 +552,9 @@ class infoCog(commands.Cog):
                             value='%s Online' % sum(1 for m in role.members if m.status != discord.Status.offline),
                             inline=True)
 
-            perms = ""
-        if role.permissions.administrator:
-            perms += "管理者権限, "
-        if role.permissions.create_instant_invite:
-            perms += "招待リンクの作成, "
-        if role.permissions.kick_members:
-            perms += "Kick権限, "
-        if role.permissions.ban_members:
-            perms += "Ban権限, "
-        if role.permissions.manage_channels:
-            perms += "チャンネルの管理, "
-        if role.permissions.manage_guild:
-            perms += "サーバーの管理, "
-        if role.permissions.add_reactions:
-             perms += "リアクションの追加, "
-        if role.permissions.view_audit_log:
-            perms += "サーバーの統計を表示, "
-        if role.permissions.read_messages:
-            perms += "メッセージの表示, "
-        if role.permissions.send_messages:
-            perms += "メッセージを送信, "
-        if role.permissions.send_tts_messages:
-            perms += "TTSメッセージの送信, "
-        if role.permissions.manage_messages:
-            perms += "メッセージを管理, "
-        if role.permissions.embed_links:
-            perms += "埋め込みリンクの送信, "
-        if role.permissions.attach_files:
-            perms += "ファイルの添付, "
-        if role.permissions.read_message_history:
-            perms += "メッセージの履歴の表示, "
-        if role.permissions.mention_everyone:
-            perms += "役職,全員宛メンション, "
-        if role.permissions.external_emojis:
-            perms += "外侮の絵文字を使用, "
-        if role.permissions.connect:
-            perms += "接続, "
-        if role.permissions.speak:
-            perms += "発言, "
-        if role.permissions.mute_members:
-            perms += "メンバーをミュート, "
-        if role.permissions.deafen_members:
-            perms += "スピーカーミュート, "
-        if role.permissions.move_members:
-            perms += "メンバーの移動, "
-        if role.permissions.use_voice_activation:
-            perms += "音声検出を使用, "
-        if role.permissions.change_nickname:
-            perms += "ニックネームを変える, "
-        if role.permissions.manage_nicknames:
-            perms += "ニックネームを管理, "
-        if role.permissions.manage_roles:
-            perms += "役職を管理, "
-        if role.permissions.manage_webhooks:
-            perms += "webhookを管理, "
-        if role.permissions.manage_emojis:
-            perms += "絵文字を管理, "
+            pers = [f"`{c}`" for c in dict(role.permissions) if dict(role.permissions)[c] is True]
+            embed.add_field(name=f"権限({len(pers)})", value=rv(",".join(pers)))
 
-        if perms is None:
-            perms = "None"
-        else:
-            perms = perms.strip(", ")
-
-            embed.add_field(name='Permissions', value=f"`{perms}`")
 
             hasmember = ""
             for m in role.members:

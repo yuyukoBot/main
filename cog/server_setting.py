@@ -188,6 +188,11 @@ class ServerSetting(commands.Cog):
             cursor.close()
             db.close()
 
+
+
+
+
+
     @settings.command(description="退出時のチャンネルを設定します")
     async def remove_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
@@ -210,6 +215,11 @@ class ServerSetting(commands.Cog):
             db.close()
         else:
             await ctx.send("権限がありません")
+
+
+
+
+
 
 
     @settings.command(description="入出時のチャンネルをリセットします")

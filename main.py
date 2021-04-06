@@ -33,7 +33,7 @@ prefix = config["prefix"]
 
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
 db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
-slash = SlashCommand(bot, override_type = True)
+slash = SlashCommand(bot,sync_commands=True,sync_on_cog_reload=True)
 bot.db=db
 bot.close_=bot.close
 async def newclose():

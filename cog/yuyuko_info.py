@@ -441,7 +441,7 @@ class infoCog(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(name="emojiinfo",description="絵文字の情報")
     async def emojiinfo(self,ctx, *, emj: commands.EmojiConverter = None):
 
         if emj is None:
@@ -460,9 +460,9 @@ class infoCog(commands.Cog):
             embed.timestamp = emj.created_at
             await ctx.send(embed=embed)
 
-    @commands.command(name="user")
+    @commands.command(name="user",description="外部ユーザーの情報")
     async def user(self, ctx, *, user: Union[discord.Member, discord.User] = None):
-        """Shows info about a user."""
+        """`誰でも`"""
 
         user = user or ctx.author
         e = discord.Embed(title="外部ユーザー情報", color=0x0066ff)
@@ -497,7 +497,7 @@ class infoCog(commands.Cog):
 
         await ctx.send(embed=e)
 
-    @commands.command(name="roleinfo", aliases=["ri", "role"], description="```役職の情報```")
+    @commands.command(name="roleinfo", aliases=["ri", "role"], description="役職の情報")
     async def roleinfo(self, ctx, *, role: commands.RoleConverter = None):
         """`誰でも`"""
         def rv(content):
@@ -569,7 +569,7 @@ class infoCog(commands.Cog):
 
             await ctx.send(embed=embed)
 
-    @commands.command(name="avatar", description="```ユーザーのアイコン```")
+    @commands.command(name="avatar", description="ユーザーのアイコン")
     async def avatar(self, ctx, *, user: Union[discord.Member, discord.User] = None):
         """`誰でも`"""
         embed = discord.Embed(color=0x5d00ff)
@@ -606,7 +606,7 @@ class infoCog(commands.Cog):
             msg += str(emoji)
         await ctx.send(msg)
 
-    @commands.command(name="messageinfo", aliases=["msg", "message"], description="```メッセージの情報```")
+    @commands.command(name="messageinfo", aliases=["msg", "message"], description="メッセージの情報")
     async def messageinfo(self, ctx, target: Union[commands.MessageConverter, None]):
         """`誰でも`"""
         if target:

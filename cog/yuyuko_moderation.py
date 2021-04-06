@@ -248,7 +248,7 @@ class Moderation(commands.Cog):
         for emoji, _ in choices:
             await poll.add_reaction(emoji)
 
-    @commands.command(name="mute", aliases=["mt"], description="```ユーザーをmute```")
+    @commands.command(name="mute", aliases=["mt"], description="ユーザーをmute")
     @commands.guild_only()
     async def mute(self, ctx, user: discord.Member, time: int = 15):
         '''```役職の管理```'''

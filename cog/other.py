@@ -125,7 +125,7 @@ class everyone(commands.Cog):
         except ValueError:
             await ctx.send("Must be a number!")
 
-    @commands.command(name="say", aliases=["echo"], description="```任意の文章を送信します。```")
+    @commands.command(name="say", aliases=["echo"], description="任意の文章を送信します。")
     async def say(self, ctx, *, arg):
         """`豆腐がしゃべります`"""
         await ctx.message.delete()

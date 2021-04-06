@@ -34,15 +34,7 @@ import DiscordUtils
 from discord.ext.commands import clean_content
 from discord import Embed
 from discord.ext.commands import Cog
-import sys
-import json
-import traceback
-import wikipedia
-import io
-from contextlib import redirect_stdout
-import re
 
-import tracemalloc
 
 class infoCog(commands.Cog):
 
@@ -374,6 +366,7 @@ class infoCog(commands.Cog):
             value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
                 "`manage_webhooks`", "`webhookの管理`")
             value = value.replace("`manage_emojis`", "`絵文字の管理`")
+            value = value.replace("`use_slash_commands`","`スラッシュコマンドの使用")
             return value
 
         user = user or ctx.author

@@ -7,7 +7,7 @@ import os
 import random
 import traceback
 import inspect
-
+import sqlite3
 import asyncio
 import discord,fnmatch
 import random
@@ -49,6 +49,14 @@ class AdminCog(commands.Cog, name="Admin"):
         # remove `foo`
         return content.strip('` \n')
 
+    @commands.command()
+    @commands.is_owner()
+    async def guildv(self, ctx, gid: int, bl: bool = True):
+        print(f'{ctx.message.author.name}({ctx.message.guild.name})_' +
+              ctx.message.content)
+        self.bot.cursor.execute(
+            "UPDATE guilds SET verified = ? WHERE id = ?", (bl, gid))
+        await ctx.send(f"サーバー`{self.bot.get_guild(gid)}`の認証状態を{str(bl)}にしました。")
 
 
 
@@ -210,26 +218,20 @@ class AdminCog(commands.Cog, name="Admin"):
                     ret = await func()
             except Exception as e:
                 value = stdout.getvalue()
-                e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}{traceback.format_exc()}\n```')
-                await ctx.send(embed=e)
                 await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
             else:
                 value = stdout.getvalue()
                 try:
-
-                    await ctx.message.add_reaction('<:outline_done_outline_black_18dp:809103360388366357>')
+                    await ctx.message.add_reaction('\u2705')
                 except:
                     pass
 
                 if ret is None:
                     if value:
-                        e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}\n```')
-                        await ctx.send(embed=e)
-
+                        await ctx.send(f'```py\n{value}\n```')
                 else:
                     self._last_result = ret
-                    e = discord.Embed(title=f'入力値\n```{body}```', description=f'出力値\n```py\n{value}{ret}\n```')
-                    await ctx.send(embed=e)
+                    await ctx.send(f'```py\n{value}{ret}\n```')
 
     @commands.command(description="BOTを再起動します")
     async def ru(self,ctx):

@@ -65,13 +65,9 @@ class everyone(commands.Cog):
 
     
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True,description="翻訳します")
     async def translate(self, ctx, to_language, *, msg):
-        """Translates words from one language to another. Do [p]help translate for more information.
-        Usage:
-        [p]translate <new language> <words> - Translate words from one language to another. Full language names must be used.
-        The original language will be assumed automatically.
-        """
+        """`誰でも`"""
         await ctx.message.delete()
         if to_language == "rot13":  # little easter egg
             embed = discord.Embed(color=discord.Color.blue())
@@ -105,6 +101,7 @@ class everyone(commands.Cog):
 
     @commands.command()
     async def timer(self, ctx, seconds):
+        """`誰でも`"""
         try:
             secondint = int(seconds)
             if secondint > 1300:
@@ -127,7 +124,7 @@ class everyone(commands.Cog):
 
     @commands.command(name="say", aliases=["echo"], description="任意の文章を送信します。")
     async def say(self, ctx, *, arg):
-        """`豆腐がしゃべります`"""
+        """`誰でも`"""
         await ctx.message.delete()
         if "<@" in arg or "@everyone" in arg or "@here" in arg:
             await ctx.send("```メンションはしないでください。```")
@@ -166,6 +163,7 @@ class everyone(commands.Cog):
 
     @commands.command(name="time", description="現在時刻を表示するよ！")
     async def time_(self,ctx):
+        """`誰でも`"""
         import locale
         locale.setlocale(locale.LC_CTYPE, "English_United States.932")
         await ctx.send(datetime.datetime.now().strftime("%Y年%m月%d日 %H時%M分%S秒"))

@@ -141,6 +141,37 @@ class log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before, after):
+        def rv(content):
+            if content == 'None': return 'なし'
+            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
+            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
+                                                                                   "`メンバーをキック`").replace(
+                "`ban_members`", "`メンバーをBan`")
+            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
+                "`manage_guild`", "`サーバー管理`")
+            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
+                "`priority_speaker`", "`優先スピーカー`")
+            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
+                "`send_messages`", "`メッセージを送信`")
+            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
+                                                                                  "`メッセージの管理`").replace("`embed_links`",
+                                                                                                        "`埋め込みリンク`")
+            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
+                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
+                                                                                                 "`全員宛メンション`")
+            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
+                                                                              "`サーバーインサイトを見る`").replace("`connect`",
+                                                                                                        "`接続`")
+            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
+                                                                                               "`メンバーをミュート`").replace(
+                "`deafen_members`", "`メンバーのスピーカーをミュート`")
+            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
+                "`change_nickname`", "`ニックネームの変更`")
+            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
+                "`manage_webhooks`", "`webhookの管理`")
+            value = value.replace("`manage_emojis`", "`絵文字の管理`")
+            value = value.replace("`use_slash_commands`", "`スラッシュコマンドの使用")
+            return value
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
@@ -148,6 +179,8 @@ class log(commands.Cog):
         if result is None:
             return
         else:
+            pers = [f"`{c}`" for c in dict(before.permissions) if dict(before.permissions)[c] is True]
+            pem = [f"`{c}`" for c in dict(after.permissions) if dict(after.permissions)[c] is True]
             if before.name != after.name:
                 embed = discord.Embed(title="役職の名前が変わりました", color=0x5d00ff)
 
@@ -162,6 +195,7 @@ class log(commands.Cog):
                     embed.add_field(name="メンション可能", value="はい")
                 else:
                     embed.add_field(name="メンション可能", value="いいえ")
+                embed.add_field(name="変更後", value=rv(",".join(pem)))
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=embed)
 
@@ -179,6 +213,7 @@ class log(commands.Cog):
                     e.add_field(name="メンション可能", value="はい")
                 else:
                     e.add_field(name="メンション可能", value="いいえ")
+                e.add_field(name="変更後", value=rv(",".join(pem)))
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e)
 
@@ -199,6 +234,8 @@ class log(commands.Cog):
                     e1.add_field(name="メンション可能", value="はい")
                 else:
                     e1.add_field(name="メンション可能", value="いいえ")
+                e1.add_field(name="変更後", value=rv(",".join(pem)))
+
 
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e1)
@@ -214,15 +251,36 @@ class log(commands.Cog):
                 if bool(after.hoist):
                     e2.add_field(name="個別表示ですか", value="はい")
                 else:
-                    e2.add_field(name="個別表示ですか", value="いいえ")
+                     e2.add_field(name="個別表示ですか", value="いいえ")
 
                 if bool(after.mentionable):
                     e2.add_field(name="メンション可能", value="はい")
                 else:
                     e2.add_field(name="メンション可能", value="いいえ")
+                e2.add_field(name="変更後", value=rv(",".join(pem)))
 
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e2)
+
+            if before.permissions != after.permissions:
+
+                e3 = discord.Embed(title="アップデート",description=f"変更メンバー:{str(after)}", color=0x5d00ff)
+                e3.add_field(name="変更前",value=rv(",".join(pers)))
+                e3.add_field(name="変更後",value=rv(",".join(pem)))
+                e3.add_field(name="名前", value=f'{after.name}({after.id})')
+                e3.add_field(name="位置", value=after.position)
+                if bool(after.hoist):
+                    e3.add_field(name="個別表示ですか", value="はい")
+                else:
+                    e3.add_field(name="個別表示ですか", value="いいえ")
+
+                if bool(after.mentionable):
+                    e3.add_field(name="メンション可能", value="はい")
+                else:
+                    e3.add_field(name="メンション可能", value="いいえ")
+
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e3)
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role):

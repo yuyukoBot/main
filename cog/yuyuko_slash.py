@@ -29,10 +29,10 @@ class Slash(commands.Cog):
         e.add_field(name="実行チャンネル", value=ctx.channel.name)
         await ch.send(embed=e)
 
-    guild_ids = [789032594456576001]
 
-    @cog_slash(name="ping", guild_ids=guild_ids)
-    async def _ping(self,ctx):  # Defines a new "context" (ctx) command called "ping."
+
+    @cog_slash(name="ping")
+    async def _ping(self,ctx: SlashContext):  # Defines a new "context" (ctx) command called "ping."
         await ctx.send(f"Pong! ({cog_slash().latency * 1000}ms)")
 
 def setup(bot):

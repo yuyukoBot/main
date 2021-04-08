@@ -776,6 +776,24 @@ class infoCog(commands.Cog):
                 e.add_field(name=f"所属するチャンネル({len(target.channels)}チャンネル)", value=mbs, inline=False)
             await ctx.send(embed=e)
 
+        elif isinstance(target, discord.StageChannel):
+            e = discord.Embed(name="チャンネル情報", description=f"{target.name}(タイプ:ボイス)\nID:{target.id}")
+            e.timestamp = target.created_at
+            if target.category:
+                e.add_field(name="所属するカテゴリ", value=f"{target.category.name}({target.category.id})")
+
+            if not target.user_limit == 0:
+                e.add_field(name="ユーザー数制限", value=f"{target.user_limit}人")
+            mbs = ""
+            for m in target.members:
+                if len(mbs + f"`{m.name}`,") >= 1020:
+                    mbs = mbs + f"他"
+                    break
+                else:
+                    mbs = mbs + f"`{m.name}`,"
+            if mbs != "":
+                e.add_field(name=f"参加可能なメンバー({len(target.members)}人)", value=mbs, inline=False)
+            await ctx.send(embed=e)
 
 
 def setup(bot):

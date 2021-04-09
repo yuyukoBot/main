@@ -79,7 +79,10 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
-        return
+        if ctx.invoked_subcommand is None:
+            await ctx.send('Invalid profile command passed... Send `sudo help profile` for assistance.')
+
+
 
     @settings.command(description="指定したチャンネルにログを送信します")
     async def log(self, ctx, channel: discord.TextChannel):
@@ -190,9 +193,6 @@ class ServerSetting(commands.Cog):
 
 
 
-
-
-
     @settings.command(description="退出時のチャンネルを設定します")
     async def remove_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
@@ -277,7 +277,13 @@ class ServerSetting(commands.Cog):
             await ctx.send("権限がありません")
 
 
-
+    @settings.command()
+    async def list(self,ctx):
+        self.bot.cursor.execute("select * from ServerSetting where id=?", (ctx.guild.id,))
+        upf = self.bot.cursor.fetchone()
+        e = discord.Embed()
+        e.add_field(name="list",value=upf["log_channel"])
+        await ctx.send(embed=e)
 
 
 

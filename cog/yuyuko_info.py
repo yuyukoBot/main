@@ -777,7 +777,7 @@ class infoCog(commands.Cog):
             await ctx.send(embed=e)
 
         elif isinstance(target, discord.StageChannel):
-            e = discord.Embed(name="チャンネル情報", description=f"{target.name}(タイプ:ボイス)\nID:{target.id}")
+            e = discord.Embed(name="チャンネル情報", description=f"{target.name}(ステージチャンネル)\nID:{target.id}")
             e.timestamp = target.created_at
             if target.category:
                 e.add_field(name="所属するカテゴリ", value=f"{target.category.name}({target.category.id})")

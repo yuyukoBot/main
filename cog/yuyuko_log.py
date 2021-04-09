@@ -580,7 +580,15 @@ class log(commands.Cog):
             return
         else:
 
-            e = discord.Embed(title="新規参加")
+            inviter = await self.tracker.fetch_inviter(member)  # inviter is the member who invited
+            data = await self.bot.invites.find(inviter.id)
+            if data is None:
+                data = {"_id": inviter.id, "count": 0, "userInvited": []}
+
+            data["count"] += 1
+            data["usersInvited"].append(member.id)
+            await self.bot.invites.upsert(data)
+            e = discord.Embed(title="新規参加",description=f"Invited by: {inviter.mention}\nInvites: {data['count']}")
             e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
             if member.bot:
                 e.add_field(name="Botですか", value="はい")

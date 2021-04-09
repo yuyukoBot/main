@@ -6,7 +6,7 @@ import collections
 import contextlib
 import asyncio
 from util.utils import Pag,clean_code
-
+import util.utils as ut
 from discord.ext import commands
 from discord_slash import SlashCommand
 
@@ -52,7 +52,6 @@ if __name__ == '__main__':
     for filename in os.listdir("cog"):
         if filename.endswith(".py"):
             bot.load_extension(f"cog.{filename[:-3]}")
-
 
 
 

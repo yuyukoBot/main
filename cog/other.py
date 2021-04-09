@@ -3,13 +3,13 @@ import codecs
 import datetime
 import time
 from datetime import datetime
-
+from util import Nullify
 import discord
 import discordlists
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
-
+import aiohttp
 class everyone(commands.Cog):
     """
     誰でも使えるコマンドです
@@ -17,6 +17,7 @@ class everyone(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+
         self.api = discordlists.Client(self.bot)
         self.api.set_auth("bots.ondiscord.xyz", "dsag38_auth_token_fda6gs") # Set authorisation token for a bot list
         self.api.set_auth("discordbots.group", "qos56a_auth_token_gfd8g6") # Set authorisation token for a bot list
@@ -167,6 +168,7 @@ class everyone(commands.Cog):
         import locale
         locale.setlocale(locale.LC_CTYPE, "English_United States.932")
         await ctx.send(datetime.datetime.now().strftime("%Y年%m月%d日 %H時%M分%S秒"))
+
 
 
 

@@ -10,6 +10,7 @@ import datetime
 import asyncio
 import random
 from discord.ext import commands
+import DiscordUtils
 
 from logging import DEBUG, getLogger
 from contextlib import redirect_stdout
@@ -24,6 +25,7 @@ logger = getLogger(__name__)
 class log(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
+        self.tracker = DiscordUtils.InviteTracker(bot)
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
@@ -376,33 +378,26 @@ class log(commands.Cog):
             channel = self.bot.get_channel(id=int(result[0]))
             await channel.send(embed=e)
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.tracker.cache_invites()
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {invite.guild.id}")
-        result = cursor.fetchone()
-        if result is None:
-            e = discord.Embed(title="サーバー招待の作成", color=0x5d00ff)
-            e.add_field(name="作成ユーザー", value=str(invite.inviter))
-            e.add_field(name="使用可能回数", value=str(invite.max_uses))
-            e.add_field(name="使用可能時間", value=str(invite.max_age))
-            e.add_field(name="チャンネル", value=str(invite.channel.mention))
-            e.add_field(name="コード", value=str(invite.code))
-            channel = self.bot.get_channel(id=int(result[0]))
+        await self.tracker.update_invite_cache(invite)
 
-            await channel.send(embed=e)
-        else:
-            e = discord.Embed(title="サーバー招待の作成", color=0x5d00ff)
-            e.add_field(name="作成ユーザー", value=str(invite.inviter))
-            e.add_field(name="使用可能回数", value=str(invite.max_uses))
-            e.add_field(name="使用可能時間", value=str(invite.max_age))
-            e.add_field(name="チャンネル", value=str(invite.channel.mention))
-            e.add_field(name="コード", value=str(invite.code))
-            channel = self.bot.get_channel(id=int(result[0]))
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        await self.tracker.update_guild_cache(guild)
 
-            await channel.send(embed=e)
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        await self.tracker.remove_invite_cache(invite)
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        await self.tracker.remove_guild_cache(guild)
+
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):

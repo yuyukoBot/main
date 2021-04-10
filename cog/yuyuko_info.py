@@ -109,7 +109,7 @@ class infoCog(commands.Cog):
         e.add_field(name="メンバー数",
                     value=f"{len(guild.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
         e.add_field(name="チャンネル数",
-                    value=f'{("<:categorie:798883839124308008>")}:{len(guild.categories)}\n{(":speech_balloon:")}:{len(guild.text_channels)}\n{(":mega:")}:{len(guild.voice_channels)}')
+                    value=f'{("<:categorie:798883839124308008>")}:{len(guild.categories)}\n{(":speech_balloon:")}:{len(guild.text_channels)}\n{(":mega:")}:{len(guild.voice_channels)}\n{(":pager:")}:{len(guild.stage_channels)}')
 
         e.add_field(name="絵文字", value=len(guild.emojis))
         e.add_field(name="地域", value=str(guild.region))

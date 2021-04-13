@@ -80,7 +80,11 @@ class ServerSetting(commands.Cog):
     @commands.group()
     async def settings(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('Invalid profile command passed... Send `sudo help profile` for assistance.')
+            e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
+            e.add_field(name="welcome-channel",value="テスト")
+            e.add_field(name="leave_channel",value="テスト",inline=True)
+
+            e.add_field()
 
 
 
@@ -216,10 +220,14 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-
-
-
-
+    @settings.command()
+    async def list(self, ctx):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT * FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+        upf = cursor.fetchone()
+        e = discord.Embed(title=upf["remove_channel_id"])
+        await ctx.send(embed=e)
 
 
     @settings.command(description="入出時のチャンネルをリセットします")
@@ -277,13 +285,7 @@ class ServerSetting(commands.Cog):
             await ctx.send("権限がありません")
 
 
-    @settings.command()
-    async def list(self,ctx):
-        self.bot.cursor.execute("select * from ServerSetting where id=?", (ctx.guild.id,))
-        upf = self.bot.cursor.fetchone()
-        e = discord.Embed()
-        e.add_field(name="list",value=upf["log_channel"])
-        await ctx.send(embed=e)
+
 
 
 

@@ -84,7 +84,7 @@ class ServerSetting(commands.Cog):
             e.add_field(name="welcome-channel",value="テスト")
             e.add_field(name="leave_channel",value="テスト",inline=True)
 
-            e.add_field()
+            await ctx.send(embed=e)
 
 
 

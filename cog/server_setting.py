@@ -80,9 +80,19 @@ class ServerSetting(commands.Cog):
     @commands.group()
     async def settings(self, ctx):
         if ctx.invoked_subcommand is None:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+            query = cursor.execute("SELECT * FROM ServerSetting WHERE guild_id = $1;")
+            row = cursor.fetchone(query, ctx.guild.id)
+            if row["welcome_channel"] == 1:
+                joincheck = "<:OwO:673656326164840488>"
+            else:
+                joincheck = "<:OwO:673656326164840488>"
+
             e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
             e.add_field(name="welcome-channel",value="テスト")
             e.add_field(name="leave_channel",value="テスト",inline=True)
+            e.add_field(name="Join Messages", value=joincheck, inline=True)
 
             await ctx.send(embed=e)
 

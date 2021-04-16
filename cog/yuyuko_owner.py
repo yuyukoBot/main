@@ -9,6 +9,7 @@ import os
 import os.path
 import re
 import sys
+import json
 import math
 import time
 import traceback
@@ -252,6 +253,10 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
 
         for page in paginator.pages:
             await ctx.send(page)
+
+
+
+
 
     @commands.is_owner()
     @commands.command(name="su", description="他の誰かとしてコマンドを実行します。これはメンバーに解決しようとしますが、メンバーが見つからない場合はユーザーを使用します")

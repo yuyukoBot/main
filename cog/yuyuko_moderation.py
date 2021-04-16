@@ -5,16 +5,26 @@ import typing
 
 import aiohttp
 
-
+import sqlite3
 from typing import Optional
 from typing import Union
 from datetime import time
 import platform
 import datetime
 import time
-from discord.ext import commands
+from discord.ext import commands,Greedy,Member
 import os
 import functools
+from discord import (
+    Embed,
+    Member,
+    Role,
+    TextChannel,
+    NotFound,
+    Object,
+    Colour,
+    Permissions,
+)
 import inspect
 from discord.ext.commands import clean_content
 from discord import Embed
@@ -247,6 +257,8 @@ class Moderation(commands.Cog):
         poll = await ctx.send(f'```{ctx.author} asks: {question}```\n\n{body}')
         for emoji, _ in choices:
             await poll.add_reaction(emoji)
+
+
 
     @commands.command(name="mute", aliases=["mt"], description="ユーザーをmute")
     @commands.guild_only()

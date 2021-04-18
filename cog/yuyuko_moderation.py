@@ -12,19 +12,10 @@ from datetime import time
 import platform
 import datetime
 import time
-from discord.ext import commands,Greedy,Member
+from discord.ext import commands
 import os
 import functools
-from discord import (
-    Embed,
-    Member,
-    Role,
-    TextChannel,
-    NotFound,
-    Object,
-    Colour,
-    Permissions,
-)
+
 import inspect
 from discord.ext.commands import clean_content
 from discord import Embed

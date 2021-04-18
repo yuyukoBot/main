@@ -336,7 +336,12 @@ class AdminCog(commands.Cog, name="Admin"):
             except discord.HTTPException as e:
                 await ctx.send(f'Unexpected error: `{e}`')
 
-    @commands.command(description="コマンドプロンプトのコマンドを実行します")
+    @commands.group(name="system",description="システムコマンド")
+    async def system(self,ctx):
+        """`Bot運営のみ`"""
+        return
+
+    @system.command(description="コマンドプロンプトのコマンドを実行します")
     async def cmd(self,ctx, *, command):
         try:
             if ctx.author.id in [478126443168006164, 691300045454180383]:
@@ -352,7 +357,7 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(embed=e)
 
     @commands.is_owner()
-    @commands.command(name="changestatus",description="ステータスを変更します")
+    @system.command(name="changestatus",description="ステータスを変更します")
     async def changestatus(self, ctx, status: str):
         """`Bot運営`"""
         status = status.lower()
@@ -367,7 +372,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await self.bot.change_presence(status=discordStatus)
         await ctx.send(f'**:ok:** Ändere Status zu: **{discordStatus}**')
 
-    @commands.command(name="set_playing",description="再生状態を設定します。")
+    @system.command(name="set_playing",description="再生状態を設定します。")
     @commands.is_owner()
     async def set_playing(self, ctx, *, game: str = None):
         """Set the playing status."""
@@ -379,7 +384,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.send(embed=em)
 
     @commands.is_owner()
-    @commands.command(name="announce", aliases=["ann"], description="アナウンス用")
+    @system.command(name="announce", aliases=["ann"], description="アナウンス用")
     async def announce(self, ctx, *, message):
         """`Bot運営`"""
 
@@ -400,7 +405,7 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send("> 送信できません！\n　メッセージの送信に失敗しました。")
 
     @commands.is_owner()
-    @commands.command(name="news")
+    @system.command(name="news")
     async def news(self, ctx, *, message):
         """`Bot運営`"""
 
@@ -413,7 +418,7 @@ class AdminCog(commands.Cog, name="Admin"):
         em.description = message
         await ctx.send(embed=em)
 
-    @commands.command()
+    @system.command(name="changenick",desceiption="ニックネームを設定します")
     @commands.is_owner()
     async def changenick(self, ctx, name=None):
         """`ニックネームの管理`"""
@@ -447,7 +452,7 @@ class AdminCog(commands.Cog, name="Admin"):
             await ctx.send(embed=e)
 
     @commands.is_owner()
-    @commands.command(hidden=True)
+    @system.command(hidden=True)
     async def listguild(self, ctx):
         '''Listet die aktuellen verbundenen Guilds auf (BOT OWNER ONLY)'''
         msg = '```js\n'
@@ -458,8 +463,8 @@ class AdminCog(commands.Cog, name="Admin"):
         await ctx.reply(msg)
 
     @commands.is_owner()
-    @commands.command(name="system_shutdown", description="botを停止します")
-    async def system_shutdown(self, ctx):
+    @system.command(name="shutdown", description="botを停止します")
+    async def shutdown(self, ctx):
         """`Bot運営`"""
 
 

@@ -373,7 +373,33 @@ class infoCog(commands.Cog):
         e = discord.Embed(color=0xb300ff)
         roles = [r.mention for r in user.roles]
         e.set_author(name="ユーザー情報")
+        badges = {
+            "staff": "<:staff:836951948745900063>",
+            "partner": "<:partner:836950588536127508>",
+            "hypesquad": "<:hypesquadevents:724328584789098639>",
+            "hypesquad_balance": "<:hypesquadbalance:724328585166454845>",
+            "hypesquad_bravery": "<:hypesquadbravery:724328585040625667>",
+            "hypesquad_brilliance":
+            "<:hypesquadbrilliance:724328585363456070>",
+            "bug_hunter": "<:bughunt:724588087052861531>",
+            "bug_hunter_level_2": "<:bug2:699986097694048327>",
+            "verified_bot_developer": "<:verifed:836952740818976770>",
+            "early_supporter": "<:earlysupporter:724588086646014034>",
 
+        }
+        flags = [
+            flag for flag, value in dict(user.public_flags).items() if
+            value is True
+                 ]
+        flagstr = ""
+        for badge in badges.keys():
+            if badge in flags:
+                flagstr += f" {badges[badge]} "
+        n = False
+        if n:
+            flagstr += f" <:nitro:724328585418113134>"
+        if len(flagstr) != 0:
+            e.add_field(name="Badges", value=flagstr)
         since_created = (ctx.message.created_at - user.created_at).days
         since_joined = (ctx.message.created_at - user.joined_at).days
         user_created = user.created_at.strftime("%d %b %Y %H:%M")

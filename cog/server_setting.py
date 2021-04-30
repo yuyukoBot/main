@@ -20,6 +20,8 @@ logger = getLogger(__name__)
 class ServerSetting(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
+        self.conn = sqlite3.connect('main.sqlite')
+        self.c = self.conn.cursor()
 
     @commands.group()
     async def vc(self,ctx):
@@ -79,10 +81,14 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
+        self.bot.cursor.execute("SELECT * from ServerSetting where id=?",{ctx.guild.id})
+        server = self.bot.cursor.fetchone()
         if ctx.invoked_subcommand is None:
+
 
             e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
             e.add_field(name="welcome-channel",value="テスト")
+            e.add_field(name="welcome",value=server["welcome_msg"])
             e.add_field(name="leave_channel",value="テスト",inline=True)
 
             await ctx.send(embed=e)
@@ -153,6 +159,7 @@ class ServerSetting(commands.Cog):
             db.close()
         else:
             await ctx.send("権限がありません")
+
 
     @settings.command(description="退出時のメッセージを設定します")
     async def remove_text(self, ctx, *, text):

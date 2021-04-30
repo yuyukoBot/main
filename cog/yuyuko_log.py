@@ -546,10 +546,25 @@ class log(commands.Cog):
         else:
             ch = self.bot.get_channel(id=int(result[0]))
             if before.channel is None:
-                e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
-                await ch.send(embed=e)
+                if member.nick:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+                    await ch.send(embed=e)
 
+                else:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+                    await ch.send(embed=e)
+            elif after.channel is None:
+                if member.nick:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
+                    await ch.send(embed=e)
+
+                else:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
+                    await ch.send(embed=e)
 
 
     @commands.Cog.listener()

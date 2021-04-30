@@ -93,8 +93,6 @@ class ServerSetting(commands.Cog):
 
             await ctx.send(embed=e)
 
-
-
     @settings.command(description="指定したチャンネルにログを送信します")
     async def log(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""

@@ -692,7 +692,7 @@ class log(commands.Cog):
         message = reaction.message
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.id}")
         result = cursor.fetchone()
         if result is None:
             return

@@ -81,14 +81,10 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
-        self.bot.cursor.execute("SELECT * from ServerSetting where id=?",{ctx.guild.id})
-        server = self.bot.cursor.fetchone()
+
         if ctx.invoked_subcommand is None:
-
-
             e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
             e.add_field(name="welcome-channel",value="テスト")
-            e.add_field(name="welcome",value=server["welcome_msg"])
             e.add_field(name="leave_channel",value="テスト",inline=True)
 
             await ctx.send(embed=e)

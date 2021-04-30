@@ -94,7 +94,7 @@ class ServerSetting(commands.Cog):
             await ctx.send(embed=e)
 
     @settings.command(description="指定したチャンネルにログを送信します")
-    async def log(self, ctx, channel: discord.TextChannel):
+    async def log(self, ctx, channel):
         """`チャンネルの管理`"""
         if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')

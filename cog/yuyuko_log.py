@@ -377,24 +377,6 @@ class log(commands.Cog):
                 await channel.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_reaction_clear(self,message, reactions):
-
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
-            e = discord.Embed(title="-サーバーログ-リアクション削除- ", color=0x5d00ff)
-            e.add_field(name="該当メッセージ", value=message.content or "(本文なし)")
-            e.add_field(name="リアクション", value=[str(i) for i in reactions])
-
-            channel = self.bot.get_channel(id=int(result[0]))
-            await channel.send(embed=e)
-
-
-    @commands.Cog.listener()
     async def on_invite_create(self, invite):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
@@ -421,6 +403,108 @@ class log(commands.Cog):
             channel = self.bot.get_channel(id=int(result[0]))
 
             await channel.send(embed=e)
+
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self,member:discord.Member, before, after):
+        await self.bot.wait_until_ready()
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            ch = self.bot.get_channel(id=int(result[0]))
+            if before.channel is None:
+                if member.nick:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+                    await ch.send(embed=e)
+
+                else:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+                    await ch.send(embed=e)
+            elif after.channel is None:
+                if member.nick:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
+                    await ch.send(embed=e)
+
+                else:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
+                    await ch.send(embed=e)
+
+
+    @commands.Cog.listener()
+    async def on_guild_update(self, before, after):
+        await self.bot.wait_until_ready()
+        bl = await after.audit_logs(limit=1, action=discord.AuditLogAction.guild_update).flatten()
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            if before.name != after.name:
+                e = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバー名を変更しました", color=0x5d00ff)
+                e.add_field(name="変更前", value=f'`{before.name}`')
+                e.add_field(name="変更後", value=f'`{after.name}`')
+                e.add_field(name="AFKチャンネル", value=after.afk_channel)
+                e.add_field(name="地域", value=after.region)
+                e.add_field(name="実行者", value=str(bl[0].user))
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e)
+
+            if before.region != after.region:
+                e1 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバー地域を変更しました", color=0x5d00ff)
+                e1.add_field(name="変更前", value=f'`{before.region}`')
+                e1.add_field(name="変更後", value=f'`{after.region}`')
+                e.add_field(name="実行者", value=str(bl[0].user))
+                e1.add_field(name="サーバー名", value=after.name)
+                e1.add_field(name="AFKチャンネル", value=after.afk_channel)
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e1)
+
+        if before.afk_channel != after.afk_channel:
+            e2 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="AFKチャンネルを変更しました", color=0x5d00ff)
+            e2.add_field(name="変更前", value=f'`{before.afk_channel}`')
+            e2.add_field(name="変更前", value=f'`{after.afk_channel}`')
+            e.add_field(name="実行者", value=str(bl[0].user))
+            e2.add_field(name="サーバー名", value=after.name)
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=e2)
+
+        if before.owner != after.owner:
+            e3 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバーの所有者を変更しました", color=0x5d00ff)
+            e3.add_field(name="変更前", value=f'`{before.owner}`')
+            e3.add_field(name="変更前", value=f'`{after.owner}`')
+            e.add_field(name="実行者", value=str(bl[0].user))
+            e3.add_field(name="サーバー名", value=after.name)
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=e3)
+
+    @commands.Cog.listener()
+    async def on_member_unban(self, guild, user:discord.Member):
+        await self.bot.wait_until_ready()
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            bl = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+            e = discord.Embed(title="-サーバーログ-メンバーのBan解除- ", color=0x5d00ff)
+            e.add_field(name="ユーザー名", value=str(user))
+            e.add_field(name="Banしたときの実行者", value=str(bl[0].user))
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=e)
+
+
 
     @commands.Cog.listener()
     async def on_member_update(self, before, after):
@@ -535,105 +619,6 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self,member:discord.Member, before, after):
-        await self.bot.wait_until_ready()
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
-            ch = self.bot.get_channel(id=int(result[0]))
-            if before.channel is None:
-                if member.nick:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
-                    await ch.send(embed=e)
-
-                else:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
-                    await ch.send(embed=e)
-            elif after.channel is None:
-                if member.nick:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
-                    await ch.send(embed=e)
-
-                else:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
-                    await ch.send(embed=e)
-
-
-    @commands.Cog.listener()
-    async def on_guild_update(self, before, after):
-        await self.bot.wait_until_ready()
-        bl = await after.audit_logs(limit=1, action=discord.AuditLogAction.guild_update).flatten()
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
-            if before.name != after.name:
-                e = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバー名を変更しました", color=0x5d00ff)
-                e.add_field(name="変更前", value=f'`{before.name}`')
-                e.add_field(name="変更後", value=f'`{after.name}`')
-                e.add_field(name="AFKチャンネル", value=after.afk_channel)
-                e.add_field(name="地域", value=after.region)
-                e.add_field(name="実行者", value=str(bl[0].user))
-                channel = self.bot.get_channel(id=int(result[0]))
-                await channel.send(embed=e)
-
-            if before.region != after.region:
-                e1 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバー地域を変更しました", color=0x5d00ff)
-                e1.add_field(name="変更前", value=f'`{before.region}`')
-                e1.add_field(name="変更後", value=f'`{after.region}`')
-                e.add_field(name="実行者", value=str(bl[0].user))
-                e1.add_field(name="サーバー名", value=after.name)
-                e1.add_field(name="AFKチャンネル", value=after.afk_channel)
-                channel = self.bot.get_channel(id=int(result[0]))
-                await channel.send(embed=e1)
-
-        if before.afk_channel != after.afk_channel:
-            e2 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="AFKチャンネルを変更しました", color=0x5d00ff)
-            e2.add_field(name="変更前", value=f'`{before.afk_channel}`')
-            e2.add_field(name="変更前", value=f'`{after.afk_channel}`')
-            e.add_field(name="実行者", value=str(bl[0].user))
-            e2.add_field(name="サーバー名", value=after.name)
-            channel = self.bot.get_channel(id=int(result[0]))
-            await channel.send(embed=e2)
-
-        if before.owner != after.owner:
-            e3 = discord.Embed(title="-サーバーログ-サーバー変更- ",description="サーバーの所有者を変更しました", color=0x5d00ff)
-            e3.add_field(name="変更前", value=f'`{before.owner}`')
-            e3.add_field(name="変更前", value=f'`{after.owner}`')
-            e.add_field(name="実行者", value=str(bl[0].user))
-            e3.add_field(name="サーバー名", value=after.name)
-            channel = self.bot.get_channel(id=int(result[0]))
-            await channel.send(embed=e3)
-
-    @commands.Cog.listener()
-    async def on_member_unban(self, guild, user:discord.Member):
-        await self.bot.wait_until_ready()
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {guild.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
-            bl = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
-            e = discord.Embed(title="-サーバーログ-メンバーのBan解除- ", color=0x5d00ff)
-            e.add_field(name="ユーザー名", value=str(user))
-            e.add_field(name="Banしたときの実行者", value=str(bl[0].user))
-            channel = self.bot.get_channel(id=int(result[0]))
-            await channel.send(embed=e)
-
-    @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
@@ -684,7 +669,56 @@ class log(commands.Cog):
 
             await channel.send(embed=e)
 
+    @commands.Cog.listener()
+    async def on_reaction_clear(self, message, reactions):
 
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            e = discord.Embed(title="-サーバーログ-リアクション削除- ", color=0x5d00ff)
+            e.add_field(name="該当メッセージ", value=message.content or "(本文なし)")
+            e.add_field(name="リアクション", value=[str(i) for i in reactions])
+
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        await self.bot.wait_until_ready()
+        message = reaction.message
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            ch = self.bot.get_channel(id=int(result[0]))
+            e = discord.Embed(title="-サーバーログ-リアクション剥奪- ", color=self.bot.color)
+            e.add_field(name="該当メッセージと絵文字", value=f"{message}:{reaction.emoji}")
+            e.add_field(name="リアクションを剥奪したユーザー", value=user)
+            await ch.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_reaction_remove(self, reaction, user):
+        await self.bot.wait_until_ready()
+        message = reaction.message
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            ch = self.bot.get_channel(id=int(result[0]))
+            e = discord.Embed(title="-サーバーログ-リアクション剥奪- ", color=self.bot.color)
+            e.add_field(name="該当メッセージと絵文字", value=f"{message}:{reaction.emoji}")
+            e.add_field(name="リアクションを剥奪したユーザー", value=user)
+            await ch.send(embed=e)
 
 
 

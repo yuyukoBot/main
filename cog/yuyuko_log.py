@@ -359,8 +359,8 @@ class log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
+        await self.bot.wait_until_ready()
         if not message.author.bot:
-            bl = await message.audit_logs(limit=1, action=discord.AuditLogAction.message_delete).flatten()
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
@@ -373,7 +373,6 @@ class log(commands.Cog):
                 e.add_field(name="メッセージ送信者", value=message.author.mention)
                 e.add_field(name="メッセージチャンネル", value=message.channel.mention)
                 e.add_field(name="メッセージのid", value=message.id)
-                e.add_field(name="実行者", value=str(bl[0].user))
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e)
 
@@ -518,23 +517,40 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self,member:discord.Member, before, after):
+    async def on_user_update(self,before, after):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.voice}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.user.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
-            if before.member != after.member:
-                e = discord.Embed()
-                e.add_field(name="変更前",value=before.member)
-                e.add_field(name="変更前", value=after.member)
+            ch = self.bot.get_channel(id=int(result[0]))
+
+            if before.name != after.name:
+                e = discord.Embed(title="サーバーログ-ユーザーアップデート",description=f"ニックネームを変更しました\n変更メンバー:{str(after)}")
+                e.add_field(name="変更前",value=before.name)
+                e.add_field(name="変更後",value=after.name)
+                await ch.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self,member:discord.Member, before, after):
+        await self.bot.wait_until_ready()
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            ch = self.bot.get_channel(id=int(result[0]))
+            if before.channel is None:
+                e = discord.Embed(title="サーバーログ -ボイスチャンネル")
+                e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+                await ch.send(embed=e)
 
 
-                channel = self.bot.get_channel(id=int(result[0]))
-                await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_guild_update(self, before, after):

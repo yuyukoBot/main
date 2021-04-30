@@ -20,8 +20,6 @@ logger = getLogger(__name__)
 class ServerSetting(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
-        self.conn = sqlite3.connect('main.sqlite')
-        self.c = self.conn.cursor()
 
     @commands.group()
     async def vc(self,ctx):
@@ -81,16 +79,18 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
-
         if ctx.invoked_subcommand is None:
+
             e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
             e.add_field(name="welcome-channel",value="テスト")
             e.add_field(name="leave_channel",value="テスト",inline=True)
 
             await ctx.send(embed=e)
 
+
+
     @settings.command(description="指定したチャンネルにログを送信します")
-    async def logging(self, ctx, channel:discord.TextChannel):
+    async def log(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
         if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
@@ -98,18 +98,17 @@ class ServerSetting(commands.Cog):
             cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO  ServerSetting(log_guild_id,log_channel) VALUES(?,?)")
+                sql = ("INSERT INTO ServerSetting(log_guild_id,log_channel) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
-                await ctx.send("チャンネルをセットしました")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             elif result is not None:
-                sql = ("UPDATE  ServerSetting SET log_channel = ? WHERE log_guild_id = ?")
+                sql = ("UPDATE ServerSetting SET log_channel = ? WHERE log_guild_id = ?")
                 val = (channel.id, ctx.guild.id)
-                await ctx.send("チャンネルをアップデートしました")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             cursor.execute(sql, val)
             db.commit()
             cursor.close()
             db.close()
-
 
     @settings.command(description="指定したチャンネルにウェルカムメッセージを設定します")
     async def welcome_text(self, ctx, *, text):
@@ -154,7 +153,6 @@ class ServerSetting(commands.Cog):
             db.close()
         else:
             await ctx.send("権限がありません")
-
 
     @settings.command(description="退出時のメッセージを設定します")
     async def remove_text(self, ctx, *, text):

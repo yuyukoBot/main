@@ -2,6 +2,7 @@ import asyncio
 import codecs
 import datetime
 import time
+import io
 from datetime import datetime
 from util import Nullify
 import discord
@@ -44,6 +45,19 @@ class everyone(commands.Cog):
                                                                              len(result["success"].keys()),
                                                                              len(result["failure"].keys())))
 
+    @commands.is_owner()
+    @commands.command()
+    async def screenshot(self, ctx, url):
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        embed = discord.Embed(title=f"Screenshot of {url}")
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f'https://image.thum.io/get/width/1920/crop/675/maxAge/1/noanimate/{url}') as r:
+                res = await r.read()
+            embed.set_image(url="attachment://ss.png")
+            embed.set_footer(
+                text=f"{ctx.author} | TransHelper | {current_time} ")
+            await ctx.send(file=discord.File(io.BytesIO(res), filename="ss.png"), embed=embed)
              
     @commands.command()
     async def get(self, ctx: commands.Context, bot_id: int = None):

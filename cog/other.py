@@ -45,9 +45,9 @@ class everyone(commands.Cog):
                                                                              len(result["success"].keys()),
                                                                              len(result["failure"].keys())))
 
-    @commands.is_owner()
-    @commands.command()
+    @commands.command(name="screenshot",aliases=["ss"],description="サイトのssを表示します")
     async def screenshot(self, ctx, url):
+        """`誰でも`"""
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         embed = discord.Embed(title=f"Screenshot of {url}")
@@ -58,25 +58,6 @@ class everyone(commands.Cog):
             embed.set_footer(
                 text=f"{ctx.author} | TransHelper | {current_time} ")
             await ctx.send(file=discord.File(io.BytesIO(res), filename="ss.png"), embed=embed)
-             
-    @commands.command()
-    async def get(self, ctx: commands.Context, bot_id: int = None):
-        """
-        Gets a bot using discordlists.py (BotBlock)
-        """
-        if bot_id is None:
-            bot_id = self.bot.user.id
-        try:
-            result = (await self.api.get_bot_info(bot_id))[1]
-        except Exception as e:
-            await ctx.send("Request failed: `{}`".format(e))
-            return
-
-        await ctx.send("Bot: {}#{} ({})\nOwners: {}\nServer Count: {}".format(
-            result['username'], result['discriminator'], result['id'],
-            ", ".join(result['owners']) if result['owners'] else "Unknown",
-            "{:,}".format(result['server_count']) if result['server_count'] else "Unknown"
-        ))
 
     
 

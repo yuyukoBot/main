@@ -90,6 +90,7 @@ class Moderation(commands.Cog):
     async def ban(self, ctx, member_id: int, reason=None):
         """`BANの権限`"""
         embed = discord.Embed(description='ユーザーをBANしますか？')
+        embed.add_field(name="対象者",value=member_id)
         mes = await ctx.send(embed=embed)
         [self.bot.loop.create_task(mes.add_reaction(i))
          for i in ("\u2705", "\u274c")]
@@ -109,6 +110,7 @@ class Moderation(commands.Cog):
         else:
             await ctx.send("キャンセルしました")
 
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.command()
     async def delm(self, ctx, ctxid):
         """`メッセージの管理`"""
@@ -122,6 +124,7 @@ class Moderation(commands.Cog):
             await dctx.delete()
             await ctx.message.delete()
 
+    @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
     @commands.command(no_pm=True,description="banされた人が確認できます")
     async def banlist(self, ctx):
@@ -140,6 +143,7 @@ class Moderation(commands.Cog):
             e.set_footer(text=f'Too many bans to show here!')
         e.description = f'```bf\n{total}```'
         await ctx.send(embed=e)
+
 
     @commands.command(pass_context=True)
     @commands.has_guild_permissions(ban_members=True)
@@ -180,6 +184,7 @@ class Moderation(commands.Cog):
         except discord.errors.Forbidden:
             await ctx.message.edit(content=self.bot.bot_prefix + 'Could not ban user. Not enough permissions.')
 
+    @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
     @commands.command(name="baninfo")
     async def baninfo(self, ctx, *, name_or_id):
@@ -249,8 +254,7 @@ class Moderation(commands.Cog):
         for emoji, _ in choices:
             await poll.add_reaction(emoji)
 
-
-
+    @commands.has_guild_permissions(manage_channels=True)
     @commands.command(name="mute", aliases=["mt"], description="ユーザーをmute")
     @commands.guild_only()
     async def mute(self, ctx, user: discord.Member, time: int = 15):
@@ -272,7 +276,7 @@ class Moderation(commands.Cog):
         e = discord.Embed(title="Mute",description=f'{user.mention} has been unmuted from the guild')
         await ctx.send(embed=e)
 
-
+    @commands.has_guild_permissions(manage_channels=True)
     @commands.command(description="```ミュートを解除```")
     @commands.guild_only()
     async def unmute(self, ctx, user: discord.Member):
@@ -286,6 +290,7 @@ class Moderation(commands.Cog):
         e = discord.Embed(title="Mute",description=f'{user.mention} has been unmuted from the guild.')
         await ctx.send(embed=e)
 
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.command(name="purge", descriotion="```clearコマンドと同じです```")
     @commands.guild_only()
     async def purge(self, ctx, messages: int):
@@ -314,7 +319,7 @@ class Moderation(commands.Cog):
         e = discord.Embed(title="役職剥奪", description=f'{member.mention} を {role.mention}から剥奪した', color=0x5d00ff)
         await ctx.send(embed=e)
 
-
+    @commands.has_guild_permissions(manage_channels=True)
     @commands.guild_only()
     @commands.command(name="slowmode", aliases=['slowmo'], description="低速モードを設定します")
     async def slowmode(self, ctx, seconds: int = 0):
@@ -336,9 +341,7 @@ class Moderation(commands.Cog):
                 f"**Set the channel slow mode delay to `{seconds}` {numofsecs}\nTo turn this off, do $slowmode**")
             await confirm.add_reaction("\N{THUMBS UP SIGN}")
 
-
-
-
+    @commands.has_guild_permissions(manage_roles=True)
     @commands.command(aliases=["roleallmemadd", "allrole"], description="指定した役職を全メンバーに付与するよ！\n役職を管理できる人のみ！\n※BOT含む")
     async def roleallmembersadd(self,ctx, role: discord.Role):
         if (
@@ -356,6 +359,7 @@ class Moderation(commands.Cog):
             e = discord.Embed(title="実行エラー", description="君はコマンドを実行する権限を持ってないよ～", color=0xff0000)
             await ctx.send(embed=e)
 
+    @commands.has_guild_permissions(manage_roles=True)
     @commands.command(aliases=["roleallmemremove", "roleallremove", "ramr"],description="指定した役職を全メンバーから削除するよ！\n役職を管理できる人のみ！\n※BOT含む")
     async def roleallmembersremove(self,ctx, role: discord.Role):
         if (

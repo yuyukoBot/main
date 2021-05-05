@@ -221,14 +221,19 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @settings.command()
-    async def list(self, ctx):
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT * FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
-        upf = cursor.fetchone()
-        e = discord.Embed(title=upf["remove_channel_id"])
-        await ctx.send(embed=e)
+    @settings.command(name='list')
+    async def _list(self, ctx):
+        conn = sqlite3.connect('main.sqlite')
+        conn.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
+        data = conn.fetchall()
+        if not data:
+            return await ctx.send('データが見つかりませんでした')
+
+        settings = data[0]
+        embed = discord.Embed(title='Server Settings')
+        embed.add_field(name='ログチャンネル', value=settings[3] if settings[3] else 'なし')
+        embed.add_field(name='Welcomeチャンネル', value=settings[1] if settings[1] else 'なし')
+        await ctx.send(embed=embed)
 
 
     @settings.command(description="入出時のチャンネルをリセットします")

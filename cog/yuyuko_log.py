@@ -9,6 +9,8 @@ from datetime import time
 import datetime
 import asyncio
 import random
+
+import tools
 from discord.ext import commands
 
 from logging import DEBUG, getLogger
@@ -605,7 +607,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.user.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -614,7 +616,7 @@ class log(commands.Cog):
 
             if before.name != after.name:
                 e = discord.Embed(title="サーバーログ-ユーザーアップデート",description=f"ニックネームを変更しました\n変更メンバー:{str(after)}")
-                e.add_field(name="変更前",value=before.name)
+
                 e.add_field(name="変更後",value=after.name)
                 await ch.send(embed=e)
 
@@ -628,20 +630,23 @@ class log(commands.Cog):
         if result is None:
             return
         else:
-
-            e = discord.Embed(title="サーバーログ - ユーザーの参加",color=self.bot.color)
-            e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
-            if member.bot:
-                e.add_field(name="Botですか", value="はい")
-            else:
-                e.add_field(name="Botですか",value="いいえ")
-            shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
-            e.add_field(name="共通鯖数", value=shared)
-            e.set_thumbnail(url=f"{member.avatar_url}")
-            e.set_footer(text=member.guild, icon_url=member.guild.icon_url_as(format="png"))
-            channel = self.bot.get_channel(id=int(result[0]))
-
-            await channel.send(embed=e)
+            cursor.execute(f"SELECT welcome_role FROM ServerSetting WHERE guild_id = {member.guild.id}")
+            result1 = cursor.fetchone()
+            if result1 is None:
+                e = discord.Embed(title="サーバーログ - ユーザーの参加",color=self.bot.color)
+                e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
+                if member.bot:
+                    e.add_field(name="Botですか", value="はい")
+                else:
+                    e.add_field(name="Botですか",value="いいえ")
+                shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
+                e.add_field(name="共通鯖数", value=shared)
+                e.set_thumbnail(url=f"{member.avatar_url}")
+                e.set_footer(text=member.guild, icon_url=member.guild.icon_url_as(format="png"))
+                ch = self.bot.get_channel(id=int(result[0]))
+                role = self.bot.get_role(id=int(result[0]))
+                await ch.send(embed=e)
+                await member.add_roles(role)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):

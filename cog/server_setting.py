@@ -131,10 +131,10 @@ class ServerSetting(commands.Cog):
             cursor.close()
             db.close()
 
-    @settings.command(description="チャンネルを設定します")
+    @settings.command(description="T指定したチャンネルにログを送信します")
     async def welcome_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
-        if ctx.author.guild_permissions.manage_channels or ctx.author.id == 478126443168006164:
+        if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT welcome_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
@@ -142,17 +142,15 @@ class ServerSetting(commands.Cog):
             if result is None:
                 sql = ("INSERT INTO ServerSetting(guild_id,welcome_channel_id) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
-                await ctx.send(f"Channel has been set to {channel.mention}")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             elif result is not None:
                 sql = ("UPDATE ServerSetting SET welcome_channel_id = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
-                await ctx.send(f"Channel has been updated to {channel.mention}")
+                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
             cursor.execute(sql, val)
             db.commit()
             cursor.close()
             db.close()
-        else:
-            await ctx.send("権限がありません")
 
     @settings.command(description="退出時のメッセージを設定します")
     async def remove_text(self, ctx, *, text):

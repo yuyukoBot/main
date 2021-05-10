@@ -317,6 +317,15 @@ class Music(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.command(aliases=["loop", "repeat"])
+    async def loop_q(self, ctx, torf: bool = None):
+        if ctx.author.voice:
+            if torf is None:
+                await ctx.send(f"今のキューのループ状態:{self.bot.lp[str(ctx.guild.id)]}")
+            else:
+                self.bot.lp[str(ctx.guild.id)] = torf
+                await ctx.send(f"きりかえました。\n今のキューのループ状態:{self.bot.lp[str(ctx.guild.id)]}")
+
     @commands.command(name='now_playing', aliases=['np', 'current', 'currentsong', 'playing'],description="再生中の曲を表示します")
     async def now_playing_(self, ctx):
         """`誰でも`"""

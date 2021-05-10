@@ -212,8 +212,9 @@ class Music(commands.Cog):
 
         return player
 
-    @commands.command(name='connect', aliases=['join'])
+    @commands.command(name='connect', aliases=['join'],description="botをボイスチャンネルに接続します")
     async def connect_(self, ctx):
+        """`誰でも`"""
         try:
             channel = ctx.author.voice.channel
         except AttributeError:
@@ -236,8 +237,9 @@ class Music(commands.Cog):
 
         await ctx.send(f'Connected to: **{channel}**', )
 
-    @commands.command(name='play', aliases=['sing'])
+    @commands.command(name='play', aliases=['sing'],description="指定した曲を再生します")
     async def play_(self, ctx, *, search: str):
+        """`誰でも`"""
         await ctx.trigger_typing()
 
         vc = ctx.voice_client
@@ -253,39 +255,39 @@ class Music(commands.Cog):
 
         await player.queue.put(source)
 
-    @commands.command(name='pause')
+    @commands.command(name='pause',description="現在再生中の曲を一時停止します。")
     async def pause_(self, ctx):
-        """Pause the currently playing song."""
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_playing():
-            return await ctx.send('I am not currently playing anything!')
+            return await ctx.send('現在何も再生されていません')
         elif vc.is_paused():
             return
 
         vc.pause()
-        await ctx.send(f'**`{ctx.author}`**: Paused the song!')
+        await ctx.send(f'`{ctx.author}`さんが曲を一時停止しました')
 
-    @commands.command(name='resume')
+    @commands.command(name='resume',description="現在一時停止している曲を再開します")
     async def resume_(self, ctx):
-        """Resume the currently paused song."""
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently playing anything!', )
+            return await ctx.send('現在何も再生されていません', )
         elif not vc.is_paused():
             return
 
         vc.resume()
-        await ctx.send(f'**`{ctx.author}`**: Resumed the song!')
+        await ctx.send(f'`{ctx.author}`さんが一時停止を解除しました')
 
-    @commands.command(name='skip')
+    @commands.command(name='skip',description="再生中の曲をスキップします")
     async def skip_(self, ctx):
-        """Skip the song."""
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently playing anything!')
+            return await ctx.send('何も再生されてません')
 
         if vc.is_paused():
             pass
@@ -293,39 +295,39 @@ class Music(commands.Cog):
             return
 
         vc.stop()
-        await ctx.send(f'**`{ctx.author}`**: Skipped the song!')
+        await ctx.send(f'`{ctx.author}`をスキップしました')
 
-    @commands.command(name='queue', aliases=['q', 'playlist'])
+    @commands.command(name='queue', aliases=['q', 'playlist'],description="queueの中身を確認します")
     async def queue_info(self, ctx):
-        """Retrieve a basic queue of upcoming songs."""
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently connected to voice!')
+            return await ctx.send('ボイスチャンネルに接続されていません')
 
         player = self.get_player(ctx)
         if player.queue.empty():
-            return await ctx.send('There are currently no more queued songs.')
+            return await ctx.send('現在、キューに入れられている曲はありません')
 
         # Grab up to 5 entries from the queue...
         upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 
         fmt = '\n'.join(f'**`{_["title"]}`**' for _ in upcoming)
-        embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}', description=fmt)
+        embed = discord.Embed(title=f' 次の曲{len(upcoming)}', description=fmt)
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='now_playing', aliases=['np', 'current', 'currentsong', 'playing'])
+    @commands.command(name='now_playing', aliases=['np', 'current', 'currentsong', 'playing'],description="再生中の曲を表示します")
     async def now_playing_(self, ctx):
-        """Display information about the currently playing song."""
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently connected to voice!', )
+            return await ctx.send('ボイスチャンネルに接続していません', )
 
         player = self.get_player(ctx)
         if not player.current:
-            return await ctx.send('I am not currently playing anything!')
+            return await ctx.send('現在何も再生されていません')
 
         try:
             # Remove our previous now_playing message.
@@ -333,24 +335,20 @@ class Music(commands.Cog):
         except discord.HTTPException:
             pass
 
-        player.np = await ctx.send(f'**Now Playing:** `{vc.source.title}` '
-                                   f'requested by `{vc.source.requester}`')
+        player.np = await ctx.send(f'`{vc.source.title}を再生しています` '
+                                   f'`{vc.source.requester}`がリクエストしました')
 
-    @commands.command(name='volume', aliases=['vol'])
+    @commands.command(name='volume', aliases=['vol'],description="音量を変更します")
     async def change_volume(self, ctx, *, vol: float):
-        """Change the player volume.
-        Parameters
-        ------------
-        volume: float or int [Required]
-            The volume to set the player to in percentage. This must be between 1 and 100.
+        """`誰でも`
         """
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently connected to voice!', )
+            return await ctx.send('ボイスチャンネルに接続していません', )
 
         if not 0 < vol < 101:
-            return await ctx.send('Please enter a value between 1 and 100.')
+            return await ctx.send('1から100までの値を入力してください')
 
         player = self.get_player(ctx)
 
@@ -358,18 +356,15 @@ class Music(commands.Cog):
             vc.source.volume = vol / 100
 
         player.volume = vol / 100
-        await ctx.send(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
+        await ctx.send(f'`{ctx.author}`さんが **{vol}%**にセットしました')
 
-    @commands.command(name='stop', aliases=['leave'])
+    @commands.command(name='stop', aliases=['leave'],description="queueの再生をやめます")
     async def stop_(self, ctx):
-        """Stop the currently playing song and destroy the player.
-        !Warning!
-            This will destroy the player assigned to your guild, also deleting any queued songs and settings.
-        """
+        """`誰でも`"""
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
-            return await ctx.send('I am not currently playing anything!')
+            return await ctx.send('現在何も再生されていません')
 
         await self.cleanup(ctx.guild)
 

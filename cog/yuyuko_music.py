@@ -82,7 +82,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
             # take first item from a playlist
             data = data['entries'][0]
 
-        await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```')
+        await ctx.send(f'```ini\n[{data["title"]} をキューに追加しました]\n```')
 
         if download:
             source = ytdl.prepare_filename(data)
@@ -365,7 +365,7 @@ class Music(commands.Cog):
             await ctx.send(
                 embed=discord.Embed(
                     description='\n'.join(
-                        [f'[{video["title"]}]({video["webpage_url"]}) by {video["uploader"]}' for video in results])
+                        [f'[{video["title"]}]({video["webpage_url"]}) by {video["uploader"]} ({video["duration"]}' for video in results])
                 )
             )
 

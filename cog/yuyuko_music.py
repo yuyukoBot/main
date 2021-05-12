@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 from discord.ext import commands
 
@@ -344,9 +346,7 @@ class Music(commands.Cog):
         e.add_field(name="再生されてる曲",value=vc.source.title)
         e.add_field(name="リクエストした人",value=vc.source.requester)
         e.add_field(name="url",value=vc.source.web_url)
-        e.set_thumbnail(url=f"{vc.source.thumbnail}")
-        e.add_field(name="Uploader:", value=f"**{vc.source.uploader}**", inline=True)
-
+        e.add_field(name="Song duration:", value=f"**{datetime.timedelta(seconds=vc.source.duration)}**")
         player.np = await ctx.send(embed=e)
 
     @commands.command()

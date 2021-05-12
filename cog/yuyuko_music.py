@@ -272,6 +272,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.players = {}
+        self.bot.color = 0x5d00ff
 
     async def cleanup(self, guild):
         try:
@@ -415,7 +416,7 @@ class Music(commands.Cog):
         upcoming = list(itertools.islice(player.queue._queue, 0, 5))
 
         fmt = '\n'.join(f'**`{_["title"]}`**' for _ in upcoming)
-        embed = discord.Embed(title=f' 次の曲{len(upcoming)}', description=fmt)
+        embed = discord.Embed(title=f' 次の曲{len(upcoming)}', description=fmt,color=self.bot.color)
 
         await ctx.send(embed=embed)
 
@@ -457,12 +458,10 @@ class Music(commands.Cog):
                 )
             )
 
-    @commands.command()
+    @commands.command(name="repeat",description="曲をリピートします")
     async def repeat(self, msg):
         """
-        Repeat the currently playing or turn off by using the command again
-        `Ex:` .repeat
-        `Command:` repeat()
+        `誰でも`
         """
         if msg.guild.id in self.player:
             if msg.voice_client.is_playing() is True:
@@ -509,10 +508,7 @@ class Music(commands.Cog):
     @commands.command(brief='Download songs', description='指定した曲をダウンロードします')
     async def download(self, ctx, *, song):
         """
-        Downloads the audio from given URL source and sends the audio source back to user to download from URL, the file will be removed from storage once sent.
-        `Ex`: .download I'll Show you K/DA
-        `Command`: download(url:required)
-        `NOTE`: file size can't exceed 8MB, otherwise it will fail to upload and cause error
+        `誰でも`
         """
         try:
             with youtube_dl.YoutubeDL(ytdl_download_format_options) as ydl:
@@ -525,13 +521,13 @@ class Music(commands.Cog):
                         infosearched['entries'][0]['webpage_url'], True)
                 filename = ydl.prepare_filename(download)
                 embed = discord.Embed(
-                    title="Your download is ready",
-                    description="Please wait a moment while the file is beeing uploaded")
+                    title='ダウンロードの準備ができました',
+                    description="ファイルがアップロードされている間、しばらくお待ちください")
                 await ctx.send(embed=embed, delete_after=30)
                 await ctx.send(file=discord.File(filename))
                 os.remove(filename)
         except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError):
-            embed = discord.Embed(title="Song couldn't be downloaded", description=("Song:" + song))
+            embed = discord.Embed(title="ダウンロードできませんでした", description=("Song:" + song),color=self.bot.color)
             await ctx.send(embed=embed)
 
 

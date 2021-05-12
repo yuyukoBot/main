@@ -19,7 +19,7 @@ import textwrap
 import traceback
 import io
 import sqlite3
-
+import DiscordUtils
 logger = getLogger(__name__)
 
 
@@ -27,6 +27,7 @@ class log(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
         self.bot.color = 0x5d00ff
+        self.tracker = DiscordUtils.InviteTracker(bot)
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
@@ -38,7 +39,7 @@ class log(commands.Cog):
         if result is None:
             return
         else:
-            e = discord.Embed(title="-サーバーログ-チャンネル削除- ", color=0x5d00ff)
+            e = discord.Embed(title="-サーバーログ-チャンネル削除- <:delete_channel:840907400394833930> ", color=0x5d00ff)
             e.add_field(name="チャンネル名", value=channel.name)
             e.add_field(name="実行者", value=str(bl[0].user))
             ch = self.bot.get_channel(id=int(result[0]))
@@ -56,7 +57,7 @@ class log(commands.Cog):
         else:
             ch = self.bot.get_channel(id=int(result[0]))
             if before.name != after.name:
-                embed = discord.Embed(title="-サーバーログ-チャンネル変更- ",description="チャンネルの名前を変更しました", color=0x5d00ff)
+                embed = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="チャンネルの名前を変更しました", color=0x5d00ff)
                 embed.add_field(name="設定前", value=f'`{before.name}`', inline=True)
                 embed.add_field(name="設定後", value=f'`{after.name}`', inline=False)
                 embed.add_field(name="実行者", value=str(bl[0].user))
@@ -69,7 +70,7 @@ class log(commands.Cog):
                 await ch.send(embed=embed)
 
             if before.topic != after.topic:
-                e = discord.Embed(title="-サーバーログ-チャンネル変更- ",description="チャンネルトピックを変更しました", color=0x5d00ff)
+                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="チャンネルトピックを変更しました", color=0x5d00ff)
                 e.add_field(name="設定前", value=f'`{before.topic}`')
                 e.add_field(name="設定後", value=f'`{after.topic}`')
                 e.add_field(name="現在のチャンネル名", value=after.name)
@@ -81,7 +82,7 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
             if before.nsfw != after.nsfw:
-                e = discord.Embed(title="-サーバーログ-チャンネル変更- ",description="nsfwかどうかを変更しました", color=0x5d00ff)
+                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="nsfwかどうかを変更しました", color=0x5d00ff)
                 if before.nsfw:
                     e.add_field(name="設定前", value=f'`はい`')
                 else:
@@ -96,7 +97,7 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
             if before.category != after.category:
-                e = discord.Embed(title="-サーバーログ-チャンネル変更- ",description="カテゴリーを変更しました", color=0x5d00ff)
+                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="カテゴリーを変更しました", color=0x5d00ff)
                 e.add_field(name="設定前", value=f'`{before.category}`')
                 e.add_field(name="設定後", value=f'`{after.category}`')
                 e.add_field(name="実行者", value=str(bl[0].user))
@@ -109,7 +110,7 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
             if before.slowmode_delay != after.slowmode_delay:
-                e = discord.Embed(title="-サーバーログ-チャンネル変更- ",description="低速モードを設定しました", color=0x5d00ff)
+                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="低速モードを設定しました", color=0x5d00ff)
                 e.add_field(name="設定前", value=f'`{before.slowmode_delay}秒`')
                 e.add_field(name="設定後", value=f'{after.slowmode_delay}秒')
                 e.add_field(name="実行者", value=str(bl[0].user))
@@ -122,7 +123,7 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
             if before.type != after.type:
-                e = discord.Embed(title="-サーバーログ-チャンネル変更-",description="チャンネルタイプが変わりました", color=0x5d00ff)
+                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更-",description="チャンネルタイプが変わりました", color=0x5d00ff)
                 e.add_field(name="設定前", value=before.type)
                 e.add_field(name="設定後", value=after.type)
                 e.add_field(name="実行者", value=str(bl[0].user))
@@ -142,14 +143,14 @@ class log(commands.Cog):
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {channel.guild.id}")
         result = cursor.fetchone()
         if result is None:
-            e = discord.Embed(title="-サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
+            e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
             e.add_field(name="チャンネル名", value=channel.mention)
             e.add_field(name="実行者", value=str(bl[0].user))
             channel = self.bot.get_channel(id=int(result[0]))
             await channel.send(embed=e)
 
         else:
-             e1 = discord.Embed(title="-サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
+             e1 = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
              e1.add_field(name="チャンネル名", value=channel.mention)
              e1.add_field(name="実行者", value=str(bl[0].user))
              channel = self.bot.get_channel(id=int(result[0]))
@@ -381,6 +382,7 @@ class log(commands.Cog):
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
         await self.bot.wait_until_ready()
+        await self.tracker.update_invite_cache(invite)
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {invite.guild.id}")
@@ -406,38 +408,47 @@ class log(commands.Cog):
 
             await channel.send(embed=e)
 
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        await self.tracker.update_guild_cache(guild)
+
+    @commands.Cog.listener()
+    async def on_invite_delete(self, invite):
+        await self.tracker.remove_invite_cache(invite)
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        await self.tracker.remove_guild_cache(guild)
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.tracker.cache_invites()
 
     @commands.Cog.listener()
     async def on_voice_state_update(self,member:discord.Member, before, after):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
             ch = self.bot.get_channel(id=int(result[0]))
-            if before.channel is None:
-                if member.nick:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
+            if before.channel !=after.channel:
+                if after.channel is None:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル退出",color=self.bot.color)
+                    e.add_field(name="該当チャンネル",value=before.channel.mention)
+                    e.add_field(name="抜けたメンバー",value=member.mention)
+                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
+                    await ch.send(embed=e)
+                else:
+                    e = discord.Embed(title="サーバーログ -ボイスチャンネル入出",color=self.bot.color)
+                    e.add_field(name="該当チャンネル",value=after.channel.mention)
+                    e.add_field(name="入ったメンバー",value=member.mention)
+                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
                     await ch.send(embed=e)
 
-                else:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に入出しました")
-                    await ch.send(embed=e)
-            elif after.channel is None:
-                if member.nick:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
-                    await ch.send(embed=e)
-
-                else:
-                    e = discord.Embed(title="サーバーログ -ボイスチャンネル")
-                    e.add_field(name="参加ユーザー",value=f"{member.display_name}が{after.channel.name}に退出しました")
-                    await ch.send(embed=e)
 
 
     @commands.Cog.listener()
@@ -626,27 +637,30 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.guild.id}")
+        inviter = await self.tracker.fetch_inviter(member)  # inviter is the member who invited
+        data = await self.bot.invites.find(inviter.id)
+        if data is None:
+            data = {"_id": inviter.id, "count": 0, "userInvited": []}
+
+        data["count"] += 1
+        data["usersInvited"].append(member.id)
+        await self.bot.invites.upsert(data)
+
         result = cursor.fetchone()
         if result is None:
             return
         else:
-            cursor.execute(f"SELECT welcome_role FROM ServerSetting WHERE guild_id = {member.guild.id}")
-            result1 = cursor.fetchone()
-            if result1 is None:
-                e = discord.Embed(title="サーバーログ - ユーザーの参加",color=self.bot.color)
-                e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
-                if member.bot:
-                    e.add_field(name="Botですか", value="はい")
-                else:
-                    e.add_field(name="Botですか",value="いいえ")
-                shared = sum(g.get_member(member.id) is not None for g in self.bot.guilds)
-                e.add_field(name="共通鯖数", value=shared)
-                e.set_thumbnail(url=f"{member.avatar_url}")
-                e.set_footer(text=member.guild, icon_url=member.guild.icon_url_as(format="png"))
-                ch = self.bot.get_channel(id=int(result[0]))
-                role = self.bot.get_role(id=int(result[0]))
-                await ch.send(embed=e)
-                await member.add_roles(role)
+
+
+            embed = discord.Embed(
+                title=f"Welcome {member.display_name}",
+                description=f"Invited by: {inviter.mention}\nInvites: {data['count']}",
+                timestamp=member.joined_at
+            )
+            embed.set_thumbnail(url=member.avatar_url)
+            channel = self.bot.get_channel(id=int(result[0]))
+
+            await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_member_remove(self, member:discord.Member):
@@ -724,7 +738,6 @@ class log(commands.Cog):
             e.add_field(name="該当メッセージと絵文字", value=f"{message}:{reaction.emoji}")
             e.add_field(name="リアクションを剥奪したユーザー", value=user)
             await ch.send(embed=e)
-
 
 
 

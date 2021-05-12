@@ -49,6 +49,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.requester = requester
         self.thumbnail = data.get('thumbnail')
 
+        self.duration = data.get('duration')
         if self.duration is None:
             self.duration = 0
 

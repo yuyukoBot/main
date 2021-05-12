@@ -2,13 +2,15 @@ import datetime
 
 import discord
 from discord.ext import commands
-
+from googleapiclient.discovery import build
+import os
 import asyncio
 import itertools
 import sys
 import traceback
 from async_timeout import timeout
 from functools import partial
+import youtube_dl
 from youtube_dl import YoutubeDL
 
 
@@ -26,6 +28,42 @@ ytdlopts = {
     'source_address': '0.0.0.0'  # ipv6 addresses cause issues sometimes
 }
 
+ytdl_download_format_options = {
+    'format': 'bestaudio/best',
+    'outtmpl': 'downloads/%(title)s.mp3',
+    'reactrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    # bind to ipv4 since ipv6 addreacses cause issues sometimes
+    'source_addreacs': '0.0.0.0',
+    'output': r'youtube-dl',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '320',
+        }]
+}
+
+stim = {
+    'default_search': 'auto',
+    "ignoreerrors": True,
+    'quiet': True,
+    "no_warnings": True,
+    "simulate": True,  # do not keep the video files
+    "nooverwrites": True,
+    "keepvideo": False,
+    "noplaylist": True,
+    "skip_download": False,
+    # bind to ipv4 since ipv6 addresses cause issues sometimes
+    'source_address': '0.0.0.0'
+}
+
+
 ffmpegopts = {
     'before_options': '-nostdin',
     'options': '-vn'
@@ -33,6 +71,10 @@ ffmpegopts = {
 
 ytdl = YoutubeDL(ytdlopts)
 
+ffmpeg_options = {
+    'options': '-vn',
+
+}
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for connection errors."""
@@ -40,6 +82,52 @@ class VoiceConnectionError(commands.CommandError):
 
 class InvalidVoiceChannel(VoiceConnectionError):
     """Exception for cases of invalid Voice Channels."""
+
+class Downloader(discord.PCMVolumeTransformer):
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+        self.data = data
+        self.title = data.get('title')
+        self.url = data.get("url")
+        self.thumbnail = data.get('thumbnail')
+        self.duration = data.get('duration')
+        self.views = data.get('view_count')
+        self.playlist = {}
+
+    @classmethod
+    async def video_url(cls, url, ytdl, *, loop=None, stream=False):
+        """
+        Download the song file and data
+        """
+        loop = loop or asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        song_list = {'queue': []}
+        if 'entries' in data:
+            if len(data['entries']) > 1:
+                playlist_titles = [title['title'] for title in data['entries']]
+                song_list = {'queue': playlist_titles}
+                song_list['queue'].pop(0)
+
+            data = data['entries'][0]
+
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data), song_list
+
+    async def get_info(self, url):
+        """
+        Get the info of the next song by not downloading the actual file but just the data of song/query
+        """
+        yt = youtube_dl.YoutubeDL(stim)
+        down = yt.extract_info(url, download=False)
+        data1 = {'queue': []}
+        if 'entries' in down:
+            if len(down['entries']) > 1:
+                playlist_titles = [title['title'] for title in down['entries']]
+                data1 = {'title': down['title'], 'queue': playlist_titles}
+
+            down = down['entries'][0]['title']
+
+        return down, data1
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -417,6 +505,34 @@ class Music(commands.Cog):
             return await ctx.send('現在何も再生されていません')
 
         await self.cleanup(ctx.guild)
+
+    @commands.command(brief='Download songs', description='指定した曲をダウンロードします')
+    async def download(self, ctx, *, song):
+        """
+        Downloads the audio from given URL source and sends the audio source back to user to download from URL, the file will be removed from storage once sent.
+        `Ex`: .download I'll Show you K/DA
+        `Command`: download(url:required)
+        `NOTE`: file size can't exceed 8MB, otherwise it will fail to upload and cause error
+        """
+        try:
+            with youtube_dl.YoutubeDL(ytdl_download_format_options) as ydl:
+                if "https://www.youtube.com/" in song:
+                    download = ydl.extract_info(song, True)
+                else:
+                    infosearched = ydl.extract_info(
+                        "ytsearch:" + song, False)
+                    download = ydl.extract_info(
+                        infosearched['entries'][0]['webpage_url'], True)
+                filename = ydl.prepare_filename(download)
+                embed = discord.Embed(
+                    title="Your download is ready",
+                    description="Please wait a moment while the file is beeing uploaded")
+                await ctx.send(embed=embed, delete_after=30)
+                await ctx.send(file=discord.File(filename))
+                os.remove(filename)
+        except (youtube_dl.utils.ExtractorError, youtube_dl.utils.DownloadError):
+            embed = discord.Embed(title="Song couldn't be downloaded", description=("Song:" + song))
+            await ctx.send(embed=embed)
 
 
 def setup(client):

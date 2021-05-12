@@ -105,6 +105,7 @@ class MusicPlayer(commands.Cog):
         self._guild = ctx.guild
         self._channel = ctx.channel
         self._cog = ctx.cog
+        self.bot.color = 0x5d00ff
 
         self.queue = asyncio.Queue()
         self.next = asyncio.Event()
@@ -317,14 +318,7 @@ class Music(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["loop", "repeat"])
-    async def loop_q(self, ctx, torf: bool = None):
-        if ctx.author.voice:
-            if torf is None:
-                await ctx.send(f"今のキューのループ状態:{self.bot.lp[str(ctx.guild.id)]}")
-            else:
-                self.bot.lp[str(ctx.guild.id)] = torf
-                await ctx.send(f"きりかえました。\n今のキューのループ状態:{self.bot.lp[str(ctx.guild.id)]}")
+
 
     @commands.command(name='now_playing', aliases=['np', 'current', 'currentsong', 'playing'],description="再生中の曲を表示します")
     async def now_playing_(self, ctx):
@@ -344,8 +338,32 @@ class Music(commands.Cog):
         except discord.HTTPException:
             pass
 
-        player.np = await ctx.send(f'`{vc.source.title}を再生しています` '
-                                   f'`{vc.source.requester}`がリクエストしました')
+        e = discord.Embed(title="今再生してる曲",color=self.bot.color)
+        e.add_field(name="再生されてる曲",value=vc.source.title)
+        e.add_field(name="リクエストした人",value=vc.source.requester)
+        e.add_field(name="url",value=vc.source.web_url)
+        e.set_thumbnail(url=f"{vc.source.thumbnail}")
+
+        player.np = await ctx.send(embed=e)
+
+    @commands.command()
+    async def repeat(self, msg):
+        """
+        Repeat the currently playing or turn off by using the command again
+        `Ex:` .repeat
+        `Command:` repeat()
+        """
+        if msg.guild.id in self.player:
+            if msg.voice_client.is_playing() is True:
+                if self.player[msg.guild.id]['repeat'] is True:
+                    self.player[msg.guild.id]['repeat'] = False
+                    return await msg.message.add_reaction(emoji='✅')
+
+                self.player[msg.guild.id]['repeat'] = True
+                return await msg.message.add_reaction(emoji='✅')
+
+            return await msg.send("No audio currently playing")
+        return await msg.send("Bot not in voice channel or playing music")
 
     @commands.command(name='volume', aliases=['vol'],description="音量を変更します")
     async def change_volume(self, ctx, *, vol: float):

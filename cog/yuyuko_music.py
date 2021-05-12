@@ -342,9 +342,19 @@ class Music(commands.Cog):
         e.add_field(name="再生されてる曲",value=vc.source.title)
         e.add_field(name="リクエストした人",value=vc.source.requester)
         e.add_field(name="url",value=vc.source.web_url)
-        e.set_thumbnail(url=f"{vc.source.thumbnail}")
 
         player.np = await ctx.send(embed=e)
+
+    @commands.command()
+    async def search(self, ctx, *, search):
+        async with ctx.typing():
+            results = ytdl.extract_info(f'ytsearch10:{search}', download=False)['entries']
+            await ctx.send(
+                embed=discord.Embed(
+                    description='\n'.join(
+                        [f'[{video["title"]}]({video["webpage_url"]}) by {video["uploader"]}' for video in results])
+                )
+            )
 
     @commands.command()
     async def repeat(self, msg):

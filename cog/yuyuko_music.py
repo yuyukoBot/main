@@ -49,6 +49,14 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.requester = requester
         self.thumbnail = data.get('thumbnail')
 
+        if self.duration is None:
+            self.duration = 0
+
+        self.uploader = data.get('uploader')
+
+        if self.uploader is None:
+            self.uploader = "Unknown uploader"
+
 
         self.title = data.get('title')
         self.web_url = data.get('webpage_url')
@@ -343,10 +351,10 @@ class Music(commands.Cog):
             pass
 
         e = discord.Embed(title="今再生してる曲",color=self.bot.color)
-        e.add_field(name="再生されてる曲",value=vc.source.title)
+        e.add_field(name="再生されてる曲",value=f"{vc.source.title}({vc.source.uploader})")
         e.add_field(name="リクエストした人",value=vc.source.requester)
         e.add_field(name="url",value=vc.source.web_url)
-        e.add_field(name="Song duration:", value=f"**{datetime.timedelta(seconds=vc.source.duration)}**")
+        e.add_field(name="再生時間", value=f"**{datetime.timedelta(seconds=vc.source.duration)}**")
         player.np = await ctx.send(embed=e)
 
     @commands.command()

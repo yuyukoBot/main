@@ -10,6 +10,8 @@ class RoboPages(menus.MenuPages):
     def __init__(self, source):
         super().__init__(source=source, check_embeds=True)
 
+        self.input_lock = asyncio.Lock()
+
     async def finalize(self, timed_out):
         try:
             if timed_out:
@@ -75,7 +77,7 @@ class BotHelpPageSource(menus.ListPageSource):
         )
 
         embed = discord.Embed(
-            title="Categories", description=description, colour=discord.Colour.blurple()
+            title="Categories", description=description, color=0x5d00ff
         )
 
         for cog in cogs:
@@ -131,7 +133,7 @@ class HelpMenu(RoboPages):
     @menus.button("\N{WHITE QUESTION MARK ORNAMENT}", position=menus.Last(5))
     async def show_bot_help(self, payload):
         """Shows how to use the bot."""
-        embed = discord.Embed(colour=discord.Colour.blurple())
+        embed = discord.Embed(color=0x5d00ff)
         embed.title = "How Interpret The Help Pages"
 
         entries = (

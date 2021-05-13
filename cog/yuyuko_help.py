@@ -1,273 +1,259 @@
-import itertools
-
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
+import asyncio
 
 
-class Paginator:
+# Taken From https://github.com/Rapptz/RoboDanny
 
-    def __init__(self, max_size=2000):
-        self.max_size = max_size
-        self.clear()
 
-    def new_embed(self):
-        embed: discord.Embed = discord.Embed(description='', color=0x5d00ff)
-        embed.set_author(name="yuyuko-help",
-                                   icon_url="https://cdn.discordapp.com/avatars/815857757940875294/41014da398e05c940be6bb76066ab2c3.png?size=1024")
-        embed.set_footer(text=f"Type help <command> for more info on a command.")
+class RoboPages(menus.MenuPages):
+    def __init__(self, source):
+        super().__init__(source=source, check_embeds=True)
+
+    async def finalize(self, timed_out):
+        try:
+            if timed_out:
+                await self.message.clear_reactions()
+            else:
+                await self.message.delete()
+        except discord.HTTPException:
+            pass
+
+
+class BotHelpPageSource(menus.ListPageSource):
+    def __init__(self, help_command, commands):
+        # entries = [(cog, len(sub)) for cog, sub in commands.items()]
+        # entries.sort(key=lambda t: (t[0].qualified_name, t[1]), reverse=True)
+        super().__init__(
+            entries=sorted(commands.keys(), key=lambda c: c.qualified_name), per_page=6
+        )
+        self.commands = commands
+        self.help_command = help_command
+        self.prefix = help_command.clean_prefix
+
+    @staticmethod
+    def format_commands(cog, commands):
+        # A field can only have 1024 characters so we need to paginate a bit
+        # just in case it doesn't fit perfectly
+        # However, we have 6 per page so I'll try cutting it off at around 800 instead
+        # Since there's a 6000 character limit overall in the embed
+        if cog.description:
+            short_doc = cog.description.split("\n", 1)[0] + "\n"
+        else:
+            short_doc = "No help found...\n"
+
+        current_count = len(short_doc)
+        ending_note = "+%d not shown"
+        ending_length = len(ending_note)
+
+        page = []
+        for command in commands:
+            value = f"`{command.name}`"
+            count = len(value) + 1  # The space
+            if count + current_count < 800:
+                current_count += count
+                page.append(value)
+            else:
+                # If we're maxed out then see if we can add the ending note
+                if current_count + ending_length + 1 > 800:
+                    # If we are, pop out the last element to make room
+                    page.pop()
+
+                # Done paginating so just exit
+                break
+
+        if len(page) == len(commands):
+            # We're not hiding anything so just return it as-is
+            return short_doc + " ".join(page)
+
+        hidden = len(commands) - len(page)
+        return short_doc + " ".join(page) + "\n" + (ending_note % hidden)
+
+    async def format_page(self, menu, cogs):
+        prefix = menu.ctx.prefix
+        description = (
+            f'Use "{prefix}help command" for more info on a command.\n'
+            f'Use "{prefix}help category" for more info on a category.\n'
+        )
+
+        embed = discord.Embed(
+            title="Categories", description=description, colour=discord.Colour.blurple()
+        )
+
+        for cog in cogs:
+            commands = self.commands.get(cog)
+            if commands:
+                value = self.format_commands(cog, commands)
+                embed.add_field(name=cog.qualified_name, value=value)
+
+        maximum = self.get_max_pages()
+        embed.set_footer(text=f"Page {menu.current_page + 1}/{maximum}")
         return embed
 
-    def clear(self):
-        self._current_page = self.new_embed()
-        self._count = 0
-        self.fields = 0
-        self._pages = []
 
-    def add_line(self, line='', *, empty=False):
-        max_page_size = self.max_size - 2
-        line += '\n'
-        if len(line) > max_page_size:
-            raise RuntimeError('Line exceeds maximum page size %s' % (max_page_size))
+class GroupHelpPageSource(menus.ListPageSource):
+    def __init__(self, group, commands, *, prefix):
+        super().__init__(entries=commands, per_page=6)
+        self.group = group
+        self.prefix = prefix
+        self.title = f"{self.group.qualified_name} Commands"
+        self.description = self.group.description
 
-        if self._count + len(line) + 1 > self.max_size:
-            self.close_page()
+    async def format_page(self, menu, commands):
+        embed = discord.Embed(
+            title=self.title,
+            description=self.description,
+            colour=discord.Colour.blurple(),
+        )
 
-        self._count += len(line) + 1
-        self._current_page.description += line
-
-        if empty:
-            self._current_page.description += ''
-            self._count += 1
-
-    def add_field(self, name, value):
-        if self.fields >= 25:
-            raise RuntimeError('Field count exceeds limit 25')
-        self._current_page.add_field(name=name, value=value, inline=True)
-
-    def close_page(self):
-        self._pages.append(self._current_page)
-        self._count = 0
-
-    def __len__(self):
-        total = sum(len(p) for p in self._pages)
-        return total + self._count
-
-    @property
-    def pages(self):
-        if self._current_page and self._pages.__len__() < 1:
-            self.close_page()
-        return self._pages
-
-    def __repr__(self):
-        fmt = '<Paginator prefix: {0.prefix} suffix: {0.suffix} max_size: {0.max_size} count: {0._count}>'
-        return fmt.format(self)
-
-
-class HelpCommand(commands.HelpCommand):
-
-    def __init__(self, **options):
-        self.width = options.pop('width', 80)
-        self.indent = options.pop('indent', 2)
-        self.sort_commands = options.pop('sort_commands', True)
-        self.dm_help = options.pop('dm_help', False)
-        self.dm_help_threshold = options.pop('dm_help_threshold', 1000)
-        self.commands_heading = options.pop('commands_heading', "Commands:")
-        self.no_category = options.pop('no_category', 'No Category')
-        self.paginator = options.pop('paginator', None)
-
-        if self.paginator is None:
-            self.paginator = Paginator()
-
-        super().__init__(**options)
-
-    def shorten_text(self, text):
-        if len(text) > self.width:
-            return text[:self.width - 1] + '...'
-        return text
-
-    def get_ending_note(self):
-        return
-
-    def add_indented_commands(self, commands, *, heading, max_size=None):
-
-        if not commands:
-            return
-
-
-        max_size = max_size or self.get_max_size(commands)
-
-        get_width = discord.utils._string_width
-        cmds = []
         for command in commands:
-            name = command.name
-            descr = command.description
-            width = max_size - (get_width(name) - len(name))
+            signature = f"{command.qualified_name} {command.signature}"
+            embed.add_field(
+                name=signature,
+                value=command.short_doc or "No help given...",
+                inline=False,
+            )
 
-            desc = f"- {command.short_doc}" if command.short_doc else ''
-            entry = f'​{self.indent * " "}`{name}`:{descr} '
-            cmds.append(self.shorten_text(entry))
-        self.paginator.add_field(f"**__{heading}__**", '\n'.join(cmds))
+        maximum = self.get_max_pages()
+        if maximum > 1:
+            embed.set_author(
+                name=f"Page {menu.current_page + 1}/{maximum} ({len(self.entries)} commands)"
+            )
 
-    async def send_pages(self):
-        destination = self.get_destination()
-        for page in self.paginator.pages:
-            await destination.send(embed=page)
-
-    def add_command_formatting(self, command):
-
-        if command.description:
-            self.paginator.add_line(command.description, empty=True)
-
-        signature = self.get_command_signature(command)
-        self.paginator.add_line(f"`Syntax: {signature}`", empty=True)
+        embed.set_footer(
+            text=f'Use "{self.prefix}help command" for more info on a command.'
+        )
+        return embed
 
 
-        if command.help:
+class HelpMenu(RoboPages):
+    def __init__(self, source):
+        super().__init__(source)
+
+    @menus.button("\N{WHITE QUESTION MARK ORNAMENT}", position=menus.Last(5))
+    async def show_bot_help(self, payload):
+        """Shows how to use the bot."""
+        embed = discord.Embed(colour=discord.Colour.blurple())
+        embed.title = "How Interpret The Help Pages"
+
+        entries = (
+            ("<argument>", "This means the argument is __**required**__."),
+            ("[argument]", "This means the argument is __**optional**__."),
+            ("[A|B]", "This means that it can be __**either A or B**__."),
+            (
+                "[argument...]",
+                "This means you can have multiple arguments.\n"
+                "Now that you know the basics, it should be noted that...\n"
+                "__**You do not type in the brackets!**__",
+            ),
+        )
+
+        for name, value in entries:
+            embed.add_field(name=name, value=value, inline=False)
+
+        embed.set_footer(
+            text=f"We were on page {self.current_page + 1} before this message."
+        )
+        await self.message.edit(embed=embed)
+
+        async def go_back_to_current_page():
+            await asyncio.sleep(30.0)
             try:
-                self.paginator.add_line(command.help, empty=True)
+                await self.show_page(self.current_page)
+            except discord.errors.NotFound:
+                return
 
-            except RuntimeError:
-                for line in command.help.splitlines():
-                    self.paginator.add_line(line)
-                self.paginator.add_line()
+        self.bot.loop.create_task(go_back_to_current_page())
 
-    def get_destination(self):
-        ctx = self.context
-        if self.dm_help is True:
-            return ctx.author
-        elif self.dm_help is None and len(self.paginator) > self.dm_help_threshold:
-            return ctx.author
+
+class PaginatedHelpCommand(commands.HelpCommand):
+    def __init__(self):
+        super().__init__(
+            command_attrs={
+                "cooldown": commands.Cooldown(1, 3.0, commands.BucketType.member),
+                "help": "Shows help about the bot, a command, or a category",
+            }
+        )
+
+    async def on_help_command_error(self, ctx, error):
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send(str(error.original))
+
+    @staticmethod
+    def get_command_signature(command):
+        parent = command.full_parent_name
+        if len(command.aliases) > 0:
+            aliases = "|".join(command.aliases)
+            fmt = f"[{command.name}|{aliases}]"
+            if parent:
+                fmt = f"{parent} {fmt}"
+            alias = fmt
         else:
-            return ctx.channel
-
-    async def prepare_help_command(self, ctx, command):
-        self.paginator.clear()
-        await super().prepare_help_command(ctx, command)
-
-    async def send_command_help(self, command):
-        embed = discord.Embed(title=self.get_command_signature(command), description=command.description,
-                              color=0x00ff00)
-        if command.help:
-            embed.add_field(name="ヘルプテキスト：", value=command.help, inline=False)
-        embed.set_footer(text=f"コマンドのヘルプ {self.context.prefix}help コマンド名")
-        await self.get_destination().send(embed=embed)
+            alias = command.name if not parent else f"{parent} {command.name}"
+        return f"{alias} {command.signature}"
 
     async def send_bot_help(self, mapping):
-        ctx = self.context
-        bot = ctx.bot
+        bot = self.context.bot
+        entries = await self.filter_commands(bot.commands, sort=True)
 
-        if bot.description:
-            self.paginator.add_line(bot.description, empty=False)
+        all_commands = {}
+        for command in entries:
+            if command.cog is None:
+                continue
+            try:
+                all_commands[command.cog].append(command)
+            except KeyError:
+                all_commands[command.cog] = [command]
 
-        no_category = '\u200b{0.no_category}:'.format(self)
-
-        def get_category(command, *, no_category=no_category):
-            cog = command.cog
-            return cog.qualified_name + ':' if cog is not None else no_category
-
-        filtered = await self.filter_commands(bot.commands, sort=True, key=get_category)
-        max_size = self.get_max_size(filtered)
-        to_iterate = itertools.groupby(filtered, key=get_category)
-
-        for category, commands in to_iterate:
-            commands = sorted(commands, key=lambda c: c.name) if self.sort_commands else list(commands)
-            self.add_indented_commands(commands, heading=category, max_size=max_size)
-
-        note = self.get_ending_note()
-        if note:
-            self.paginator.add_line()
-            self.paginator.add_line(note)
-
-        await self.send_pages()
-
-    async def send_command_help(self, command):
-        params = " ".join(command.clean_params.keys())
-        embed = discord.Embed(title=f"{self.context.prefix}{command.qualified_name} {params}",
-                              description=command.description,color=0xb300ff)
-        if command.aliases:
-            embed.add_field(name="有効なエイリアス：", value="`" + "`, `".join(command.aliases) + "`", inline=False)
-        else:
-            embed.add_field(name="有効なエイリアス",value="ありません")
-        if command.help:
-            embed.add_field(name="必要な権限", value=f"`{command.help}`", inline=False)
-        await self.get_destination().send(embed=embed)
-
-    async def send_group_help(self, group):
-        self.add_command_formatting(group)
-
-        filtered = await self.filter_commands(group.commands, sort=self.sort_commands)
-        self.add_indented_commands(filtered, heading=self.commands_heading)
-
-        if filtered:
-            note = self.get_ending_note()
-            if note:
-                self.paginator.add_line()
-                self.paginator.add_line(note)
-
-        await self.send_pages()
+        menu = HelpMenu(BotHelpPageSource(self, all_commands))
+        await menu.start(self.context)
 
     async def send_cog_help(self, cog):
-        if cog.description:
-            self.paginator.add_line(cog.description, empty=True)
+        entries = await self.filter_commands(cog.get_commands(), sort=True)
+        menu = HelpMenu(GroupHelpPageSource(cog, entries, prefix=self.clean_prefix))
+        await menu.start(self.context)
 
-        filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
-        self.add_indented_commands(filtered, heading=self.commands_heading)
-
-        note = self.get_ending_note()
-        if note:
-            self.paginator.add_line()
-            self.paginator.add_line(note)
-
-        await self.send_pages()
-
-    async def command_callback(self, ctx, *, command=None):
-        await self.prepare_help_command(ctx, command)
-        bot = ctx.bot
-
-        if command is None:
-            mapping = self.get_bot_mapping()
-            return await self.send_bot_help(mapping)
-
-        # Check if it's a cog
-        cog = bot.get_cog(command)
-        if cog is not None:
-            return await self.send_cog_help(cog)
-
-        maybe_coro = discord.utils.maybe_coroutine
-
-        keys = command.split(' ')
-        cmd = bot.all_commands.get(keys[0])
-        if cmd is None:
-            return
-
-        for key in keys[1:]:
-            try:
-                found = cmd.all_commands.get(key)
-            except AttributeError:
-                string = await maybe_coro(self.subcommand_not_found, cmd, self.remove_mentions(key))
-                print(string)
-                return await self.send_error_message(string)
-            else:
-                if found is None:
-                    string = await maybe_coro(self.subcommand_not_found, cmd, self.remove_mentions(key))
-                    return await self.send_error_message(string)
-                cmd = found
-
-        if isinstance(cmd, commands.Group):
-            return await self.send_group_help(cmd)
+    def common_command_formatting(self, embed_like, command):
+        embed_like.title = f"{self.context.prefix}{self.get_command_signature(command)}"
+        if command.description:
+            embed_like.description = f"```{command.description}\n\n{command.help}```"
         else:
-            return await self.send_command_help(cmd)
+            embed_like.description = f"```{command.help}```" or "```No help found...```"
 
-class CustomHelp(commands.Cog):
-    def __init__(self, bot):
+    async def send_command_help(self, command):
+        # No pagination necessary for a single command.
+        embed = discord.Embed(colour=discord.Colour.blurple())
+        self.common_command_formatting(embed, command)
+        await self.context.send(embed=embed)
+
+    async def send_group_help(self, group):
+        subcommands = group.commands
+        if len(subcommands) == 0:
+            return await self.send_command_help(group)
+
+        entries = await self.filter_commands(subcommands, sort=True)
+        if len(entries) == 0:
+            return await self.send_command_help(group)
+
+        source = GroupHelpPageSource(group, entries, prefix=self.clean_prefix)
+        self.common_command_formatting(source, group)
+        menu = HelpMenu(source)
+        await menu.start(self.context)
+
+
+class _help(commands.Cog, name="help"):
+    """For the help command."""
+
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self._original_help_command = bot.help_command
-        bot.help_command = HelpCommand(indent=5)
+        self.old_help_command = bot.help_command
+        bot.help_command = PaginatedHelpCommand()
         bot.help_command.cog = self
 
     def cog_unload(self):
-        self.bot.help_command = self._original_help_command
+        self.bot.help_command = self.old_help_command
 
 
-def setup(bot):
-    bot.add_cog(CustomHelp(bot))
+def setup(bot: commands.Bot) -> None:
+    """Starts help cog."""
+    bot.add_cog(_help(bot))

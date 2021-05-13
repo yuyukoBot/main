@@ -163,6 +163,37 @@ class HelpMenu(RoboPages):
 
         self.bot.loop.create_task(go_back_to_current_page())
 
+    @menus.button('\N{INPUT SYMBOL FOR NUMBERS}', position=menus.Last(1.5), lock=False)
+    async def numbered_page(self, payload):
+        """lets you type a page number to go to"""
+        if self.input_lock.locked():
+            return
+
+        async with self.input_lock:
+            channel = self.message.channel
+            author_id = payload.user_id
+            to_delete = []
+            to_delete.append(await channel.send('What page do you want to go to?'))
+
+            def message_check(m):
+                return m.author.id == author_id and \
+                       channel == m.channel and \
+                       m.content.isdigit()
+
+            try:
+                msg = await self.bot.wait_for('message', check=message_check, timeout=30.0)
+            except asyncio.TimeoutError:
+                to_delete.append(await channel.send('Took too long.'))
+                await asyncio.sleep(5)
+            else:
+                page = int(msg.content)
+                to_delete.append(msg)
+                await self.show_checked_page(page - 1)
+
+            try:
+                await channel.delete_messages(to_delete)
+            except Exception:
+                pass
 
 class PaginatedHelpCommand(commands.HelpCommand):
     def __init__(self):

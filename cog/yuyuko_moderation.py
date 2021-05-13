@@ -35,6 +35,7 @@ POLL_CHAR = ['🇦','🇧','🇨','🇩','🇪','🇫','🇬','🇭','🇮','�
 class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bot.color = 0x5d00ff
 
     async def format_mod_embed(self, ctx, user, success, method, duration=None, location=None):
         '''Helper func to format an embed to prevent extra code'''
@@ -77,13 +78,42 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason=None):
-        await ctx.guild.kick(user=member, reason=reason)
+        message = await ctx.send(embed=Embed(title="ユーザー -kick-",
+                                             description=f"{member}をkickしますか",
+                                             color=self.bot.color))
+        await message.add_reaction('✅')
+        await message.add_reaction('❎')
 
-        # Using our past episodes knowledge can we make the log channel dynamic?
-        embed = discord.Embed(
-            title=f"{ctx.author.name} kicked: {member.name}", description=reason
-        )
-        await ctx.send(embed=embed)
+        emoji = ''
+
+        while True:
+            if emoji == '✅':
+                try:
+                    await ctx.guild.ban(discord.Object(member), reason=reason)
+                    e = discord.Embed(title="ユーザー -kick",description=f"{member}をkickしました")
+                    await ctx.send(embed=e)
+                    break
+                except Exception as e:
+                    return await ctx.send(embed=Embed(title="Error:", description=e, color=self.bot.color))
+
+            elif emoji == '❎':
+                return await message.edit(embed=Embed(
+                    title="ユーザー -kick失敗",
+                    description=f"{member}のkickに失敗しました",
+                    color=self.bot.color
+                ))
+
+            res = await self.bot.wait_for('reaction_add',
+                                          check=lambda r, u: u.id == ctx.author.id and r.message.id == message.id,
+                                          timeout=15)
+            if not res:
+                break
+            elif res[1].id != 478126443168006164:
+                emoji = str(res[0].emoji)
+
+        await message.clear_reactions()
+
+
 
     @commands.has_guild_permissions(ban_members=True)
     @commands.command(name="ban",description="ユーザーをBANします")
@@ -112,13 +142,13 @@ class Moderation(commands.Cog):
 
     @commands.has_guild_permissions(manage_messages=True)
     @commands.command()
-    async def delm(self, ctx, ctxid):
+    async def delm(self, ctx, message):
         """`メッセージの管理`"""
         if ctx.message.author.permissions_in(
                 ctx.message.channel).manage_messages is True or ctx.author.id == 478126443168006164:
             print(
                 f'{ctx.message.author.name}({ctx.message.guild.name})_' + ctx.message.content)
-            dctx = await ctx.message.channel.fetch_message(ctxid)
+            dctx = await ctx.message.channel.fetch_message(message)
             print(
                 f'{ctx.message.author.name}さんのコマンド実行で、{ctx.message.guild.name}でメッセージ"{dctx.content}"が削除されました。')
             await dctx.delete()

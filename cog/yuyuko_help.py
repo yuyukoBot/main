@@ -70,10 +70,8 @@ class BotHelpPageSource(menus.ListPageSource):
         return short_doc + " ".join(page) + "\n" + (ending_note % hidden)
 
     async def format_page(self, menu, cogs):
-        prefix = menu.ctx.prefix
         description = (
-            f'Use "{prefix}help command" for more info on a command.\n'
-            f'Use "{prefix}help category" for more info on a category.\n'
+            'y/help <コマンド名で確認できます'
         )
 
         embed = discord.Embed(
@@ -103,7 +101,7 @@ class GroupHelpPageSource(menus.ListPageSource):
         embed = discord.Embed(
             title=self.title,
             description=self.description,
-            colour=discord.Colour.blurple(),
+            color=0x5d00ff,
         )
 
         for command in commands:
@@ -221,10 +219,12 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed_like.description = f"```{command.help}```" or "```No help found...```"
 
     async def send_command_help(self, command):
-        # No pagination necessary for a single command.
-        embed = discord.Embed(colour=discord.Colour.blurple())
-        self.common_command_formatting(embed, command)
-        await self.context.send(embed=embed)
+        embed = discord.Embed(title=self.get_command_signature(command), description=command.description,
+                              color=0x00ff00)
+        if command.help:
+            embed.add_field(name="ヘルプテキスト：", value=command.help, inline=False)
+        embed.set_footer(text=f"コマンドのヘルプ {self.context.prefix}help コマンド名")
+        await self.get_destination().send(embed=embed)
 
     async def send_group_help(self, group):
         subcommands = group.commands

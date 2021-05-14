@@ -252,11 +252,15 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed_like.description = f"```{command.help}```" or "```No help found...```"
 
     async def send_command_help(self, command):
-        embed = discord.Embed(title=self.get_command_signature(command), description=command.description,
-                              color=0x00ff00)
+        params = " ".join(command.clean_params.keys())
+        embed = discord.Embed(title=f"{self.context.prefix}{command.qualified_name} {params}",
+                              description=command.description, color=0xb300ff)
+        if command.aliases:
+            embed.add_field(name="有効なエイリアス：", value="`" + "`, `".join(command.aliases) + "`", inline=False)
+        else:
+            embed.add_field(name="有効なエイリアス", value="ありません")
         if command.help:
-            embed.add_field(name="ヘルプテキスト：", value=command.help, inline=False)
-        embed.set_footer(text=f"コマンドのヘルプ {self.context.prefix}help コマンド名")
+            embed.add_field(name="必要な権限", value=f"`{command.help}`", inline=False)
         await self.get_destination().send(embed=embed)
 
     async def send_group_help(self, group):

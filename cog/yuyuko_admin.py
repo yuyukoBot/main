@@ -189,7 +189,7 @@ class AdminCog(commands.Cog, name="Admin"):
     @commands.command(pass_context=True, name='eval',description="コードを評価します")
     async def _eval(self, ctx, *, body: str):
         """`Bot運営`"""
-        if ctx.author.id in [478126443168006164, 602680118519005184]:
+        if ctx.author.id in [478126443168006164, 602680118519005184,691300045454180383]:
 
             env = {
                 'bot': self.bot,

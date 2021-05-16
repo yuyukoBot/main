@@ -100,11 +100,18 @@ class ServerSetting(commands.Cog):
             if result is None:
                 sql = ("INSERT INTO ServerSetting(log_guild_id,log_channel) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
-                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
+                e = discord.Embed(title="ログチャンネルをセットしました")
+                e.add_field(name="取得できる内容",value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                e.add_field(name="該当チャンネル",value=channel.mention)
+                await ctx.send(embed=e)
+
             elif result is not None:
                 sql = ("UPDATE ServerSetting SET log_channel = ? WHERE log_guild_id = ?")
                 val = (channel.id, ctx.guild.id)
-                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
+                e = discord.Embed(title="ログチャンネルをセットしました")
+                e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                e.add_field(name="該当チャンネル", value=channel.mention)
+                await ctx.send(embed=e)
             cursor.execute(sql, val)
             db.commit()
             cursor.close()
@@ -131,6 +138,8 @@ class ServerSetting(commands.Cog):
             cursor.close()
             db.close()
 
+
+
     @settings.command(description="T指定したチャンネルにログを送信します")
     async def welcome_channel(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
@@ -142,11 +151,11 @@ class ServerSetting(commands.Cog):
             if result is None:
                 sql = ("INSERT INTO ServerSetting(guild_id,welcome_channel_id) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
-                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
+                await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
             elif result is not None:
                 sql = ("UPDATE ServerSetting SET welcome_channel_id = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
-                await ctx.send(f"{channel.mention}をログチャンネルとして設定しました")
+                await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
             cursor.execute(sql, val)
             db.commit()
             cursor.close()

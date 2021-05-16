@@ -46,7 +46,7 @@ class log(commands.Cog):
         if not message.author.bot:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
+            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {message.guild.id}")
             result = cursor.fetchone()
             if result is None:
                 return
@@ -63,7 +63,7 @@ class log(commands.Cog):
     async def on_message_edit(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -88,7 +88,7 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         bl = await channel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete).flatten()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {channel.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {channel.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -104,7 +104,7 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         bl = await after.TextChannel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_update).flatten()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -194,7 +194,7 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         bl = await channel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_create).flatten()
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {channel.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {channel.guild.id}")
         result = cursor.fetchone()
         if result is None:
             e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
@@ -245,7 +245,7 @@ class log(commands.Cog):
             return value
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -358,7 +358,7 @@ class log(commands.Cog):
     async def on_guild_role_create(self, role):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {role.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {role.guild.id}")
         bl = await role.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_create).flatten()
         result = cursor.fetchone()
         if result is None:
@@ -375,7 +375,7 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         bl = await role.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_delete).flatten()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {role.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {role.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -395,7 +395,7 @@ class log(commands.Cog):
         await self.tracker.update_invite_cache(invite)
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {invite.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {invite.guild.id}")
         result = cursor.fetchone()
         if result is None:
             e = discord.Embed(title="-サーバーログ-招待リンク作成- ", color=0x5d00ff)
@@ -439,7 +439,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -490,7 +490,7 @@ class log(commands.Cog):
         bl = await after.audit_logs(limit=1, action=discord.AuditLogAction.guild_update).flatten()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -538,7 +538,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -587,7 +587,7 @@ class log(commands.Cog):
             return value
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -633,7 +633,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -651,7 +651,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -672,7 +672,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {member.guild.id}")
         inviter = await self.tracker.fetch_inviter(member)  # inviter is the member who invited
         data = await self.bot.invites.find(inviter.id)
         if data is None:
@@ -703,7 +703,7 @@ class log(commands.Cog):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {member.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {member.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -729,7 +729,7 @@ class log(commands.Cog):
 
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {message.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -747,7 +747,7 @@ class log(commands.Cog):
         message = reaction.message
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {reaction.id}")
         result = cursor.fetchone()
         if result is None:
             return
@@ -764,7 +764,7 @@ class log(commands.Cog):
         message = reaction.message
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {reaction.guild.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {reaction.guild.id}")
         result = cursor.fetchone()
         if result is None:
             return

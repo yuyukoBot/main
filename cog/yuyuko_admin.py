@@ -451,6 +451,71 @@ class AdminCog(commands.Cog, name="Admin"):
             e = discord.Embed(title="Senddm", description="指定されたユーザーにDMを送信できませんでした。")
             await ctx.send(embed=e)
 
+    @commands.command()
+    async def sql(self, ctx, *, code):
+        """
+        `BOT運営`
+        """
+        if ctx.author.id in [478126443168006164, 602680118519005184, 691300045454180383]:
+            try:
+                returned = self.bot.cursor.execute(code)
+            except Exception as e:
+                if ctx.message != None:
+                    await ctx.message.add_reaction("❌")
+                    embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```", color=0x5d00ff)
+                    await ctx.send(embed=embed)
+                else:
+                    embed = discord.Embed(title="予期しないエラー", description=f"例外が発生しました。\n```{e}\n```", color=0x5d00ff)
+                    await ctx.send(embed=embed)
+            else:
+                if ctx.message != None:
+                    await ctx.message.add_reaction("⭕")
+                    if code.lower().startswith("select"):
+                        await ctx.send(embed=discord.Embed(description=f"{returned.fetchall()}", color=0x5d00ff))
+
+    @commands.command(name="read_dm_reply", brief="What the member has sent the bot")
+    async def read_dm_reply(self, ctx, user_id, amount=20):
+        """
+        Retrieve messages from a DM channel with a server member
+        """
+
+        if self.bot.shadow_guild:
+            guild = self.bot.shadow_guild
+            await ctx.send(f"using a guild {guild.name}")
+        else:
+            guild = ctx.guild
+
+        if not guild:
+            guild = self.bot.shadow_guild
+            if not guild:
+                await ctx.send("command not typed in a guild and no shadow guild set")
+                return
+
+        member = get_member_helpers.get_member_guaranteed_custom_guild(ctx, guild, user_id)
+
+        if not member:
+            await ctx.send("no member found with that name")
+            return
+
+        dm_channel = member.dm_channel
+
+        if not dm_channel:
+            await member.create_dm()
+            dm_channel = member.dm_channel
+
+        if not dm_channel:
+            await ctx.send("it seems like i can't access the dm channel")
+            return
+
+        buffer = ""
+        async for message in dm_channel.history(limit=int(amount)):
+            buffer += f"{message.author.name}: {message.content}\n"
+
+        embed = discord.Embed(color=0xffffff)
+        embed.set_author(name=f"messages between me and {member.name}")
+
+        await send_large_message.send_large_embed(ctx.channel, embed, buffer)
+
     @commands.is_owner()
     @system.command(hidden=True)
     async def listguild(self, ctx):

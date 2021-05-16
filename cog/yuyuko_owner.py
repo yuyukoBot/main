@@ -371,7 +371,6 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
             scope.clear_intersection(arg_dict)
 
     @commands.command()
-    @commands.is_owner()
     async def sql(self, ctx, *, code):
         """
         `BOT運営`

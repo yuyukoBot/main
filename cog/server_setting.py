@@ -230,12 +230,13 @@ class ServerSetting(commands.Cog):
 
     @settings.command(name='list')
     async def _list(self, ctx):
+        import sqlite3
         conn = sqlite3.connect('main.sqlite')
-        conn.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
-        data = conn.fetchall()
+        cursor = conn.cursor()
+        cursor.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
+        data = cursor.fetchall()
         if not data:
             return await ctx.send('データが見つかりませんでした')
-
         settings = data[0]
         embed = discord.Embed(title='Server Settings')
         embed.add_field(name='ログチャンネル', value=settings[3] if settings[3] else 'なし')

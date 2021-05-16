@@ -664,6 +664,9 @@ class log(commands.Cog):
                 e.add_field(name="変更後",value=after.name)
                 await ch.send(embed=e)
 
+            if before.discriminator != after.discriminator:
+                e = discord.Embed
+
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
         await self.bot.wait_until_ready()

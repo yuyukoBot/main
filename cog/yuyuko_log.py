@@ -29,6 +29,60 @@ class log(commands.Cog):
         self.bot.color = 0x5d00ff
         self.tracker = DiscordUtils.InviteTracker(bot)
 
+
+
+
+    @commands.Cog.listener()
+    async def on_bulk_message_delete(self,msgs):
+        await self.bot.wait_until_ready()
+        ch=discord.utils.get(msgs[0].guild.text_channels,name="yui-log")
+        if ch:
+            e=discord.Embed(title="サーバーログ - メッセージの一括削除",description=f"{msgs[0].channel}で{tools.noDayAgoFormatDatetime(msgs[0].created_at)}から{tools.noDayAgoFormatDatetime(msgs[-1].created_at)}の{len(msgs)}件のメッセージが削除されました",color=self.bot.color)
+            await ch.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message):
+        await self.bot.wait_until_ready()
+        if not message.author.bot:
+            db = sqlite3.connect('main.sqlite')
+            cursor = db.cursor()
+            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
+            result = cursor.fetchone()
+            if result is None:
+                return
+            else:
+                e = discord.Embed(title="-サーバーログ-メッセージ削除- ", color=0x5d00ff)
+                e.add_field(name="メッセージ", value=f'```{message.content}```', inline=False)
+                e.add_field(name="メッセージ送信者", value=message.author.mention)
+                e.add_field(name="メッセージチャンネル", value=message.channel.mention)
+                e.add_field(name="メッセージのid", value=message.id)
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before, after):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+
+            embed = discord.Embed(title="-サーバーログ-メッセージ変更-", timestamp=after.created_at,
+                                  description=f"<#{before.channel.id}>で<@!{before.author.id}>がメッセージを編集しました",
+                                  colour=discord.Colour(0x5d00ff))
+
+            embed.set_author(name=f'{before.author.name}#{before.author.discriminator}',
+                             icon_url=before.author.avatar_url)
+            embed.set_footer(text=f"Author ID:{before.author.id} • Message ID: {before.id}")
+            embed.add_field(name='Before:', value=before.content, inline=False)
+            embed.add_field(name="After:", value=after.content, inline=False)
+
+            embed.add_field(name="メッセージのURL", value=after.jump_url)
+            channel = self.bot.get_channel(id=int(result[0]))
+            await channel.send(embed=embed)
+
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel):
         db = sqlite3.connect('main.sqlite')
@@ -333,51 +387,7 @@ class log(commands.Cog):
             await ch.send(embed=e)
 
 
-    @commands.Cog.listener()
-    async def on_message_edit(self, before, after):
-        db = sqlite3.connect('main.sqlite')
-        cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {after.guild.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
 
-            embed = discord.Embed(title="-サーバーログ-メッセージ変更-",timestamp=after.created_at,description=f"<#{before.channel.id}>で<@!{before.author.id}>がメッセージを編集しました",colour=discord.Colour(0x5d00ff))
-
-
-
-
-            embed.set_author(name=f'{before.author.name}#{before.author.discriminator}', icon_url=before.author.avatar_url)
-            embed.set_footer(text=f"Author ID:{before.author.id} • Message ID: {before.id}")
-            embed.add_field(name='Before:', value=before.content, inline=False)
-            embed.add_field(name="After:", value=after.content, inline=False)
-
-            embed.add_field(name="メッセージのURL", value=after.jump_url)
-            channel = self.bot.get_channel(id=int(result[0]))
-            await channel.send(embed=embed)
-
-
-
-
-    @commands.Cog.listener()
-    async def on_message_delete(self, message):
-        await self.bot.wait_until_ready()
-        if not message.author.bot:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {message.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                return
-            else:
-                e = discord.Embed(title="-サーバーログ-メッセージ削除- ", color=0x5d00ff)
-                e.add_field(name="メッセージ", value=f'```{message.content}```', inline=False)
-                e.add_field(name="メッセージ送信者", value=message.author.mention)
-                e.add_field(name="メッセージチャンネル", value=message.channel.mention)
-                e.add_field(name="メッセージのid", value=message.id)
-                channel = self.bot.get_channel(id=int(result[0]))
-                await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
@@ -448,6 +458,29 @@ class log(commands.Cog):
                     e.add_field(name="入ったメンバー",value=member.mention)
                     e.set_thumbnail(url=member.avatar_url_as(format="png"))
                     await ch.send(embed=e)
+
+            if before.mute != after.mute:
+                e = discord.Embed(title="サーバーログ -サーバーミュート設定(解除)",color=self.bot.color)
+                e.add_field(name="該当ユーザー",value=member.mention)
+                e.add_field(name="該当チャンネル", value=after.channel.mention)
+                await ch.send(embed=e)
+
+            if before.deaf != after.deaf:
+                e = discord.Embed(title="サーバーログ -サーバー側スピーカーミュート")
+                e.add_field(name="該当ユーザー",value=member.mention)
+                e.add_field(name="該当チャンネル",value=after.channel.mention)
+                await ch.send(embed=e)
+
+
+
+            if before.self_mute != after.self_mute:
+                e = discord.Embed(title="test",description={member})
+                await ch.send(embed=e)
+
+
+
+
+
 
 
 

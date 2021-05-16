@@ -95,10 +95,10 @@ class ServerSetting(commands.Cog):
         if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE log_guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO ServerSetting(log_guild_id,log_channel) VALUES(?,?)")
+                sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
                 val = (ctx.guild.id, channel.id)
                 e = discord.Embed(title="ログチャンネルをセットしました")
                 e.add_field(name="取得できる内容",value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
@@ -106,7 +106,7 @@ class ServerSetting(commands.Cog):
                 await ctx.send(embed=e)
 
             elif result is not None:
-                sql = ("UPDATE ServerSetting SET log_channel = ? WHERE log_guild_id = ?")
+                sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
                 e = discord.Embed(title="ログチャンネルをセットしました")
                 e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")

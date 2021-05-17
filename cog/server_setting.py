@@ -239,7 +239,7 @@ class ServerSetting(commands.Cog):
             return await ctx.send('データが見つかりませんでした')
         settings = data[0]
         embed = discord.Embed(title='Server Settings')
-        embed.add_field(name='ログチャンネル', value=self.bot.get_channel(int(settings[4])).mention)
+        embed.add_field(name='ログチャンネル', value=self.bot.get_channel(int(settings[4])).mention if settings[4] else 'なし')
         embed.add_field(name='Welcomeチャンネル', value=settings[1] if settings[1] else 'なし')
         await ctx.send(embed=embed)
 

@@ -698,11 +698,12 @@ class log(commands.Cog):
             invite_code = invite_used.code if invite_used else "Unknown"
 
             embed = discord.Embed(
-                title=f"Welcome {member.display_name} ",
+                title="サーバーログ -ユーザー参加",
                 timestamp=member.joined_at
             )
-            embed.add_field(name="Invited by:", value=inviter, inline=False)
-            embed.add_field(name="Invite code:", value=invite_code, inline=False)
+            embed.add_field(name="ユーザー名",value=member.mention)
+            embed.add_field(name="招待した人", value=inviter)
+            embed.add_field(name="招待コード", value=invite_code)
             embed.set_thumbnail(url=member.avatar_url)
             channel = self.bot.get_channel(id=int(result[0]))
 

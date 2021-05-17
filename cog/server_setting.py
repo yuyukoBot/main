@@ -20,6 +20,7 @@ logger = getLogger(__name__)
 class ServerSetting(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
+        self.bot.color = 0x5d00ff
 
     @commands.group()
     async def vc(self,ctx):

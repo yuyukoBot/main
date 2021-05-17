@@ -9,6 +9,7 @@ from datetime import time
 import datetime
 import asyncio
 import random
+from itertools import product
 
 import tools
 from discord.ext import commands
@@ -28,8 +29,11 @@ class log(commands.Cog):
         self.bot = bot
         self.bot.color = 0x5d00ff
         self.tracker = DiscordUtils.InviteTracker(bot)
+        self.invites = []
 
-
+    async def update_invites_cache(self):
+        guild = await self.bot.fetch_guild(self.guild_id)
+        self.invites = await guild.invites()
 
 
     @commands.Cog.listener()
@@ -673,26 +677,32 @@ class log(commands.Cog):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {member.guild.id}")
-        inviter = await self.tracker.fetch_inviter(member)  # inviter is the member who invited
-        data = await self.bot.invites.find(inviter.id)
-        if data is None:
-            data = {"_id": inviter.id, "count": 0, "userInvited": []}
-
-        data["count"] += 1
-        data["usersInvited"].append(member.id)
-        await self.bot.invites.upsert(data)
 
         result = cursor.fetchone()
         if result is None:
             return
         else:
+            invites_after_join = await member.guild.invites()
 
+            def find_used_invite(invites_before, invites_after):
+                for invites in product(invites_before, invites_after):
+                    if (invites[0].code == invites[1].code
+                            and invites[0].uses < invites[1].uses):
+                        return invites[0]
+
+                # If invite can't be found
+                return None
+
+            invite_used = find_used_invite(self.invites, invites_after_join)
+            inviter = invite_used.inviter.mention if invite_used else "Unknown"
+            invite_code = invite_used.code if invite_used else "Unknown"
 
             embed = discord.Embed(
-                title=f"Welcome {member.display_name}",
-                description=f"Invited by: {inviter.mention}\nInvites: {data['count']}",
+                title=f"Welcome {member.display_name} ",
                 timestamp=member.joined_at
             )
+            embed.add_field(name="Invited by:", value=inviter, inline=False)
+            embed.add_field(name="Invite code:", value=invite_code, inline=False)
             embed.set_thumbnail(url=member.avatar_url)
             channel = self.bot.get_channel(id=int(result[0]))
 

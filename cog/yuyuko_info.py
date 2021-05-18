@@ -246,11 +246,9 @@ class infoCog(commands.Cog):
         cass = conn.cursor()
         cass.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
         dess = cass.fetchall()
-        if not dess:
-            return await ctx.send("test")
+        setting = dess[0]
+        e.add_field(name='認証してますか', value=setting[1] if setting[1] else 'なし')
 
-
-        e.add_field(name="認証",value="テスト")
 
         roles = self._getRoles(guild.roles)
         if len(roles) <= 1024:

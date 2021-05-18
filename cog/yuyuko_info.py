@@ -239,7 +239,7 @@ class infoCog(commands.Cog):
         data = cursor.fetchall()
         settings = data[0]
         if not data:
-            return e.add_field(name="ログチャンネル等",value="設定されていません")
+            return
         e.add_field(name='ログチャンネル', value=self.bot.get_channel(int(settings[4])).mention if settings[4] else 'なし')
         e.add_field(name='Welcomeチャンネル',value=self.bot.get_channel(int(settings[1])).mention if settings[1] else 'なし')
 

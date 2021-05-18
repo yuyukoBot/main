@@ -6,7 +6,7 @@ import aiohttp
 import datetime
 from datetime import datetime, timedelta
 from typing import Optional
-
+import sqlite3
 from typing import Union
 import time, struct,subprocess
 
@@ -233,17 +233,16 @@ class infoCog(commands.Cog):
         emojis = self._getEmojis(guild.emojis)
 
         e.add_field(name='カスタム絵文字', value=emojis, inline=False)
-        import sqlite3
         conn = sqlite3.connect('main.sqlite')
         cursor = conn.cursor()
-        cursor.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
+        cursor.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (guild.id,))
         data = cursor.fetchall()
         settings = data[0]
         if not data:
             return e.add_field(name="ログチャンネル等",value="設定されていません")
         e.add_field(name='ログチャンネル', value=self.bot.get_channel(int(settings[4])).mention if settings[4] else 'なし')
-        e.add_field(name='Welcomeチャンネル',
-                        value=self.bot.get_channel(int(settings[1])).mention if settings[1] else 'なし')
+        e.add_field(name='Welcomeチャンネル',value=self.bot.get_channel(int(settings[1])).mention if settings[1] else 'なし')
+
 
         roles = self._getRoles(guild.roles)
         if len(roles) <= 1024:

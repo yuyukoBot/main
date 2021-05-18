@@ -242,13 +242,6 @@ class infoCog(commands.Cog):
         e.add_field(name='ログチャンネル', value=self.bot.get_channel(int(settings[4])).mention if settings[4] else 'なし')
         e.add_field(name='Welcomeチャンネル',
                         value=self.bot.get_channel(int(settings[1])).mention if settings[1] else 'なし')
-        connect = sqlite3.connect()
-        cursor = connect.cursor()
-        cursor.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
-        dess = cursor.fetchall()
-        setting = dess[0]
-        e.add_field(name='認証してますか', value=setting[1] if setting[1] else 'なし')
-
 
         roles = self._getRoles(guild.roles)
         if len(roles) <= 1024:

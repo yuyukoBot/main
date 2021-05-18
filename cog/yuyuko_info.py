@@ -243,6 +243,9 @@ class infoCog(commands.Cog):
         e.add_field(name='Welcomeチャンネル',
                         value=self.bot.get_channel(int(settings[1])).mention if settings[1] else 'なし')
 
+        cass = conn.cursor()
+        cass.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
+        dess = cass.fetchall()
         roles = self._getRoles(guild.roles)
         if len(roles) <= 1024:
             e.add_field(name="役職", value=roles, inline=False)

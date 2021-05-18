@@ -247,7 +247,7 @@ class infoCog(commands.Cog):
         cass.execute(f'SELECT * FROM ServerSetting WHERE guild_id = ?', (ctx.guild.id,))
         dess = cass.fetchall()
         if not dess:
-            e.add_field(name="認証されてません",value="テスト")
+            return await ctx.send("test")
         if dess:
 
             e.add_field(name="認証",value="テスト")

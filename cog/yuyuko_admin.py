@@ -52,12 +52,24 @@ class AdminCog(commands.Cog, name="Admin"):
 
     @commands.command()
     @commands.is_owner()
-    async def guildv(self, ctx, gid: int, bl: bool = True):
-        print(f'{ctx.message.author.name}({ctx.message.guild.name})_' +
-              ctx.message.content)
-        self.bot.cursor.execute(
-            "UPDATE guilds SET verified = ? WHERE id = ?", (bl, gid))
-        await ctx.send(f"サーバー`{self.bot.get_guild(gid)}`の認証状態を{str(bl)}にしました。")
+    async def guildv(self, ctx, *, guild_id:int):
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT guild_id FROM verfiy WHERE id = {ctx.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            sql = ("INSERT INTO verfiy(id, guild_id) VALUES(?,?)")
+            val = (ctx.guild.id, guild_id)
+            await ctx.send(f"認証しました")
+        elif result is not None:
+            sql = ("UPDATE verfiy SET guild_id = ? WHERE id = ?")
+            val = (guild_id, ctx.guild.id)
+            await ctx.send(f"{guild_id}にアップデートしました")
+        cursor.execute(sql, val)
+        db.commit()
+        cursor.close()
+        db.close()
+
 
 
 

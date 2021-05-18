@@ -1,6 +1,4 @@
 import textwrap
-
-import aiofiles
 import discord
 from discord import Intents
 import typing
@@ -17,7 +15,7 @@ import time
 from discord.ext import commands
 import os
 import functools
-import aiofiles
+
 import inspect
 from discord.ext.commands import clean_content
 from discord import Embed
@@ -38,7 +36,6 @@ class Moderation(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.color = 0x5d00ff
-        self.bot.reaction_roles = []
 
     async def format_mod_embed(self, ctx, user, success, method, duration=None, location=None):
         '''Helper func to format an embed to prevent extra code'''
@@ -142,37 +139,6 @@ class Moderation(commands.Cog):
             await ctx.send("BANしました")
         else:
             await ctx.send("キャンセルしました")
-
-    @commands.command()
-    async def set_reaction(self,ctx, role: discord.Role = None, msg: discord.Message = None, emoji=None):
-        if role != None and msg != None and emoji != None:
-            await msg.add_reaction(emoji)
-            self.bot.reaction_roles.append((role.id, msg.id, str(emoji.encode("utf-8"))))
-
-            async with aiofiles.open("reaction_roles.txt", mode="a") as file:
-                emoji_utf = emoji.encode("utf-8")
-                await file.write(f"{role.id} {msg.id} {emoji_utf}\n")
-
-            await ctx.channel.send("Reaction has been set.")
-
-        else:
-            await ctx.send("Invalid arguments.")
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_add(self,payload):
-        for role_id, msg_id, emoji in self.bot.reaction_roles:
-            if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode("utf-8")):
-                await payload.member.add_roles(self.bot.get_guild(payload.guild_id).get_role(role_id))
-                return
-
-    @commands.Cog.listener()
-    async def on_raw_reaction_remove(self,payload):
-        for role_id, msg_id, emoji in self.bot.reaction_roles:
-            if msg_id == payload.message_id and emoji == str(payload.emoji.name.encode("utf-8")):
-                guild = self.bot.get_guild(payload.guild_id)
-                await guild.get_member(payload.user_id).remove_roles(guild.get_role(role_id))
-                return
-
 
     @commands.has_guild_permissions(manage_messages=True)
     @commands.command()
@@ -354,16 +320,15 @@ class Moderation(commands.Cog):
         e = discord.Embed(title="Mute",description=f'{user.mention} has been unmuted from the guild.')
         await ctx.send(embed=e)
 
-
+    @commands.has_guild_permissions(manage_messages=True)
     @commands.command(name="purge", descriotion="```clearコマンドと同じです```")
     @commands.guild_only()
     async def purge(self, ctx, messages: int):
         '''`メッセージの管理`'''
-        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
-            if messages > 99:
-                messages = 99
-            await ctx.channel.purge(limit=messages + 1)
-            await ctx.send(f'{messages} messages deleted. 👌', delete_after=3)
+        if messages > 99:
+            messages = 99
+        await ctx.channel.purge(limit=messages + 1)
+        await ctx.send(f'{messages} messages deleted. 👌', delete_after=3)
 
 
 

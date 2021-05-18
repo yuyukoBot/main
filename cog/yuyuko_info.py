@@ -248,9 +248,9 @@ class infoCog(commands.Cog):
         dess = cass.fetchall()
         if not dess:
             return await ctx.send("test")
-        if dess:
 
-            e.add_field(name="認証",value="テスト")
+
+        e.add_field(name="認証",value="テスト")
 
         roles = self._getRoles(guild.roles)
         if len(roles) <= 1024:

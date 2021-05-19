@@ -150,10 +150,10 @@ class welcome(commands.Cog):
             db.close()
 
     @commands.group()
-    async def remove(self, ctx):
+    async def removes(self, ctx):
         await ctx.send('セットアップを完了してください:\nleave channel <#channel>\nleave text <message>')
 
-    @remove.command()
+    @removes.command()
     async def channel(self, ctx, channel: discord.TextChannel):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')
@@ -175,7 +175,7 @@ class welcome(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @remove.command()
+    @removes.command()
     async def text(self, ctx, *, text):
         if ctx.author.guild_permissions.manage_messages:
             db = sqlite3.connect('main.sqlite')

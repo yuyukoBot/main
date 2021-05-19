@@ -110,7 +110,7 @@ class GroupHelpPageSource(menus.ListPageSource):
             signature = f"{command.qualified_name} {command.signature}"
             embed.add_field(
                 name=signature,
-                value=command.short_doc or "No help given...",
+                value=command.description or "No help given...",
                 inline=False,
             )
 

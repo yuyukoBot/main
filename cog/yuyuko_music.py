@@ -6,7 +6,9 @@ import itertools
 import random
 import youtube_dl
 import async_timeout
-
+import sr_api
+import os
+api = sr_api.Client()
 try:
     import uvloop
 except ImportError:
@@ -245,14 +247,14 @@ class Song:
             DURATION = self.source.duration
         embed = (
             discord.Embed(
-                title="Now playing",
+                title="再生中の曲",
                 description=f"```css\n{self.source.title}\n```",
                 color=discord.Color.blurple(),
             )
-                .add_field(name="Duration", value=DURATION)
-                .add_field(name="Requested by", value=self.requester.mention)
+                .add_field(name="再生時間", value=DURATION)
+                .add_field(name="リクエストした人", value=self.requester.mention)
                 .add_field(
-                name="Uploader",
+                name="アップロードした人",
                 value=f"[{self.source.uploader}]({self.source.uploader_url})",
             )
                 .add_field(name="URL", value=f"[Click]({self.source.url})")
@@ -405,9 +407,9 @@ class music(commands.Cog):
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.voice_state = self.get_voice_state(ctx)
 
-    @commands.command(name="join")
+    @commands.command(name="join",description="現在の音声チャネルに参加します")
     async def _join(self, ctx: commands.Context):
-        """Joins your current voice channel."""
+        """`誰でも`"""
         destination = ctx.author.voice.channel
         if ctx.voice_state.voice:
             await ctx.voice_state.voice.move_to(destination)
@@ -415,17 +417,15 @@ class music(commands.Cog):
 
         ctx.voice_state.voice = await destination.connect()
 
-    @commands.command(name="summon")
+    @commands.command(name="summon",description="指定したチャンネルにbotを入出させます")
     async def _summon(
             self, ctx: commands.Context, *, channel: discord.VoiceChannel = None
     ):
-        """Summons the bot to a voice channel.
-        channel: discord.VoiceChannel
-            The channel to join defaulting to your voice channel.
+        """`誰でも`
         """
         if not channel and not ctx.author.voice:
             raise VoiceError(
-                "You are neither connected to a voice channel nor specified a channel to join."
+                "チャンネルに接続していません"
             )
 
         destination = channel or ctx.author.voice.channel
@@ -435,64 +435,62 @@ class music(commands.Cog):
 
         ctx.voice_state.voice = await destination.connect()
 
-    @commands.command(name="leave", aliases=["disconnect"])
+    @commands.command(name="leave", aliases=["disconnect"],description="botをボイスチャンネルから退出させます")
     async def _leave(self, ctx: commands.Context):
-        """Clears the queue and leaves the voice channel."""
+        """`誰でも`"""
         if not ctx.voice_state.voice:
-            return await ctx.send("Not connected to any voice channel.")
+            return await ctx.send("ボイスチャンネルに接続していません")
 
         await ctx.voice_state.stop()
         del self.voice_states[ctx.guild.id]
 
-    @commands.command(name="volume")
+    @commands.command(name="volume",description="音量を調節します")
     async def _volume(self, ctx: commands.Context, *, volume: int):
-        """Sets the volume of the player.
-        volume: int
-            The volume to be set from 0% to 100%.
+        """`誰でも`
         """
         if not ctx.voice_state.is_playing:
-            return await ctx.send("Nothing being played at the moment.")
+            return await ctx.send("現在、何も再生されていません。")
 
         if 0 > volume > 100:
-            return await ctx.send("Volume must be between 0 and 100")
+            return await ctx.send("ボリュームは0〜100の間である必要があります")
 
         ctx.voice_state.current.source.volume = volume / 100
-        await ctx.send(f"Volume of the player set to {volume}%")
+        await ctx.send(f"{volume}%にセットしました")
 
-    @commands.command(name="now", aliases=["current", "playing", "n"])
+    @commands.command(name="now", aliases=["np", "playing", "n"],description="現在流してる曲を表示します")
     async def _now(self, ctx: commands.Context):
-        """Displays the currently playing song."""
+        """誰でも"""
         embed = ctx.voice_state.current.create_embed()
         await ctx.send(embed=embed)
 
-    @commands.command(name="pause", aliases=["pa"])
+    @commands.command(name="pause", aliases=["pa"],description="現在一時停止している曲を再開します")
     async def _pause(self, ctx: commands.Context):
-        """Pauses the currently playing song."""
+        """`誰でも`"""
         if ctx.voice_state.voice.is_playing():
             ctx.voice_state.voice.pause()
             await ctx.message.add_reaction("⏯")
 
-    @commands.command(name="resume", aliases=["re", "res"])
+    @commands.command(name="resume", aliases=["re", "res"],description="現在一時停止している曲を再開します")
     async def _resume(self, ctx: commands.Context):
-        """Resumes a currently paused song."""
+        """`誰でも`"""
         if ctx.voice_state.voice.is_paused():
             ctx.voice_state.voice.resume()
             await ctx.message.add_reaction("⏯")
 
-    @commands.command(name="stop")
+    @commands.command(name="stop",description="曲の再生を停止し、キューをクリアします")
     async def _stop(self, ctx: commands.Context):
-        """Stops playing song and clears the queue."""
+        """`誰でも`"""
         ctx.voice_state.songs.clear()
 
         if ctx.voice_state.is_playing:
             ctx.voice_state.voice.stop()
             await ctx.message.add_reaction("⏹")
 
-    @commands.command(name="skip", aliases=["s", "sk"])
+    @commands.command(name="skip", aliases=["s", "sk"],description="曲をスキップします")
     async def _skip(self, ctx: commands.Context):
-        """Vote to skip a song."""
+        """`誰でも`"""
         if not ctx.voice_state.is_playing:
-            return await ctx.send("Not playing any music right now...")
+            return await ctx.send("現在、音楽を再生していません")
 
         voter = ctx.author
         if voter == ctx.voice_state.current.requester:
@@ -514,11 +512,10 @@ class music(commands.Cog):
         else:
             await ctx.send("You have already voted to skip this song.")
 
-    @commands.command(name="queue", aliases=["q"])
+    @commands.command(name="queue", aliases=["q"],description="キューの中身を確認します")
     async def _queue(self, ctx: commands.Context, *, page: int = 1):
-        """Shows the player's queue.
-        page: int
-            The page to display defaulting to the first page.
+        """
+        `誰でも`
         """
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
@@ -539,20 +536,19 @@ class music(commands.Cog):
         ).set_footer(text=f"Viewing page {page}/{pages}")
         await ctx.send(embed=embed)
 
-    @commands.command(name="shuffle")
+    @commands.command(name="shuffle",description="キューの曲をシャッフルします")
     async def _shuffle(self, ctx: commands.Context):
-        """Shuffles the queue."""
+        """`誰でも`"""
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
 
         ctx.voice_state.songs.shuffle()
         await ctx.message.add_reaction("✅")
 
-    @commands.command(name="remove")
+    @commands.command(name="remove",description="指定した曲をキューから消します")
     async def _remove(self, ctx: commands.Context, index: int):
-        """Removes a song from the queue at a given index.
-        index: int
-            The index of the song to remove.
+        """
+        `誰でも`
         """
         if len(ctx.voice_state.songs) == 0:
             return await ctx.send("Empty queue.")
@@ -560,20 +556,19 @@ class music(commands.Cog):
         ctx.voice_state.songs.remove(index - 1)
         await ctx.message.add_reaction("✅")
 
-    @commands.command(name="loop")
+    @commands.command(name="loop",description="曲をループ状態にします")
     async def _loop(self, ctx: commands.Context):
-        """Loops the currently playing song."""
+        """`誰でも`"""
         if not ctx.voice_state.is_playing:
             return await ctx.send("Nothing being played at the moment.")
 
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.message.add_reaction("✅")
 
-    @commands.command(name="play")
+    @commands.command(name="play",description="指定した曲を再生します")
     async def _play(self, ctx: commands.Context, *, search: str):
-        """Plays a song.
-        searcch: str
-            The song to search for.
+        """
+        `誰でも`
         """
         async with ctx.typing():
             try:
@@ -588,14 +583,10 @@ class music(commands.Cog):
                 await ctx.voice_state.songs.put(song)
                 await ctx.send(f"Enqueued {source}")
 
-    @commands.command(name="search")
+    @commands.command(name="search",description="検索した曲をキューに追加します")
     async def _search(self, ctx: commands.Context, *, search: str):
-        """Searches youtube.
-        search: str
-            The song to search youtube for.
-        It returns an imbed of the first 10 results collected from youtube.
-        Then the member can choose one of the titles by typing a number
-        in chat or they can cancel by typing "cancel" in chat.
+        """
+        `誰でも`
         """
         async with ctx.typing():
             try:
@@ -626,6 +617,35 @@ class music(commands.Cog):
         if ctx.voice_client and ctx.voice_client.channel != ctx.author.voice.channel:
             raise commands.CommandError("Bot is already in a voice channel.")
 
+    @commands.command(description="指定した曲の歌詞を表示します")
+    async def lyric(self, ctx, *, title=None):
+        """`誰でも`"""
+        if not title:
+            title = ctx.voice_state.current.ret_lyric()
+        lyrics = await api.get_lyrics(str(title))
+        embed = discord.Embed(title=f"{lyrics.title} - {lyrics.author}", description=lyrics.lyrics, url=lyrics.link,
+                              timestamp=ctx.message.created_at)
+        try:
+            try:
+                embed.set_thumbnail(url=lyrics.thumbnail)
+                await ctx.send(embed=embed)
+            except:
+                await ctx.send(embed=embed)
+        except:
+            try:
+                await ctx.send("I tried to send an embed, but it was too long. Here is the text file.")
+                if lyrics.title != "requirements" and lyrics.title != "runtime" and lyrics.title != "main":
+                    lyrics.save()
+                    with open(f"{lyrics.title}.txt") as fp:
+                        await ctx.send(file=discord.File(fp))
+                    os.remove(f"{lyrics.title}.txt")
+            except:
+                try:
+                    if lyrics.title != "requirements" and lyrics.title != "runtime" and lyrics.title != "main":
+                        os.remove(f"{lyrics.title}.txt")
+                    await ctx.send("Hmmm, I was unable to send an embed, and I couldn't send a file either.")
+                except:
+                    await ctx.send("Hmmm, I was unable to send an embed, and I couldn't send a file either.")
 
 def setup(bot: commands.Bot) -> None:
     """Starts music cog."""

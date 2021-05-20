@@ -35,14 +35,21 @@ class log(commands.Cog):
         guild = await self.bot.fetch_guild(self.guild_id)
         self.invites = await guild.invites()
 
-
     @commands.Cog.listener()
-    async def on_bulk_message_delete(self,msgs):
+    async def on_bulk_message_delete(self, messages):
         await self.bot.wait_until_ready()
-        ch=discord.utils.get(msgs[0].guild.text_channels,name="yui-log")
-        if ch:
-            e=discord.Embed(title="サーバーログ - メッセージの一括削除",description=f"{msgs[0].channel}で{tools.noDayAgoFormatDatetime(msgs[0].created_at)}から{tools.noDayAgoFormatDatetime(msgs[-1].created_at)}の{len(msgs)}件のメッセージが削除されました",color=self.bot.color)
-            await ch.send(embed=e)
+        db = sqlite3.connect('main.sqlite')
+        cursor = db.cursor()
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {messages.guild.id}")
+        result = cursor.fetchone()
+        if result is None:
+            return
+        else:
+            guild = messages[0].channel.guild
+            channel = self.bot.get_channel(id=int(result[0]))
+            e = discord.Embed(title="-サーバーログ-メッセージ一括削除- ",description=f"**Bulk messages deleted in {messages[0].channel.mention}, {len(messages)} messages deleted.**", color=0x5d00ff)
+            e.set_author(name=f"{guild.name}", icon_url=guild.icon.url if guild.icon.url is not None else '')
+            await channel.send(embed=e)
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):

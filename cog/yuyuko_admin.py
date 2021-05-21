@@ -178,6 +178,45 @@ class AdminCog(commands.Cog, name="Admin"):
         else:
             await ctx.send(f'`{module}をunloadしました`')
 
+    @commands.group(invoke_without_command=True)
+    async def blacklist(self, ctx):
+        """Blacklists parent command."""
+        await ctx.send_help('blacklist')
+
+    @blacklist.command(name='add')
+    async def _blacklist_add(self, ctx, users: commands.Greedy[discord.Member]):
+        """Blacklist a user.
+        This makes him/her no longer able to use the bot.
+        Example:
+            **{p}blacklist add @Dosek**
+        Args:
+            users (commands.Greedy[discord.Member]): Blacklist several users.
+        """
+        query = 'UPDATE users SET blacklisted = true WHERE user_id = $1'
+
+        for user in users:
+            await self.bot.cursor.execute(query, user.id)
+
+        await ctx.send(f'✅ Successfully put **{", ".join(str(x) for x in users)}** into blacklist.')
+        await self.bot.user_cache.refresh()
+
+    @blacklist.command(name='remove')
+    async def _blacklist_remove(self, ctx, users: commands.Greedy[discord.Member]):
+        """Remove a user from blacklist.
+        This brings him/her back the permissions to use the bot.
+        Example:
+            **{p}blacklist remove @Dosek**
+        Args:
+            users (commands.Greedy[discord.Member]): Unblacklist several users.
+        """
+        query = 'UPDATE users SET blacklisted = false WHERE user_id = $1'
+
+        for user in users:
+            await self.bot.cursor.execute(query, user.id)
+
+        await ctx.send(f'✅ Successfully removed **{", ".join(str(x) for x in users)}** from blacklist.')
+        await self.bot.user_cache.refresh()
+
     @commands.is_owner()
     @commands.command(name='listextensions')
     async def list_extensions(self, ctx):

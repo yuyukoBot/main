@@ -132,12 +132,14 @@ class log(commands.Cog):
                 embed.add_field(name="現在のカテゴリー", value=after.category)
                 embed.add_field(name="低速モード", value=after.slowmode_delay)
                 embed.add_field(name="タイプ", value=after.type)
+
                 await ch.send(embed=embed)
 
             if before.topic != after.topic:
                 e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="チャンネルトピックを変更しました", color=0x5d00ff)
                 e.add_field(name="設定前", value=f'`{before.topic}`')
                 e.add_field(name="設定後", value=f'`{after.topic}`')
+                e.add_field(name="実行者", value=str(bl[0].user))
                 e.add_field(name="現在のチャンネル名", value=after.name)
                 e.add_field(name="現在のトピック", value=after.topic)
                 e.add_field(name="nsfwかどうか", value=after.nsfw)

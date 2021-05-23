@@ -114,7 +114,7 @@ class log(commands.Cog):
     async def on_guild_channel_update(self, before, after):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        bl = await after.TextChannel.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_update).flatten()
+        bl = await after.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_update).flatten()
         cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.guild.id}")
         result = cursor.fetchone()
         if result is None:

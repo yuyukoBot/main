@@ -80,17 +80,11 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
-        if ctx.invoked_subcommand is None:
-
-            e = discord.Embed(title="サーバーセッティング",color=0x9000ff)
-            e.add_field(name="welcome-channel",value="テスト")
-            e.add_field(name="leave_channel",value="テスト",inline=True)
-
-            await ctx.send(embed=e)
+        await ctx.send_help(ctx.command)
 
 
 
-    @settings.command(description="T指定したチャンネルにログを送信します")
+    @settings.command(description="指定したチャンネルにログを送信します")
     async def log(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
         if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:

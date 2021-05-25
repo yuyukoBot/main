@@ -258,6 +258,7 @@ class Song:
                 value=f"[{self.source.uploader}]({self.source.uploader_url})",
             )
                 .add_field(name="URL", value=f"[Click]({self.source.url})")
+                .add_field(name="再生数",value=self.views)
                 .set_thumbnail(url=self.source.thumbnail)
                 .set_author(name=self.requester.name, icon_url=self.requester.avatar_url)
         )

@@ -164,6 +164,22 @@ class everyone(commands.Cog):
         locale.setlocale(locale.LC_CTYPE, "English_United States.932")
         await ctx.send(datetime.datetime.now().strftime("%Y年%m月%d日 %H時%M分%S秒"))
 
+    @commands.command(name="invite_bot",description="指定したbotの招待リンクを作成します")
+    async def invite_bot(self, ctx, bot: discord.Member):
+        """`誰でも`"""
+        bot_invite = discord.Embed()
+        bot_invite.set_thumbnail(url=bot.avatar_url)
+        bot_invite.title = f"{bot.name} Invite"
+        if bot.bot:
+            bot_invite.description = (
+                f"{bot.name} の招待リンクです"
+            )
+        else:
+            bot_invite.description = "指定したidは間違っています"
+        bot_invite.add_field(name="権限0",value=str(discord.utils.oauth_url(bot.id, discord.Permissions(0))))
+        bot_invite.add_field(name="管理者権限",value=str(discord.utils.oauth_url(bot.id, discord.Permissions(8))))
+        await ctx.send(embed=bot_invite)
+
 
 
 

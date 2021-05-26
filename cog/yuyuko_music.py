@@ -8,6 +8,9 @@ import youtube_dl
 import async_timeout
 import sr_api
 import os
+from discord_slash import cog_ext, SlashContext
+from discord_slash.cog_ext import cog_slash
+
 api = sr_api.Client()
 try:
     import uvloop
@@ -408,6 +411,16 @@ class music(commands.Cog):
 
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.voice_state = self.get_voice_state(ctx)
+
+    @cog_slash(name="join",description="現在の音声チャネルに参加します")
+    async def _join(self, ctx: SlashContext):
+        """`誰でも`"""
+        destination = ctx.author.voice.channel
+        if ctx.voice_state.voice:
+            await ctx.voice_state.voice.move_to(destination)
+            return
+
+        ctx.voice_state.voice = await destination.connect()
 
     @commands.command(name="join",description="現在の音声チャネルに参加します")
     async def _join(self, ctx: commands.Context):

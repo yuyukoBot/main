@@ -2,6 +2,9 @@ import asyncio
 import codecs
 import datetime
 import time
+import dns
+import dns.resolver
+import socket
 import io
 from datetime import datetime
 from util import Nullify
@@ -11,6 +14,8 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 import aiohttp
+from util.Error import ErrorMessage
+
 class everyone(commands.Cog):
     """
     誰でも使えるコマンドです
@@ -94,6 +99,80 @@ class everyone(commands.Cog):
             await ctx.send("", embed=embed)
         else:
             await ctx.send(self.bot.bot_prefix + "That's not a real language.")
+
+    @commands.command(
+        brief="Frage DNS-Einträge ab",
+        description="Frage bestimmte DNS-Einträge einer Domain ab.",
+        aliases=["getdns"],
+        help="",
+        usage="<Domain> <Typ (CNAME, A, MX...)>"
+    )
+    async def dns(self, ctx, domain: str, typ: str = "A"):
+        typ = typ.upper()
+        try:
+            result = dns.resolver.query(domain, typ)
+            if typ == "A":
+                await ctx.sendEmbed(
+                    title="DNS-Info",
+                    description=f"DNS-Einträge des Typs A für '{domain}'!",
+                    inline=False,
+                    fields=[
+                        ("IP", ipval.to_text()) for ipval in result
+                    ]
+                )
+            elif typ == "CNAME":
+                await ctx.sendEmbed(
+                    title="DNS-Info",
+                    description=f"DNS-Einträge des Typs CNAME für '{domain}'!",
+                    inline=False,
+                    fields=[
+                        ("CNAME Target", cnameval.target) for cnameval in result
+                    ]
+                )
+            elif typ == "MX":
+                await ctx.sendEmbed(
+                    title="DNS-Info",
+                    description=f"DNS-Einträge des Typs MX für '{domain}'!",
+                    inline=False,
+                    fields=[
+                        ("MX Record", mxdata.exchange) for mxdata in result
+                    ]
+                )
+            else:
+                await ctx.sendEmbed(
+                    title="DNS-Info",
+                    description=f"DNS-Einträge des Typs '{typ}' für '{domain}'!",
+                    inline=False,
+                    fields=[
+                        ("Eintrag", str(data)) for data in result
+                    ]
+                )
+        except dns.resolver.NXDOMAIN:
+            raise ErrorMessage(
+                f"Die Domain '{domain}' konnte nicht gefunden werden!")
+        except dns.resolver.NoAnswer:
+            raise ErrorMessage(
+                f"Für die Domain '{domain}' konnten keine DNS-Einträge des Typs '{typ}' gefunden werden!")
+        except dns.rdatatype.UnknownRdatatype:
+            raise ErrorMessage(
+                f"Unbekannter DNS-Record Typ: {typ}")
+
+    @commands.command(
+        brief="Erhalte die IP einer Domain",
+        description="Frage die IP-Adresse ab, welche hinter einer Domain steckt.",
+        aliases=["ip"],
+        help="",
+        usage="<Domain>"
+    )
+    async def getip(self, ctx, domain: str):
+        try:
+            ip = socket.gethostbyname(domain)
+            await ctx.sendEmbed(
+                title="IP-Info",
+                description=f"Die IP hinter '{domain}' lautet '{ip}'!",
+            )
+        except socket.gaierror:
+            raise ErrorMessage(f"Die Domain '{domain}' konnte nicht gefunden werden!")
 
     @commands.command()
     async def timer(self, ctx, seconds):

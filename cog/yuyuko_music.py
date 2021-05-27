@@ -383,7 +383,7 @@ class VoiceState:
             await self.voice.disconnect()
             self.voice = None
 
-
+target_guilds = []
 class music(commands.Cog):
     """Commands related to music."""
 
@@ -412,10 +412,10 @@ class music(commands.Cog):
     async def cog_before_invoke(self, ctx: commands.Context):
         ctx.voice_state = self.get_voice_state(ctx)
 
-    @cog_slash(name="join",description="現在の音声チャネルに参加します")
+    @cog_slash(name="join",description="現在の音声チャネルに参加します",guild_ids=target_guilds)
     async def _join(self, ctx: SlashContext):
         """`誰でも`"""
-        destination = ctx.author.voice.channel
+        destination = SlashContext.author.voice.channel
         if ctx.voice_state.voice:
             await ctx.voice_state.voice.move_to(destination)
             return

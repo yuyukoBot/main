@@ -580,35 +580,23 @@ class music(commands.Cog):
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.message.add_reaction("✅")
 
-    @commands.command()
-    @commands.guild_only()
-    async def _play(self, ctx: commands.Context, *, url: str):
-        """Plays the url or adds it to the queue"""
-        if ctx.voice_client is None:
-            if ctx.author.voice:
-                await ctx.author.voice.channel.connect()
+    @commands.command(name="play",description="指定した曲を再生します")
+    async def _play(self, ctx: commands.Context, *, search: str):
+        """
+        `誰でも`
+        """
+        async with ctx.typing():
+            try:
+                source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
+            except YTDLError:
+                pass
             else:
-                await ctx.send(':x: **I am not connected to a voice channel**', delete_after=5)
-                return
+                if not ctx.voice_state.voice:
+                    await ctx.invoke(self._join)
 
-        msg = await ctx.send(f'**Searching** :mag_right: `{url}`')
-        first, *rest = self._extract_info(url, ctx)
-
-        if ctx.bot.config.get('delete_messages'):
-            await ctx.channel.delete_messages([ctx.message, msg])
-        if not ctx.voice_client.is_playing():
-            await self._queue(ctx).play(first)
-        else:
-            self._queue(ctx).append(first)
-            embed = discord.Embed(
-                title='Added to queue',
-                description=f'[{first.title}]({first.webpage_url}) by [{first.uploader}]({first.uploader_url})',
-                color=discord.Color.from_rgb(180, 192, 200)) \
-                .set_thumbnail(url=first.thumbnail) \
-                .add_field(name='Duration', value=first.duration)
-            await ctx.send(embed=embed, delete_after=5)
-        if rest:
-            self._queue(ctx).extend(rest)
+                song = Song(source)
+                await ctx.voice_state.songs.put(song)
+                await ctx.send(f"Enqueued {source}")
 
     @commands.command(name="search",description="検索した曲をキューに追加します")
     async def _search(self, ctx: commands.Context, *, search: str):

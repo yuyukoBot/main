@@ -1,7 +1,4 @@
-import textwrap
-from discord import Intents
-import typing
-from datetime import time
+
 import aiohttp
 import datetime
 from datetime import datetime, timedelta
@@ -19,21 +16,11 @@ from collections import OrderedDict, deque, Counter
 import datetime
 import time
 import os
-from asyncio import sleep
 
-import asyncio, discord
-import random
-import secrets
-from io import BytesIO
-import ast
+
+import discord
+
 import psutil
-import functools
-from util import DisplayName
-import inspect
-import DiscordUtils
-from discord.ext.commands import clean_content
-from discord import Embed
-from discord.ext.commands import Cog
 
 
 class infoCog(commands.Cog):
@@ -347,40 +334,6 @@ class infoCog(commands.Cog):
     async def userinfo(self, ctx, *, user: Union[discord.Member, discord.User,] = None):
         """`誰でも`"""
 
-        def serverperms(content):
-            if content == 'None': return 'なし'
-            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
-            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
-                                                                                   "`メンバーをキック`").replace(
-                "`ban_members`", "`メンバーをBan`")
-            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
-                "`manage_guild`", "`サーバー管理`")
-            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
-                "`priority_speaker`", "`優先スピーカー`")
-            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
-                "`send_messages`", "`メッセージを送信`")
-            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
-                                                                                  "`メッセージの管理`").replace("`embed_links`",
-                                                                                                        "`埋め込みリンク`")
-            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
-                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
-                                                                                                 "`全員宛メンション`")
-            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
-                                                                              "`サーバーインサイトを見る`").replace("`connect`",
-                                                                                                        "`接続`")
-            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
-                                                                                               "`メンバーをミュート`").replace(
-                "`deafen_members`", "`メンバーのスピーカーをミュート`")
-            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
-                "`change_nickname`", "`ニックネームの変更`")
-            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
-                "`manage_webhooks`", "`webhookの管理`")
-            value = value.replace("`manage_emojis`", "`絵文字の管理`")
-            value = value.replace("`use_slash_commands`","`スラッシュコマンドの使用`")
-            return value
-
-
-
         user = user or ctx.author
         e = discord.Embed(color=0xb300ff)
         roles = [r.mention for r in user.roles]
@@ -605,39 +558,9 @@ class infoCog(commands.Cog):
     @commands.command(name="roleinfo", aliases=["ri", "role"], description="役職の情報")
     async def roleinfo(self, ctx, *, role: commands.RoleConverter = None):
         """`誰でも`"""
-        def rv(content):
-            if content == 'None': return 'なし'
-            value = content.replace('online', 'オンライン').replace('offline', 'オフライン')
-            value = value.replace("`create_instant_invite`", "`招待リンクを作成`").replace("`kick_members`",
-                                                                                   "`メンバーをキック`").replace(
-                "`ban_members`", "`メンバーをBan`")
-            value = value.replace("`administrator`", "`管理者`").replace("`manage_channels`", "`チャンネルの管理`").replace(
-                "`manage_guild`", "`サーバー管理`")
-            value = value.replace("`add_reactions`", "`リアクションの追加`").replace("`view_audit_log`", "`サーバーログの表示`").replace(
-                "`priority_speaker`", "`優先スピーカー`")
-            value = value.replace("`stream`", "`配信`").replace("`read_messages`", "`メッセージを読む`").replace(
-                "`send_messages`", "`メッセージを送信`")
-            value = value.replace("`send_tts_messages`", "`TTSメッセージを送信`").replace("`manage_messages`",
-                                                                                  "`メッセージの管理`").replace("`embed_links`",
-                                                                                                        "`埋め込みリンク`")
-            value = value.replace("`attach_files`", "`ファイルの添付`").replace("`read_message_history`",
-                                                                         "`メッセージ履歴を読む`").replace("`mention_everyone`",
-                                                                                                 "`全員宛メンション`")
-            value = value.replace("`external_emojis`", "`外部の絵文字の使用`").replace("`view_guild_insights`",
-                                                                              "`サーバーインサイトを見る`").replace("`connect`",
-                                                                                                        "`接続`")
-            value = value.replace("`speak`", "`発言`").replace("`mute_members`", "`発言`").replace("`mute_members`",
-                                                                                               "`メンバーをミュート`").replace(
-                "`deafen_members`", "`メンバーのスピーカーをミュート`")
-            value = value.replace("`move_members`", "`メンバーの移動`").replace("`use_voice_activation`", "`音声検出を使用`").replace(
-                "`change_nickname`", "`ニックネームの変更`")
-            value = value.replace("`manage_nicknames`", "`ニックネームの管理`").replace("`manage_roles`", "`役職の管理`").replace(
-                "`manage_webhooks`", "`webhookの管理`")
-            value = value.replace("`manage_emojis`", "`絵文字の管理`")
-            value = value.replace("`use_slash_commands`","`スラッシュコマンドの使用`")
-            return value
+
         if role is None:
-            await ctx.send(ctx._("roleinfo-howto"))
+            await ctx.send("役職が見つかりません")
         elif role.guild == ctx.guild:
             embed = discord.Embed(title=role.name, description=f"id:{role.id}", color=0x5d00ff)
             if role.hoist:
@@ -657,8 +580,7 @@ class infoCog(commands.Cog):
                             value='%s Online' % sum(1 for m in role.members if m.status != discord.Status.offline),
                             inline=True)
 
-            pers = [f"`{c}`" for c in dict(role.permissions) if dict(role.permissions)[c] is True]
-            embed.add_field(name=f"権限({len(pers)})", value=rv(",".join(pers)))
+
 
 
             hasmember = ""
@@ -671,6 +593,72 @@ class infoCog(commands.Cog):
                     embed.add_field(name="メンバー", value="ユーザーが多すぎます")
             else:
                 embed.add_field(name="メンバー", value="None")
+
+            role_permission = role.permissions
+
+            server_permission = {
+                'administrator': '管理者', 'read_messages': 'チャンネルを見る', 'manage_channels': 'チャンネルの管理',
+                'manage_roles': 'ロールの管理', 'manage_emojis': '絵文字の管理',
+                'view_audit_log': 'サーバーログの表示', 'view_guild_insights': 'サーバーインサイトを見る',
+                'manage_webhooks': 'webhookの管理', 'manage_guild': 'サーバー管理'
+            }
+            member_permission = {
+                'create_instant_invite': '招待リンクを作成', 'change_nickname': 'ニックネームの変更',
+                'manage_nicknames': 'ニックネームの管理', 'kick_members': 'メンバーをキック',
+                'ban_members': 'メンバーをBAN'
+            }
+            ch_permission = {
+                'send_messages': 'メッセージを送信', 'embed_links': '埋め込みリンク', 'attach_files': 'ファイルを添付',
+                'add_reactions': 'リアクションの追加', 'external_emojis': '外部の絵文字の利用',
+                'mention_everyone': '@everyone、@here、全てのロールにメンション', 'manage_messages': 'メッセージの管理',
+                'read_message_history': 'メッセージ履歴を読む', 'send_tts_messages': 'テキスト読み上げメッセージを送信する',
+                'use_slash_commands': 'スラッシュコマンドを使用'
+            }
+            voice_permission = {
+                'connect': '接続', 'speak': '発言', 'stream': '動画',
+                'use_voice_activation': '音声検出を使用', 'priority_speaker': '優先スピーカー',
+                'mute_members': 'メンバーをミュート', 'deafen_members': 'メンバーのスピーカーをミュート',
+                'move_members': 'メンバーを移動', 'request_to_speak': 'スピーカー参加をリクエスト'
+            }
+
+            s_perm_text = ''
+            m_perm_text = ''
+            c_perm_text = ''
+            not_vperm_text = ''
+            not_cperm_text = ''
+            not_mperm_text = ''
+            not_sperm_text = ''
+            v_perm_text = ''
+            user_permission_list = []
+            for rp in list(role_permission):
+                if rp[1]:
+                    user_permission_list.append(rp[0])
+
+            for sp in list(server_permission):
+                if sp in user_permission_list:
+                    s_perm_text += f"✅:{server_permission[sp]}"
+                else:
+                    not_sperm_text += f"❌:{server_permission[sp]}"
+            for sp in list(member_permission):
+                if sp in user_permission_list:
+                    m_perm_text += f"✅:{member_permission[sp]}"
+                else:
+                    not_mperm_text += f"❌:{member_permission[sp]}"
+            for sp in list(ch_permission):
+                if sp in user_permission_list:
+                    c_perm_text += f"✅:{ch_permission[sp]}"
+                else:
+                    not_cperm_text += f"❌:{ch_permission[sp]}"
+            for sp in list(voice_permission):
+                if sp in user_permission_list:
+                    v_perm_text += f"✅:{voice_permission[sp]}"
+                else:
+                    not_vperm_text += f"❌:{voice_permission[sp]}"
+
+            embed.add_field(name='サーバー全般', value=f'`{s_perm_text}`,`{not_sperm_text}`')
+            embed.add_field(name='メンバー', value=f'`{m_perm_text}`,`{not_mperm_text}`')
+            embed.add_field(name='テキストチャンネル', value=f'`{c_perm_text}`,`{not_cperm_text}`')
+            embed.add_field(name='ボイス', value=f'`{v_perm_text}`,`{not_vperm_text}`')
 
             await ctx.send(embed=embed)
 

@@ -24,6 +24,7 @@ status = "Beta"
 
 intents = discord.Intents.default()
 intents.members = True
+intents.emojis = True
 with open('./config.json', 'r') as cjson:
     config = json.load(cjson)
 ver = "2.1"
@@ -46,6 +47,7 @@ bot.close=newclose
 bot.savedb=savedb
 bot.cursor=db.cursor()
 bot.load_extension('jishaku')
+bot.load_extension('private.server_manage')
 
 
 if __name__ == '__main__':
@@ -102,7 +104,7 @@ async def on_guild_join(guild):
     ch = bot.get_channel(817642658599141417)
     await ch.send(embed=e)
     e1 = discord.Embed(title="幽々子の導入ありがとうございます",
-                       description="詳しくは`y/help`でご確認ください\n`幽々子ログ`というチャンネルを作ると自動的にログチャンネルとなります", color=0x5d00ff)
+                       description="詳しくは`y/help`でご確認ください\nこのbotは主に,logやmoderation,music,information等の機能があります", color=0x5d00ff)
     try:
         await guild.system_channel.send(embed=e1)
     except:

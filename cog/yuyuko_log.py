@@ -122,18 +122,49 @@ class log(commands.Cog):
         else:
             ch = self.bot.get_channel(id=int(result[0]))
             if before.name != after.name:
-                embed = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="チャンネルの名前を変更しました", color=0x5d00ff)
-                embed.add_field(name="設定前", value=f'`{before.name}`', inline=True)
-                embed.add_field(name="設定後", value=f'`{after.name}`', inline=False)
-                embed.add_field(name="実行者", value=str(bl[0].user))
-                embed.add_field(name="現在のチャンネル名", value=after.name)
-                embed.add_field(name="現在のトピック", value=after.topic)
-                embed.add_field(name="nsfwかどうか", value=after.nsfw)
-                embed.add_field(name="現在のカテゴリー", value=after.category)
-                embed.add_field(name="低速モード", value=after.slowmode_delay)
-                embed.add_field(name="タイプ", value=after.type)
+                if isinstance(after, discord.TextChannel):
+                    embed = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-テキストチャンネル変更- ",description="チャンネルの名前を変更しました", color=0x5d00ff)
+                    embed.add_field(name="設定前", value=f'`{before.name}`', inline=True)
+                    embed.add_field(name="設定後", value=f'`{after.name}`', inline=False)
+                    embed.add_field(name="実行者", value=str(bl[0].user))
+                    embed.add_field(name="現在のチャンネル名", value=after.name)
+                    embed.add_field(name="現在のトピック", value=after.topic)
+                    embed.add_field(name="nsfwかどうか", value=after.nsfw)
+                    embed.add_field(name="現在のカテゴリー", value=after.category)
+                    embed.add_field(name="低速モード", value=after.slowmode_delay)
+                    await ch.send(embed=embed)
+                elif isinstance(after, discord.VoiceChannel):
+                    e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-ボイスチャンネル変更- ",description="チャンネルの名前を変更しました", color=0x5d00ff)
+                    e.add_field(name="設定前", value=f'`{before.name}`', inline=True)
+                    e.add_field(name="設定後", value=f'`{after.name}`', inline=False)
+                    e.add_field(name="実行者", value=str(bl[0].user))
+                    mbs = ""
+                    for m in after.members:
+                        if len(mbs + f"`{m.name}`,") >= 1020:
+                            mbs = mbs + f"他"
+                            break
+                        else:
+                            mbs = mbs + f"`{m.name}`,"
+                    if mbs != "":
+                        e.add_field(name=f"参加可能なメンバー({len(after.members)}人)", value=mbs, inline=False)
 
-                await ch.send(embed=embed)
+                    await ch.send(embed=e)
+                elif isinstance(after, discord.StageChannel):
+                    e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-カテゴリ変更- ",description="カテゴリーの名前を変更しました", color=0x5d00ff)
+                    e.add_field(name="設定前", value=f'`{before.name}`', inline=True)
+                    e.add_field(name="設定後", value=f'`{after.name}`', inline=False)
+                    e.add_field(name="実行者", value=str(bl[0].user))
+                    e.add_field(name="現在のチャンネル名", value=after.name)
+                    mbs = ""
+                    for m in after.members:
+                        if len(mbs + f"`{m.name}`,") >= 1020:
+                            mbs = mbs + f"他"
+                            break
+                        else:
+                            mbs = mbs + f"`{m.name}`,"
+                    if mbs != "":
+                        e.add_field(name=f"参加可能なメンバー({len(after.members)}人)", value=mbs, inline=False)
+                    await ch.send(embed=e)
 
             if before.topic != after.topic:
                 e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="チャンネルトピックを変更しました", color=0x5d00ff)
@@ -149,19 +180,19 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
             if before.nsfw != after.nsfw:
-                e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="nsfwかどうかを変更しました", color=0x5d00ff)
-                if before.nsfw:
-                    e.add_field(name="設定前", value=f'`はい`')
-                else:
-                    e.add_field(name="設定後", value=f'`いいえ`')
-                e.add_field(name="実行者", value=str(bl[0].user))
-                e.add_field(name="現在のチャンネル名", value=after.name)
-                e.add_field(name="現在のトピック", value=after.topic)
-                e.add_field(name="nsfwかどうか", value=after.nsfw)
-                e.add_field(name="現在のカテゴリー", value=after.category)
-                e.add_field(name="低速モード", value=after.slowmode_delay)
-                e.add_field(name="タイプ", value=after.type)
-                await ch.send(embed=e)
+                    e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="nsfwかどうかを変更しました", color=0x5d00ff)
+                    if before.nsfw:
+                        e.add_field(name="設定前", value=f'`はい`')
+                    else:
+                        e.add_field(name="設定後", value=f'`いいえ`')
+                    e.add_field(name="実行者", value=str(bl[0].user))
+                    e.add_field(name="現在のチャンネル名", value=after.name)
+                    e.add_field(name="現在のトピック", value=after.topic)
+                    e.add_field(name="nsfwかどうか", value=after.nsfw)
+                    e.add_field(name="現在のカテゴリー", value=after.category)
+                    e.add_field(name="低速モード", value=after.slowmode_delay)
+                    e.add_field(name="タイプ", value=after.type)
+                    await ch.send(embed=e)
 
             if before.category != after.category:
                 e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-チャンネル変更- ",description="カテゴリーを変更しました", color=0x5d00ff)
@@ -217,11 +248,85 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
         else:
-             e1 = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-チャンネル作成- ", timestamp=channel.created_at, color=0x5d00ff)
-             e1.add_field(name="チャンネル名", value=channel.mention)
-             e1.add_field(name="実行者", value=str(bl[0].user))
-             channel = self.bot.get_channel(id=int(result[0]))
-             await channel.send(embed=e1)
+            ch = self.bot.get_channel(id=int(result[0]))
+            if isinstance(channel, discord.TextChannel):
+                e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ -テキストチャンネル作成",
+                                  color=self.bot.color)
+                e.add_field(name="チャンネル名", value=f'{channel}({channel.id})')
+                if channel.category:
+                    e.add_field(name="所属するカテゴリ", value=f"{channel.category.name}({channel.category.id})")
+                e.add_field(name="チャンネルトピック", value=channel.topic or "なし")
+                if not channel.slowmode_delay == 0:
+                    e.add_field(name="スローモードの時間", value=f"{channel.slowmode_delay}秒")
+                e.add_field(name="NSFW指定有無", value=channel.is_nsfw())
+                await ch.send(embed=e)
+            elif isinstance(channel, discord.VoiceChannel):
+                e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-ボイスチャンネル作成- ",
+                                  timestamp=channel.created_at, color=0x5d00ff)
+                e.add_field(name="チャンネル名", value=channel.mention)
+                e.add_field(name="実行者", value=str(bl[0].user))
+                if not channel.user_limit == 0:
+                    e.add_field(name="ユーザー数制限", value=f"{channel.user_limit}人")
+                mbs = ""
+                for m in channel.members:
+                    if len(mbs + f"`{m.name}`,") >= 1020:
+                        mbs = mbs + f"他"
+                        break
+                    else:
+                        mbs = mbs + f"`{m.name}`,"
+                if mbs != "":
+                    e.add_field(name=f"参加可能なメンバー({len(channel.members)}人)", value=mbs, inline=False)
+                await ch.send(embed=e)
+            elif isinstance(channel, discord.CategoryChannel):
+                e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-カテゴリ-作成- ",
+                                  timestamp=channel.created_at, color=0x5d00ff)
+                e.add_field(name="チャンネル名", value=channel.mention)
+                e.add_field(name="実行者", value=str(bl[0].user))
+                mbs = ""
+                for c in channel.channels:
+                    if c.type is discord.ChannelType.news:
+                        if "NEWS" in channel.guild.features:
+                            chtype = "アナウン素"
+                        else:
+                            chtype = "アナウンス(フォロー不可)"
+                    elif c.type is discord.ChannelType.store:
+                        chtype = "ストア"
+                    elif c.type is discord.ChannelType.voice:
+                        chtype = "ボイス"
+                    elif c.type is discord.ChannelType.text:
+                        chtype = "テキスト"
+                    else:
+                        chtype = str(c.type)
+                    if len(mbs + f"`{c.name}({chtype})`,") >= 1020:
+                        mbs = mbs + f"他"
+                        break
+                    else:
+                        mbs = mbs + f"`{c.name}({chtype})`,"
+                if mbs != "":
+                    e.add_field(name=f"所属するチャンネル({len(channel.channels)}チャンネル)", value=mbs, inline=False)
+                await ch.send(embed=e)
+
+            elif isinstance(channel, discord.StageChannel):
+                e = discord.Embed(title="<:create_channel:840913176819662858> -サーバーログ-ステージチャンネル作成- ",
+                                  timestamp=channel.created_at,color=self.bot.color)
+                e.add_field(name="チャンネル名",value=channel.mention)
+                e.add_field(name="実行者", value=str(bl[0].user))
+                if channel.category:
+                    e.add_field(name="所属するカテゴリ", value=f"{channel.category.name}({channel.category.id})")
+
+                if not channel.user_limit == 0:
+                    e.add_field(name="ユーザー数制限", value=f"{channel.user_limit}人")
+                mbs = ""
+                for m in channel.members:
+                    if len(mbs + f"`{m.name}`,") >= 1020:
+                        mbs = mbs + f"他"
+                        break
+                    else:
+                        mbs = mbs + f"`{m.name}`,"
+                if mbs != "":
+                    e.add_field(name=f"参加可能なメンバー({len(channel.members)}人)", value=mbs, inline=False)
+                await ch.send(embed=e)
+
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before, after):
@@ -463,6 +568,8 @@ class log(commands.Cog):
                     e = discord.Embed(title="サーバーログ -ボイスチャンネル退出",color=self.bot.color)
                     e.add_field(name="該当チャンネル",value=before.channel.mention)
                     e.add_field(name="抜けたメンバー",value=member.mention)
+
+
                     e.set_thumbnail(url=member.avatar_url_as(format="png"))
                     await ch.send(embed=e)
                 else:
@@ -677,8 +784,7 @@ class log(commands.Cog):
                 e.add_field(name="変更後",value=after.name)
                 await ch.send(embed=e)
 
-            if before.discriminator != after.discriminator:
-                e = discord.Embed
+
 
     @commands.Cog.listener()
     async def on_member_join(self, member:discord.Member):
@@ -793,6 +899,16 @@ class log(commands.Cog):
             e = discord.Embed(title="-サーバーログ-リアクション剥奪- ", color=self.bot.color)
             e.add_field(name="該当メッセージと絵文字", value=f"{message}:{reaction.emoji}")
             e.add_field(name="リアクションを剥奪したユーザー", value=user)
+            await ch.send(embed=e)
+
+    @commands.Cog.listener()
+    async def on_guild_emojis_update(self,before,after):
+        if before.name != after.name:
+            e = discord.Embed(title="サーバーログ -絵文字アップデート")
+            e.add_field(name="変更前",value=before.name)
+            e.add_field(name="変更跡",value=after.name)
+            e.set_thumbnail(url=after.url)
+            ch = self.bot.get_channel(757773097758883880)
             await ch.send(embed=e)
 
 

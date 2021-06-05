@@ -3,6 +3,7 @@ from asyncio import sleep
 
 import json
 from typing import Union
+from discord import Color, Embed, Guild, Member, User
 import logging
 import textwrap
 from datetime import time
@@ -563,6 +564,8 @@ class log(commands.Cog):
             return
         else:
             ch = self.bot.get_channel(id=int(result[0]))
+
+
             if before.channel !=after.channel:
                 if after.channel is None:
                     e = discord.Embed(title="サーバーログ -ボイスチャンネル退出",color=self.bot.color)
@@ -725,19 +728,24 @@ class log(commands.Cog):
                 await channel.send(embed=e)
 
             if before.roles != after.roles:
-                e1 = discord.Embed(title="-サーバーログ-メンバー変更- ", description=f"役職を付与or剥奪しました\n変更メンバー:{str(after)}", color=0x5d00ff)
-                if len(before.roles) > len(after.roles):
-                    e1.add_field(name="変更内容", value="役職除去")
-                    e1.add_field(name="役職", value=list(
-                        set(before.roles) - set(after.roles))[0])
-                else:
-                    e1.add_field(name="変更内容", value="役職付与")
-                    e1.add_field(name="役職", value=list(
-                        set(after.roles) - set(before.roles))[0])
-                    e1.add_field(name="今の権限", value=rv(",".join(pem)))
-                    e1.add_field(name="実行者", value=str(bl[0].user))
-                    channel = self.bot.get_channel(id=int(result[0]))
-                    await channel.send(embed=e1)
+                bls = await after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_role_update).flatten()
+
+                old_roles = set(before.roles)
+                new_roles = set(after.roles)
+                removed_roles = old_roles - new_roles
+                added_roles = new_roles - old_roles
+                action_type = "剥奪" if removed_roles else "付与"
+                description = (
+                    f"**Role:** {removed_roles.pop().mention if removed_roles else added_roles.pop().mention}\n"
+                    f"**Mention:** {after.mention}"
+                )
+                e1 = discord.Embed(title=f"-サーバーログ-メンバーの役職{action_type}- ", description=description,
+                                   color=0x5d00ff)
+
+                e1.add_field(name="今の権限", value=rv(",".join(pem)))
+                e1.add_field(name="実行者", value=str(bls[0].user))
+                channel = self.bot.get_channel(id=int(result[0]))
+                await channel.send(embed=e1)
             if before.guild_permissions != after.guild_permissions:
 
                 e2 = discord.Embed(title="-サーバーログ-メンバー変更- ",description=f"権限を変更しました\n変更メンバー:{str(after)}", color=0x5d00ff)
@@ -767,21 +775,21 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_user_update(self,before, after):
+    async def on_user_update(self, user_before: User, user_after: User):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {after.id}")
+        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {user_after.id}")
         result = cursor.fetchone()
         if result is None:
             return
         else:
             ch = self.bot.get_channel(id=int(result[0]))
 
-            if before.name != after.name:
-                e = discord.Embed(title="サーバーログ-ユーザーアップデート",description=f"ニックネームを変更しました\n変更メンバー:{str(after)}")
+            if user_before.name != user_after.name:
+                e = discord.Embed(title="サーバーログ-ユーザーアップデート",description=f"ニックネームを変更しました\n変更メンバー:{str(user_after)}")
 
-                e.add_field(name="変更後",value=after.name)
+                e.add_field(name="変更後",value=user_after.name)
                 await ch.send(embed=e)
 
 

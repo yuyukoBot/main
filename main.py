@@ -48,6 +48,7 @@ bot.savedb=savedb
 bot.cursor=db.cursor()
 bot.load_extension('jishaku')
 bot.load_extension('private.server_manage')
+bot.load_extension('private.team')
 
 
 if __name__ == '__main__':

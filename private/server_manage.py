@@ -61,14 +61,17 @@ class Server_Manage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self,member:discord.Member):
-        role = discord.utils.get(member.guild.roles, name="未認証")
-        await member.add_roles(role)
-        ch = self.bot.get_channel(850787565622919229)
-        e = discord.Embed(title="サーバー認証",description="ルール等をお読みになったら`y/agree`と入力してください")
-        await ch.send(embed=e)
-        channel = self.bot.get_channel(850793112338038784)
-        e = discord.Embed(title="ユーザー参加ログ",description=f"{member}さんが参加しました")
-        await channel.send(embed=e)
+        if member.guild.id == 847119998153261096:
+            category_channel = self.bot.get_channel(850915412878688286)
+            ow = {
+                member: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                member.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                member.guild.me: discord.PermissionOverwrite(
+                    read_messages=True, send_messages=True, manage_messages=True)
+            }
+            ch = await member.guild.create_text_channel(f'{member}-verfiy', overwrites=ow, topic=str(member.id), position=0,category=category_channel)
+            e = discord.Embed(title=f"{member}さん{member.guild}へようこそ～",description=f"ルール等読みましたら`y/agree`と入力してください")
+            await ch.send(embed=e)
 
 
 
@@ -76,9 +79,9 @@ class Server_Manage(commands.Cog):
     async def agree(self,ctx):
         role = discord.utils.get(ctx.author.guild.roles, name="Server-Member")
         await ctx.author.add_roles(role)
-        channel = self.bot.get_channel(850793112338038784)
+        ch = self.bot.get_channel(850793112338038784)
         e = discord.Embed(title="ユーザー認証ログ", description=f"{ctx.author}さんが認証しました")
-        await channel.send(embed=e)
+        await ch.send(embed=e)
 
 
 

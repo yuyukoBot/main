@@ -18,7 +18,6 @@ logger = getLogger(__name__)
 
 
 class ServerSetting(commands.Cog):
-    """`ログには監視ログの権限が必要です`"""
     def __init__(self,bot):
         self.bot = bot
         self.bot.color = 0x5d00ff
@@ -59,7 +58,7 @@ class ServerSetting(commands.Cog):
                 val = (ctx.guild.id, channel.id)
                 await ctx.send("チャンネルをセットしました")
             elif result is not None:
-                sql = ("UPDATE  ServerSetting SET voice_channel = ? WHERE guild_id = ?")
+                sql = ("UPDATE  ServerSetting SET voice_role = ? WHERE guild_id = ?")
                 val = (channel.id, ctx.guild.id)
                 await ctx.send("チャンネルをアップデートしました")
             cursor.execute(sql, val)
@@ -67,18 +66,16 @@ class ServerSetting(commands.Cog):
             cursor.close()
             db.close()
 
-
-
-
     @commands.Cog.listener()
     async def on_member_join(self, member):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute("SELECT on_join_role FROM guild_config WHERE guild_id = $1",member.guild.id)
+        cursor.execute(f"SELECT welcome_role FROM ServerSetting WHERE guild_id = {member.guild.id}")
         role = cursor.fetchone()
-        if role is not None:
-            roles = member.guild.get_role(role)
-            await member.add_roles(roles)
+        if role is None:
+            return
+        else:
+            member.add_roles(role)
 
 
     @commands.group()
@@ -86,11 +83,11 @@ class ServerSetting(commands.Cog):
         await ctx.send_help(ctx.command)
 
 
-    @commands.bot_has_permissions(view_audit_log=True)
+
     @settings.command(description="指定したチャンネルにログを送信します")
     async def log(self, ctx, channel: discord.TextChannel):
         """`チャンネルの管理`"""
-        if ctx.message.author.guild_permissions.manage_messages and ctx.author.guild_permissions.view_audit_log or ctx.author.id == 478126443168006164:
+        if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
             cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
@@ -114,10 +111,6 @@ class ServerSetting(commands.Cog):
             db.commit()
             cursor.close()
             db.close()
-        else:
-             e = discord.Embed(title="エラー情報",description="権限が足りません",color=self.bot.color)
-             await ctx.send(embed=e)
-
 
     @settings.command(description="指定したチャンネルにウェルカムメッセージを設定します")
     async def welcome_text(self, ctx, *, text):
@@ -139,8 +132,6 @@ class ServerSetting(commands.Cog):
             db.commit()
             cursor.close()
             db.close()
-
-
 
 
 
@@ -192,14 +183,14 @@ class ServerSetting(commands.Cog):
             """`役職の管理`"""
             db = sqlite3.connect('main.sqlite')
             cursor = db.cursor()
-            cursor.execute(f"SELECT on_join_role FROM guild_config WHERE guild_id = {ctx.guild.id}")
+            cursor.execute(f"SELECT welcome_role FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
             result = cursor.fetchone()
             if result is None:
-                sql = ("INSERT INTO guild_config(guild_id,on_join_role) VALUES(?,?)")
+                sql = ("INSERT INTO ServerSetting(guild_id,welcome_role) VALUES(?,?)")
                 val = (ctx.guild.id, role.id)
                 await ctx.send("セットしました")
             elif result is not None:
-                sql = ("UPDATE guild_config SET on_join_role = ? WHERE guild_id = ?")
+                sql = ("UPDATE ServerSetting SET welcome_role = ? WHERE guild_id = ?")
                 val = (role.id, ctx.guild.id)
                 await ctx.send(f"アップデート")
             cursor.execute(sql, val)

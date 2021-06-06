@@ -35,7 +35,11 @@ PASSWORD = config['password']
 DATABASE = config["database"]
 
 
+async def main():
+    conn = await asyncpg.connect(user=USERNAME,password=PASSWORD,database=DATABASE,host="127.0.0.1")
+    await conn.close()
 
+asyncio.get_event_loop().run_until_complete(main())
 
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
 db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)

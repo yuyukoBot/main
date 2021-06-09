@@ -263,7 +263,7 @@ class Song:
             )
                 .add_field(name="URL", value=f"[Click]({self.source.url})")
                 .add_field(name="再生数",value=self.source.views)
-                .set_thumbnail(url=self.source.thumbnail)
+                .set_image(url=self.source.thumbnail)
                 .set_author(name=self.requester.name, icon_url=self.requester.avatar_url)
         )
         return embed

@@ -309,7 +309,7 @@ class ServerSetting(commands.Cog):
             await ctx.send("権限がありません")
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_reaction_add(self, payload):
         if payload.member.bot:
             return
         db = sqlite3.connect('main.sqlite')
@@ -326,7 +326,7 @@ class ServerSetting(commands.Cog):
                     await payload.member.add_roles(role)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
+    async def on_reaction_remove(self, payload):
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
         cursor.execute("SELECT * FROM reactrole WHERE guild_id = ?", (payload.guild_id,))

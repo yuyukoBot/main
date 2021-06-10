@@ -5,8 +5,12 @@ import time
 import dns
 import dns.resolver
 import socket
+from urllib.parse import unquote
+import wikipedia
 import io
+from discord_components import DiscordComponents, Button
 from datetime import datetime
+from discord.ext import menus as dmenus
 from util import Nullify
 import discord
 import discordlists
@@ -15,6 +19,65 @@ from discord.ext import commands
 from discord_slash import cog_ext, SlashContext
 import aiohttp
 from util.Error import ErrorMessage
+
+class EmbedBuilderMenu(dmenus.Menu):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.embed = discord.Embed()
+
+    async def send_initial_message(self, ctx, channel):
+        return await channel.send("Welcome to the interactive embed builder menu. To get started, press the "
+                                  "\N{INFORMATION SOURCE} button.")
+
+    async def wait_for_message(self):
+        def check(m):
+            return m.author.id == self.ctx.author.id and m.channel.id == self.ctx.channel.id
+
+        try:
+            msg = await self.ctx.bot.wait_for('message', timeout=30.0, check=check)
+        except asyncio.TimeoutError:
+            await self.ctx.send("Timed out waiting for a message.")
+            return
+        return msg
+
+    @dmenus.button("\N{MEMO}")
+    async def set_description(self, payload):
+        """Sets a description for the embed"""
+        await self.message.edit(content="Send the message you want to add as a description")
+        msg = await self.wait_for_message()
+        self.embed.description = msg.content
+
+    @dmenus.button("\N{LABEL}")
+    async def set_title(self, payload):
+        """Sets the title for the embed"""
+        await self.message.edit(content="Send the message you want to add as a title.\n**Limits**: Text can only be 256"
+                                        "characters or less")
+        msg = await self.wait_for_message()
+
+        if len(msg.content) > 256:
+            await self.ctx.send("Title can only be 256 characters or less.")
+            return
+
+        self.embed.title = msg.content
+
+    @dmenus.button("\N{INFORMATION SOURCE}\ufe0f", position=dmenus.Last(3))
+    async def info_page(self, payload) -> None:
+        """shows you this message"""
+        messages = []
+        for emoji, button in self.buttons.items():
+            messages.append(f'{str(emoji)} {button.action.__doc__}')
+
+        embed = discord.Embed(title="Help", color=discord.Color.blurple())
+        embed.clear_fields()
+        embed.description = '\n'.join(messages)
+        await self.message.edit(content=None, embed=embed)
+
+    @dmenus.button("\N{CHEQUERED FLAG}")
+    async def build(self, payload):
+        """Sends the embed"""
+        await self.ctx.send(embed=self.embed)
+        self.stop()
+
 
 class everyone(commands.Cog):
     """
@@ -28,6 +91,12 @@ class everyone(commands.Cog):
         self.api.set_auth("bots.ondiscord.xyz", "dsag38_auth_token_fda6gs") # Set authorisation token for a bot list
         self.api.set_auth("discordbots.group", "qos56a_auth_token_gfd8g6") # Set authorisation token for a bot list
         self.api.start_loop()  # Posts the server count automatically every 30 minutes
+
+    @commands.command()
+    async def embedbuilder(self, ctx) -> None:
+        """WIP embed builder command"""
+        em = EmbedBuilderMenu()
+        await em.start(ctx)
 
     @cog_ext.cog_slash(name="test")
     async def _test(self, ctx: SlashContext):
@@ -49,6 +118,8 @@ class everyone(commands.Cog):
                        "\nFailed to post server count to {:,} lists.".format(self.api.server_count,
                                                                              len(result["success"].keys()),
                                                                              len(result["failure"].keys())))
+
+
 
     @commands.command(name="screenshot",aliases=["ss"],description="サイトのssを表示します")
     async def screenshot(self, ctx, url):

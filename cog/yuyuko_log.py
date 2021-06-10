@@ -747,12 +747,13 @@ class log(commands.Cog):
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e1)
             if before.guild_permissions != after.guild_permissions:
+                blse = await after.guild.audit_logs(limit=1, action=discord.AuditLogActionCategory.update).flatten()
 
                 e2 = discord.Embed(title="-サーバーログ-メンバー変更- ",description=f"権限を変更しました\n変更メンバー:{str(after)}", color=0x5d00ff)
                 e2.add_field(name="変更前",value=rv(",".join(pers)))
                 e2.add_field(name="変更後",value=rv(",".join(pem)))
                 e2.add_field(name="役職",value=after.roles)
-                e2.add_field(name="実行者", value=str(bl[0].user))
+                e2.add_field(name="実行者", value=str(blse[0].user))
                 channel = self.bot.get_channel(id=int(result[0]))
                 await channel.send(embed=e2)
 
@@ -820,6 +821,8 @@ class log(commands.Cog):
             inviter = invite_used.inviter.mention if invite_used else "Unknown"
             invite_code = invite_used.code if invite_used else "Unknown"
 
+
+
             embed = discord.Embed(
                 title="サーバーログ -ユーザー参加",
                 timestamp=member.joined_at
@@ -827,6 +830,9 @@ class log(commands.Cog):
             embed.add_field(name="ユーザー名",value=member.mention)
             embed.add_field(name="招待した人", value=inviter)
             embed.add_field(name="招待コード", value=invite_code)
+            bl = await member.guild.audit_logs(limit=1, action=discord.AuditLogAction.bot_add).flatten()
+            if member.bot:
+                embed.add_field(name="botを追加したユーザー", value=str(bl[0].user))
             embed.set_thumbnail(url=member.avatar_url)
             channel = self.bot.get_channel(id=int(result[0]))
 

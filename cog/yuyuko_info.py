@@ -23,7 +23,7 @@ import discord
 import psutil
 
 
-class infoCog(commands.Cog):
+class information(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -892,4 +892,4 @@ class infoCog(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(infoCog(bot))
+    bot.add_cog(information(bot))

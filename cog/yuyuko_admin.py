@@ -568,7 +568,7 @@ class AdminCog(commands.Cog, name="Admin"):
         await send_large_message.send_large_embed(ctx.channel, embed, buffer)
 
     @commands.is_owner()
-    @system.command(hidden=True)
+    @system.command()
     async def listguild(self, ctx):
         '''Listet die aktuellen verbundenen Guilds auf (BOT OWNER ONLY)'''
         msg = '```js\n'

@@ -597,12 +597,8 @@ class log(commands.Cog):
 
 
             if before.self_mute != after.self_mute:
-                e = discord.Embed(title="test",description={member})
+                e = discord.Embed(title="test",description=f'{member}がミュート')
                 await ch.send(embed=e)
-
-
-
-
 
 
 

@@ -597,7 +597,6 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
 
-            #ミュートの時通知
             if before.self_mute != after.self_mute:
                 if after.self_mute:
                     e = discord.Embed(title="サーバーログ -ユーザー側ミュート設定",color=self.bot.color)
@@ -648,7 +647,7 @@ class log(commands.Cog):
 
 
 
-
+#tsts
     @commands.Cog.listener()
     async def on_guild_update(self, before, after):
         await self.bot.wait_until_ready()

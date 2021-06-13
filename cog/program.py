@@ -4,8 +4,8 @@ import zlib
 import io
 import re
 import aiohttp
-from discord.ext import commands
 from util import fuzzy
+from discord.ext import commands
 from pistonapi import PistonAPI
 piston = PistonAPI()
 class SphinxObjectFileReader:
@@ -260,7 +260,7 @@ class ProgrammingCog(commands.Cog, name="Programming"):
         e.set_author(name=str(member), icon_url=member.avatar_url)
 
 
-    @commands.command()
+    @commands.command(name="evalute")
     async def evalute(self,ctx, n, *, code):
         nm = n.lower()
         a = code.replace("```", "")
@@ -276,7 +276,7 @@ class ProgrammingCog(commands.Cog, name="Programming"):
             b = (piston.execute(language="java", version="15.0.2", code=a))
             c = str(b)
             em = discord.Embed(title="Java Code Output!",
-                               description=f'```py\nOutput:\n{c}```',
+                               description=f'```py\n出力:\n{c}```',
                                color=discord.Color.red())
 
         elif nm == "js":

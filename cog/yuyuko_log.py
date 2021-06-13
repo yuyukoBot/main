@@ -597,36 +597,6 @@ class log(commands.Cog):
                 await ch.send(embed=e)
 
 
-            if before.self_mute != after.self_mute:
-                if after.self_mute:
-                    e = discord.Embed(title="サーバーログ -ユーザー側ミュート設定",color=self.bot.color)
-                    e.add_field(name="該当ユーザー",value=f'{member}({member.id})')
-                    e.add_field(name="チャンネル",value=f'{after.channel}({after.channel.id})')
-                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
-                    await ch.send(embed=e)
-                else:
-                    e = discord.Embed(title="サーバーログ-ユーザー側ミュート解除",color=self.bot.color)
-                    e.add_field(name="該当ユーザー", value=f'{member}({member.id})')
-                    e.add_field(name="チャンネル", value=f'{after.channel}({after.channel.id})')
-                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
-                    await ch.send(embed=e)
-
-
-            if before.self_deaf != after.self_deaf:
-                if after.self_deaf:
-
-                    e = discord.Embed(title="サーバーログ -ユーザー側スピーカーミュート設定",color=self.bot.color)
-                    e.add_field(name="該当ユーザー",value=f'{member}({member.id})')
-                    e.add_field(name="チャンネル", value=f'{after.channel}({after.channel.id})')
-                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
-                    await ch.send(embed=e)
-
-                else:
-                    e = discord.Embed(title="サーバーログ-ユーザー側スピーカーミュート解除",color=self.bot.color)
-                    e.add_field(name="該当ユーザー", value=f'{member}({member.id})')
-                    e.add_field(name="チャンネル", value=f'{after.channel}({after.channel.id})')
-                    e.set_thumbnail(url=member.avatar_url_as(format="png"))
-                    await ch.send(embed=e)
 
             if before.self_stream != after.self_stream:
                 if after.self_stream:

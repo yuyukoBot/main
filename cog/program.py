@@ -60,7 +60,7 @@ class ProgrammingCog(commands.Cog, name="Programming"):
             json={"language": lang, "source": code})
         return await res.json()
 
-    @commands.command(name="run")
+    @commands.command()
     async def run(self, ctx: commands.Context, *, codeblock: str):
         """
         Run code and get results instantly

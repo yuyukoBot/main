@@ -507,7 +507,7 @@ class log(commands.Cog):
 
 
 
-
+#invite
     @commands.Cog.listener()
     async def on_invite_create(self, invite):
         await self.bot.wait_until_ready()

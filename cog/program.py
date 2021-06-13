@@ -60,7 +60,7 @@ class ProgrammingCog(commands.Cog, name="Programming"):
             json={"language": lang, "source": code})
         return await res.json()
 
-    @commands.command()
+    @commands.command(name="run")
     async def run(self, ctx: commands.Context, *, codeblock: str):
         """
         Run code and get results instantly
@@ -260,7 +260,7 @@ class ProgrammingCog(commands.Cog, name="Programming"):
         e.set_author(name=str(member), icon_url=member.avatar_url)
 
 
-    @commands.command(name="evalute")
+    @commands.command(name="evalute",description="コードを評価します")
     async def evalute(self,ctx, n, *, code):
         nm = n.lower()
         a = code.replace("```", "")

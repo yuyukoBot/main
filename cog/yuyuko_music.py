@@ -450,6 +450,26 @@ class music(commands.Cog):
 
         ctx.voice_state.voice = await destination.connect()
 
+    @commands.command()
+    async def fileplay(self,ctx):
+        """指定された音声ファイルを流します。"""
+        voice_client = ctx.message.guild.voice_client
+
+        if not voice_client:
+            await ctx.send("Botはこのサーバーのボイスチャンネルに参加していません。")
+            return
+
+        if not ctx.message.attachments:
+            await ctx.send("ファイルが添付されていません。")
+            return
+
+        await ctx.message.attachments[0].save("tmp.mp3")
+
+        ffmpeg_audio_source = discord.FFmpegPCMAudio("tmp.mp3")
+        voice_client.play(ffmpeg_audio_source)
+
+        await ctx.send("再生しました。")
+
     @commands.command(name="leave", aliases=["disconnect"],description="botをボイスチャンネルから退出させます")
     async def _leave(self, ctx: commands.Context):
         """`誰でも`"""

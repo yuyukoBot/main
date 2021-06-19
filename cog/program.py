@@ -307,8 +307,15 @@ class ProgrammingCog(commands.Cog, name="Programming"):
                                description=f'```py\nOutput:\n{c}```',
                                color=discord.Color.red())
 
+        elif nm == "php":
+           b = (piston.execute(language="php",version="8.0",code=a))
+           c = str(b)
+           em = discord.Embed(title="PHP code出力",
+                              description=f'```py\nOutput:\n{c}```',
+                              color=discord.Color.red())
+
         else:
-            em = discord.Embed(title="**Not a supported language!!**")
+            em = discord.Embed(title="その言語は対応していません")
 
         await ctx.send(embed=em)
 

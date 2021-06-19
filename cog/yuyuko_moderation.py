@@ -154,25 +154,35 @@ class Moderation(commands.Cog):
             await dctx.delete()
             await ctx.message.delete()
 
-    @commands.bot_has_permissions(ban_members=True)
-    @commands.guild_only()
-    @commands.command(no_pm=True,description="banされた人が確認できます")
-    async def banlist(self, ctx):
-        """`BANの権限`"""
-        try:
-            bans = await ctx.guild.bans()
-        except:
-            return await ctx.send("You don't have the perms to see bans. (｡◝‿◜｡)")
-        e = discord.Embed(color=0x5d00ff)
-        e.set_author(name=f'List of Banned Members ({len(bans)}):', icon_url=ctx.guild.icon_url)
-        result = ',\n'.join(["[" + (str(b.user.id) + "] " + str(b.user)) for b in bans])
-        if len(result) < 1990:
-            total = result
+    @commands.command()
+    @commands.has_permissions(kick_members=True)
+    async def tempban(self, ctx, member: discord.Member, time, d, *, reason="No Reason"):
+        if member == None:
+            embed = discord.Embed(f"{ctx.message.author}, Please enter a valid user!")
+            await ctx.reply(embed=embed)
+
+
         else:
-            total = result[:1990]
-            e.set_footer(text=f'Too many bans to show here!')
-        e.description = f'```bf\n{total}```'
-        await ctx.send(embed=e)
+            guild = ctx.guild
+            embed = discord.Embed(title="Banned!", description=f"{member.mention}はTempBanされました",
+                                  colour=discord.Colour.purple(), timestamp=datetime.datetime.utcnow())
+            embed.add_field(name="理由 ", value=reason, inline=False)
+            embed.add_field(name="時間", value=f"{time}{d}", inline=False)
+            await ctx.reply(embed=embed)
+            await guild.ban(user=member)
+
+            if d == "s":
+                await asyncio.sleep(int(time))
+                await guild.unban(user=member)
+            if d == "m":
+                await asyncio.sleep(int(time * 60))
+                await guild.unban(user=member)
+            if d == "h":
+                await asyncio.sleep(int(time * 60 * 60))
+                await guild.unban(user=member)
+            if d == "d":
+                await asyncio.sleep(time * 60 * 60 * 24)
+                await guild.unban(int(user=member))
 
 
     @commands.command(pass_context=True)

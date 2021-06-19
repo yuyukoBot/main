@@ -111,7 +111,7 @@ class GroupHelpPageSource(menus.ListPageSource):
             embed.add_field(
                 name=signature,
                 value=command.description or "No help given...",
-                inline=False,
+                inline=True,
             )
 
         maximum = self.get_max_pages()
@@ -137,19 +137,17 @@ class HelpMenu(RoboPages):
         embed.title = "How Interpret The Help Pages"
 
         entries = (
-            ("<argument>", "This means the argument is __**required**__."),
-            ("[argument]", "This means the argument is __**optional**__."),
-            ("[A|B]", "This means that it can be __**either A or B**__."),
-            (
-                "[argument...]",
-                "This means you can have multiple arguments.\n"
-                "Now that you know the basics, it should be noted that...\n"
-                "__**You do not type in the brackets!**__",
-            ),
+            ('\N{BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f', "一番前のページに戻る"),
+            ('\N{BLACK LEFT-POINTING TRIANGLE}\ufe0f', "前のページに戻る"),
+            ('\N{BLACK RIGHT-POINTING TRIANGLE}\ufe0f', "次のページに行く"),
+            ('\N{BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR}\ufe0f',"最後のページに行く"),
+            ('\N{BLACK SQUARE FOR STOP}\ufe0f','ページをstopする'),
+            ('\N{INPUT SYMBOL FOR NUMBERS}','指定したページに飛ぶ'),
+
         )
 
         for name, value in entries:
-            embed.add_field(name=name, value=value, inline=False)
+            embed.add_field(name=name, value=value, inline=True)
 
         embed.set_footer(
             text=f"We were on page {self.current_page + 1} before this message."
@@ -261,6 +259,8 @@ class PaginatedHelpCommand(commands.HelpCommand):
             embed.add_field(name="有効なエイリアス", value="ありません")
         if command.help:
             embed.add_field(name="必要な権限", value=f"`{command.help}`", inline=False)
+        if command.usage:
+            embed.add_field(name="使い方",value=f"`{command.usage}`",inline=False)
         await self.get_destination().send(embed=embed)
 
     async def send_group_help(self, group):

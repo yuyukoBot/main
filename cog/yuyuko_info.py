@@ -131,11 +131,6 @@ class information(commands.Cog):
         else:
             e.add_field(name="役職", value="多いですよ")
 
-
-
-
-
-
         e.add_field(name="features",
                     value=f"```{','.join(guild.features)}```")
 
@@ -889,6 +884,54 @@ class information(commands.Cog):
             await ctx.send(embed=e)
 
 
+    @commands.command(name="dir",usage="getobject member <ゆーざーid>",description="引数を選択した不和オブジェクトに変換します")
+    async def get_object(self, ctx, object, arg, *, attr=None):
+        """`誰でも`
+        """
+        object = object.replace(" ", "").lower()
+        objects = {
+            "member": commands.MemberConverter(),
+            "user": commands.UserConverter(),
+            "message": commands.MessageConverter(),
+            "text": commands.TextChannelConverter(),
+            "voice": commands.VoiceChannelConverter(),
+            "category": commands.CategoryChannelConverter(),
+            "invite": commands.InviteConverter(),
+            "role": commands.RoleConverter(),
+            "game": commands.GameConverter(),
+            "colour": commands.ColourConverter(),
+            "color": commands.ColorConverter(),
+            "emoji": commands.EmojiConverter(),
+            "partial": commands.PartialEmojiConverter(),
+        }
+
+        if object not in objects:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(),
+                    description="```Could not find object```",
+                )
+            )
+
+        try:
+            obj = await objects[object].convert(ctx, arg)
+        except commands.BadArgument:
+            return await ctx.send(
+                embed=discord.Embed(
+                    color=discord.Color.blurple(), description="```Conversion failed```"
+                )
+            )
+
+        if attr:
+            attributes = attr.split(".")
+            try:
+                for attribute in attributes:
+                    obj = getattr(obj, attribute)
+            except AttributeError:
+                return await ctx.send(f"{obj} has no attribute {attribute}")
+            return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
+
+        await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
 
 def setup(bot):

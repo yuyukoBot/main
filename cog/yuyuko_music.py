@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
+from discord.ext import menus
 import asyncio
+import copy
 import functools
 import itertools
 import random
@@ -384,6 +386,92 @@ class VoiceState:
             self.voice = None
 
 target_guilds = []
+
+class InteractiveController(menus.Menu):
+    """The Players interactive controller menu class."""
+
+    def __init__(self, *, embed: discord.Embed):
+        super().__init__(timeout=None)
+
+        self.embed = embed
+
+
+    def update_context(self, payload: discord.RawReactionActionEvent):
+        """Update our context with the user who reacted."""
+        ctx = copy.copy(self.ctx)
+        ctx.author = payload.member
+
+        return ctx
+
+    def reaction_check(self, payload: discord.RawReactionActionEvent):
+        if payload.event_type == 'REACTION_REMOVE':
+            return False
+
+        if not payload.member:
+            return False
+        if payload.member.bot:
+            return False
+        if payload.message_id != self.message.id:
+            return False
+        if payload.member not in self.bot.get_channel(int(self.player.channel_id)).members:
+            return False
+
+        return payload.emoji in self.buttons
+
+    async def send_initial_message(self, ctx: commands.Context, channel: discord.TextChannel) -> discord.Message:
+        return await channel.send(embed=self.embed)
+
+    @menus.button(emoji='\u25B6')
+    async def resume_command(self, payload: discord.RawReactionActionEvent):
+        """Resume button."""
+        ctx = self.update_context(payload)
+
+        command = self.bot.get_command('resume')
+        ctx.command = command
+
+        await self.bot.invoke(ctx)
+
+    @menus.button(emoji='\u23F8')
+    async def pause_command(self, payload: discord.RawReactionActionEvent):
+        """Pause button"""
+        ctx = self.update_context(payload)
+
+        command = self.bot.get_command('pause')
+        ctx.command = command
+
+        await self.bot.invoke(ctx)
+
+    @menus.button(emoji='\u23F9')
+    async def stop_command(self, payload: discord.RawReactionActionEvent):
+        """Stop button."""
+        ctx = self.update_context(payload)
+
+        command = self.bot.get_command('stop')
+        ctx.command = command
+
+        await self.bot.invoke(ctx)
+
+    @menus.button(emoji='\u23ED')
+    async def skip_command(self, payload: discord.RawReactionActionEvent):
+        """Skip button."""
+        ctx = self.update_context(payload)
+
+        command = self.bot.get_command('skip')
+        ctx.command = command
+
+        await self.bot.invoke(ctx)
+
+    @menus.button(emoji='\U0001F500')
+    async def shuffle_command(self, payload: discord.RawReactionActionEvent):
+        """Shuffle button."""
+        ctx = self.update_context(payload)
+
+        command = self.bot.get_command('shuffle')
+        ctx.command = command
+
+        await self.bot.invoke(ctx)
+
+
 class music(commands.Cog):
     """Commands related to music."""
 
@@ -605,6 +693,8 @@ class music(commands.Cog):
         """
         `誰でも`
         """
+        m = InteractiveController()
+        await m.start(ctx)
         async with ctx.typing():
             try:
                 source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop)

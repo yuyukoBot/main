@@ -263,6 +263,7 @@ class fun(commands.Cog, name="Fun"):
                 "\n[%s](%s)" % (p.name, p.id) for p in status.players.sample)
         e.add_field(name="players", value=players_string)
 
+
         return dict(embed=e, file=fil)
 
     @commands.command(aliases=["ps"], description="password")

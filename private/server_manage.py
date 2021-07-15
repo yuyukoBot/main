@@ -86,7 +86,38 @@ class Server_Manage(commands.Cog):
 
 
 
+    @commands.command()
+    async def testserverinfo(self,ctx,*, guild_id: int = None):
 
+        if guild_id is not None and await self.bot.is_owner(ctx.author):
+            guild = self.bot.get_guild(guild_id)
+            if guild is None:
+                return await ctx.send(f'Invalid Guild ID given.')
+        else:
+            guild = ctx.guild
+
+        if not guild.chunked:
+            async with ctx.typing():
+                await guild.chunk(cache=True)
+
+        everyone = guild.default_role
+        everyone_perms = everyone.permissions.value
+        secret = Counter()
+        totals = Counter()
+        for channel in guild.channels:
+            allow, deny = channel.overwrites_for(everyone).pair()
+            perms = discord.Permissions((everyone_perms & ~deny.value) | allow.value)
+            channel_type = type(channel)
+            totals[channel_type] += 1
+            if not perms.read_messages:
+                secret[channel_type] += 1
+            elif isinstance(channel, discord.VoiceChannel) and (not perms.connect or not perms.speak):
+                secret[channel_type] += 1
+
+        e = discord.Embed(title="サーバー情報",color=0xfb00ff)
+        e.add_field(name="サーバー名",value=f'{guild.name}({guild.id})')
+
+        await ctx.send(embed=e)
 
 
 

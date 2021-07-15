@@ -2,6 +2,7 @@ import textwrap
 import discord
 from discord import Intents
 import typing
+import utils
 import colorsys
 import os
 import random
@@ -25,7 +26,9 @@ from discord.ext.commands import clean_content
 from discord import Embed
 from discord.ext.commands import Cog
 from util import get_member_helpers,send_large_message
+from discord.ext import menus
 import os
+import util.utils
 import random
 import traceback
 from contextlib import redirect_stdout
@@ -469,6 +472,47 @@ class AdminCog(commands.Cog, name="Admin"):
         em.description = message
         await ctx.send(embed=em)
 
+    class ServersEmbed(menus.ListPageSource):
+        async def format_page(self, menu, item):
+            embed = discord.Embed(title="Servers:", description=item, color=random.randint(0, 16777215))
+            return embed
+
+    @commands.command(brief="a command to give a list of servers(owner only)",
+                      help="Gives a list of guilds(Bot Owners only)")
+    async def servers(self, ctx):
+        if await self.bot.is_owner(ctx.author):
+
+            pag = commands.Paginator()
+            for g in self.bot.guilds:
+                pag.add_line(
+                    f"[{len(g.members)}/{g.member_count}] **{g.name}** (`{g.id}`) | {(g.system_channel or g.text_channels[0]).mention}")
+
+            pages = [page.strip("`") for page in pag.pages]
+            menu = menus.MenuPages(self.ServersEmbed(pages, per_page=1), delete_message_after=True)
+            await menu.start(ctx, channel=ctx.author.dm_channel)
+
+        if await self.bot.is_owner(ctx.author) is False:
+            await ctx.send("You can't use that it's owner only")
+
+    class mutualGuildsEmbed(menus.ListPageSource):
+        async def format_page(self, menu, item):
+            embed = discord.Embed(title="Servers:", description=item, color=random.randint(0, 16777215))
+            return embed
+
+    @commands.command(brief="Commands to see what guilds a person is in.")
+    async def mutualguilds(self, ctx, *, user: util.utils.BetterUserconverter = None):
+        user = user or ctx.author
+        pag = commands.Paginator()
+
+        for g in user.mutual_guilds:
+            pag.add_line(f"{g}")
+
+        pages = [page.strip("`") for page in pag.pages]
+        pages = pages or ["No shared servers"]
+
+        menu = menus.MenuPages(self.mutualGuildsEmbed(pages, per_page=1), delete_message_after=True)
+        await menu.start(ctx, channel=ctx.author.dm_channel)
+
     @system.command(name="changenick",desceiption="ニックネームを設定します")
     @commands.is_owner()
     async def changenick(self, ctx, name=None):
@@ -584,6 +628,7 @@ class AdminCog(commands.Cog, name="Admin"):
         """`Bot運営`"""
 
 
+
         e = discord.Embed(title="System - shutdown", description="処理中...", color=0x5d00ff)
         msg = await ctx.send(embed=e)
 
@@ -632,6 +677,41 @@ class AdminCog(commands.Cog, name="Admin"):
         f = discord.File(logFile)
         await ctx.send(file=f, content=msg)
         os.remove(logFile)
+
+    @commands.command()
+    async def changeperm(self,ctx,member:discord.Member,n):
+        nm = n.lower()
+        if nm == "admin":
+            db = sqlite3.connect("main.sqlite")
+            cursor = db.cursor()
+            sql = ("INSERT INTO userperms(userid,perms) VALUES(?, ?)")
+            val = (str(member.id), n)
+            cursor.execute(sql, val)
+            db.commit()
+
+        elif nm == "moderator":
+            db = sqlite3.connect("main.sqlite")
+            cursor = db.cursor()
+            sql = ("INSERT INTO userperms(userid,perms) VALUES(?, ?)")
+            val = (str(member.id), n)
+            cursor.execute(sql, val)
+            db.commit()
+
+    @commands.command()
+    @commands.has_permissions(send_messages=True, manage_messages=True)
+    async def sayaa(self,ctx, channel: discord.TextChannel, message):
+        if "<@" in message or "@everyone" in message or "@here" in message:
+            await ctx.send("メンションしないでください")
+        else:
+            await channel.send(message)
+
+        ch = self.bot.get_channel(864101206700064799)
+        e = discord.Embed(title="say使用履歴", color=0x00ff7f)
+        e.add_field(name="実行ユーザー", value=ctx.author)
+        e.add_field(name="メッセージ", value=message)
+        await ch.send(embed=e)
+
+
 
 
 

@@ -818,22 +818,27 @@ class log(commands.Cog):
             await channel.send(embed=e)
 
     @commands.Cog.listener()
-    async def on_user_update(self, user_before: User, user_after: User):
+    async def on_user_update(self, before, after):
         await self.bot.wait_until_ready()
         db = sqlite3.connect('main.sqlite')
         cursor = db.cursor()
-        cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {user_after.id}")
-        result = cursor.fetchone()
-        if result is None:
-            return
-        else:
-            ch = self.bot.get_channel(id=int(result[0]))
 
-            if user_before.name != user_after.name:
-                e = discord.Embed(title="サーバーログ-ユーザーアップデート",description=f"ニックネームを変更しました\n変更メンバー:{str(user_after)}")
+        for guild in after.guilds:
+            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE user_id = ?", (guild.id,))
+            result = cursor.fetchone()
+            if result is None:
+                continue
+            else:
+                ch = self.bot.get_channel(id=int(result[0]))
 
-                e.add_field(name="変更後",value=user_after.name)
-                await ch.send(embed=e)
+                if before.name != after.name:
+                    e = discord.Embed(title="サーバーログ-ユーザーアップデート", description=f"ニックネームを変更しました\n変更メンバー:{str(after)}")
+
+                    e.add_field(name="変更後", value=after.name)
+                    await ch.send(embed=e)
+                elif before.status != after.status:
+                    e = discord.Embed(title="サーバーログーユーザーアップデート", value=f"{after}のステータスが変わりました")
+                    await ch.send(embed=e)
 
 
 

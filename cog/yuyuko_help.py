@@ -195,6 +195,7 @@ class HelpMenu(RoboPages):
             except Exception:
                 pass
 
+
 class PaginatedHelpCommand(commands.HelpCommand):
     def __init__(self):
         super().__init__(
@@ -258,7 +259,9 @@ class PaginatedHelpCommand(commands.HelpCommand):
         else:
             embed.add_field(name="有効なエイリアス", value="ありません")
         if command.help:
-            embed.add_field(name="必要な権限", value=f"`{command.help}`", inline=False)
+            embed.add_field(name="ユーザーに必要な権限", value=f"`{command.help}`", inline=False)
+        if command.brief:
+            embed.add_field(name="Botに必要な権限",value=f"`{command.brief}`", inline=False)
         if command.usage:
             embed.add_field(name="使い方",value=f"`{command.usage}`",inline=False)
         await self.get_destination().send(embed=embed)

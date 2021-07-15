@@ -6,6 +6,7 @@ from typing import Optional
 import sqlite3
 from typing import Union
 import time, struct,subprocess
+import asyncio
 
 import platform
 from discord.ext import commands
@@ -16,7 +17,7 @@ from collections import OrderedDict, deque, Counter
 import datetime
 import time
 import os
-
+import random
 
 import discord
 
@@ -48,6 +49,32 @@ class information(commands.Cog):
             return 'None'
         else:
             return string[:1000]  # The maximum allowed charcter amount for embed fields
+
+    @commands.command(name="omikuji")
+    async def omikuji(self, ctx):
+
+        omikuzi = [
+            "大吉だよ！\nおめでとう" if i < 2 else
+            "中吉" if 2 <= i < 10 else
+            "小吉" if 10 <= i < 20 else
+            "吉" if 20 <= i < 40 else
+            "末吉" if 40 <= i < 50 else
+            "凶" if 50 <= i < 55 else
+            "中凶" if 55 <= i < 59 else
+            "大凶" for i in range(61)]
+        e = discord.Embed(title="おみくじ～")
+
+        msg = await ctx.send(embed=e)
+        async with ctx.typing():
+            e = discord.Embed(title="おみくじ~",description="がらがら～～")
+            await asyncio.sleep(2)
+        await msg.edit(content=None, embed=e)
+
+        async with ctx.typing():
+            e = discord.Embed(title="おみくじ")
+            e.add_field(name="結果！", value=omikuzi[random.randrange(len(omikuzi))])
+            await asyncio.sleep(2)
+        await msg.edit(content=None, embed=e)
 
     @commands.command(aliases=["si"], name="serverinfo", usage='')
     @commands.guild_only()
@@ -95,8 +122,7 @@ class information(commands.Cog):
                 ubm = ubm + 1
         e.add_field(name="メンバー数",
                     value=f"{len(guild.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
-        e.add_field(name="チャンネル数",
-                    value=f'{("<:categorie:798883839124308008>")}:{len(guild.categories)}\n{(":speech_balloon:")}:{len(guild.text_channels)}\n{(":mega:")}:{len(guild.voice_channels)}\n{(":pager:")}:{len(guild.stage_channels)}')
+
 
         e.add_field(name="絵文字", value=len(guild.emojis))
         e.add_field(name="地域", value=str(guild.region))
@@ -119,17 +145,17 @@ class information(commands.Cog):
         else:
             e.add_field(name="AFKチャンネル", value="設定されていません")
 
+        rlist = "@".join([i.name for i in guild.roles])
+        if len(rlist) <= 1000:
+            e.add_field(name="役職", value=rlist)
+
 
 
         emojis = self._getEmojis(guild.emojis)
 
         e.add_field(name='カスタム絵文字', value=emojis, inline=False)
 
-        roles = self._getRoles(guild.roles)
-        if len(roles) <= 1024:
-            e.add_field(name="役職", value=roles, inline=False)
-        else:
-            e.add_field(name="役職", value="多いですよ")
+
 
         e.add_field(name="features",
                     value=f"```{','.join(guild.features)}```")
@@ -232,6 +258,10 @@ class information(commands.Cog):
         else:
             e.add_field(name="役職", value="多いですよ")
 
+        rlist = ",".join([i.name for i in guild.roles])
+        if len(rlist) <= 1000:
+            e.add_field(name=ctx._("serverinfo-roles"), value=rlist)
+
         await ctx.send(embed=e)
 
     @commands.command()
@@ -332,15 +362,18 @@ class information(commands.Cog):
         user = user or ctx.author
         e = discord.Embed(color=0xb300ff)
         roles = [r.mention for r in user.roles]
+
+
         e.set_author(name="ユーザー情報")
         badges = {
             "staff": "<:staff:836951948745900063>",
             "partner": "<:partner:836950588536127508>",
             "hypesquad": "<:hypesquadevents:724328584789098639>",
-            "hypesquad_balance": "<:hypesquadbalance:724328585166454845>",
-            "hypesquad_bravery": "<:hypesquadbravery:724328585040625667>",
+            "hypesquad_balance": "<:balance:855966162483281940>",
+            "hypesquad_bravery": "<:bravery:855966487956684821>",
             "hypesquad_brilliance":
-            "<:hypesquadbrilliance:724328585363456070>",
+            "<:brilince:855966748250341396>",
+            "premium_since": "test",
             "bug_hunter": "<:bughunt:724588087052861531>",
             "bug_hunter_level_2": "<:bug2:699986097694048327>",
             "verified_bot_developer": "<:verifed:836952740818976770>",
@@ -369,6 +402,10 @@ class information(commands.Cog):
         joined_at = f"{user_joined}\n({since_joined} days ago)"
 
         e.add_field(name="ユーザー名", value=f"{user}({user.id})", inline=True)
+        if user.id in [478126443168006164, 602680118519005184, 691300045454180383]:#admin
+            e.add_field(name="権限",value="admin")
+        else:
+            e.add_field(name="権限",value="一般")
 
         voice = getattr(user, 'voice', None)
         if voice is not None:
@@ -386,9 +423,36 @@ class information(commands.Cog):
         else:
             e.add_field(name="Botですか", value="いいえ")
 
-        e.add_field(name='Status', value=user.status)
+
+
+
 
         e.add_field(name="ニックネーム", value=user.display_name)
+        if str(user.status) == "online":
+            e.add_field(name="ステータス",value='<:online:855965213156311091>  ')
+        elif str(user.status) == "offline":
+            e.add_field(name="ステータス",value='<:offline:855965198221180968>')
+        elif str(user.status) == "idle":
+            e.add_field(name="ステータス",value='<:afk:855965231740878878>')
+        elif str(user.status) == "dnd":
+            e.add_field(name="ステータス",value='<:dnd:855965222640156682> ')
+
+        if user.mobile_status:
+            e.add_field(name="使用デバイス(モバイル)",value=':mobile_phone:')
+        elif user.desktop_status:
+            e.add_field(name="使用デバイス(デスクトップ)",value=':desktop:')
+
+        elif user.web_status:
+            e.add_field(name="使用デバイス(web)",value=':computer:')
+
+        if user.activity is not None:
+            try:
+                if user.activity.type == discord.ActivityType.custom:
+                    e.add_field(name="プレイ中", value=user.activity)
+                else:
+                    e.add_field(name="プレイ中", value=f'{user.activity.name}')
+            except:
+                e.add_field(name="プレイ中",value=user.activity)
 
         if bool(user.premium_since):
             e.add_field(name="ブースト？", value="してます")
@@ -492,7 +556,49 @@ class information(commands.Cog):
         async for i in ctx.channel.history(limit=num):
             await ctx.send(f"{i.author.name}#{i.author.discriminator}: {i.content}")
 
-
+    @commands.command()
+    async def tutorial(self, ctx):
+        em1 = discord.Embed(
+            description=f"Hey there {ctx.author.mention}! It looks like you need some help moving around the bot! Let me help you!",
+            color=0x36393f)
+        em2 = discord.Embed(
+            description=f"First, put in the command `{ctx.prefix}help`, this is where you can find all the commands!",
+            color=0x36393f)
+        em3 = discord.Embed(
+            description=f"Awesome! Now, lets start you up with an profile! Execute the command `{ctx.prefix}start` to get make a profile!",
+            color=0x36393f)
+        em4 = discord.Embed(
+            description=f"Great! Lets view your profile that you created. Execute the command `{ctx.prefix}profile` to view it!",
+            color=0x36393f)
+        em5 = discord.Embed(
+            description=f"With `{ctx.prefix}profile`, you can view your **case points**. Those determine what rank you are and how hard the cases will be.\nNow, let move onto money. Use the command `{ctx.prefix}wallet` to view your coins.",
+            color=0x36393f)
+        em6 = discord.Embed(
+            description=f"You can buy things with your coins. You earn coins by completing cases. Whenever you are ready, use the command `{ctx.prefix}case`. That's all! Have a great time and thank you for using The Detective!",
+            color=0x36393f)
+        await ctx.send(embed=em1)
+        await asyncio.sleep(3)
+        await ctx.send(embed=em2)
+        msg = await self.bot.wait_for('message', check=lambda
+            message: message.author == ctx.author and message.channel == ctx.channel)
+        if msg.content.lower() == f"{ctx.prefix}help":
+            await asyncio.sleep(0.5)
+            await ctx.send(embed=em3)
+            msg = await self.bot.wait_for('message', check=lambda
+                message: message.author == ctx.author and message.channel == ctx.channel)
+            if msg.content.lower() == f"{ctx.prefix}start":
+                await asyncio.sleep(0.5)
+                await ctx.send(embed=em4)
+                msg = await self.bot.wait_for('message', check=lambda
+                    message: message.author == ctx.author and message.channel == ctx.channel)
+                if msg.content.lower() == f"{ctx.prefix}profile":
+                    await asyncio.sleep(0.5)
+                    await ctx.send(embed=em5)
+                    msg = await self.bot.wait_for('message', check=lambda
+                        message: message.author == ctx.author and message.channel == ctx.channel)
+                    if msg.content.lower() == f"{ctx.prefix}wallet":
+                        await asyncio.sleep(0.5)
+                        await ctx.send(embed=em6)
 
     @commands.command(name="emojiinfo",description="絵文字の情報")
     async def emojiinfo(self,ctx, *, emj: commands.EmojiConverter = None):
@@ -765,7 +871,7 @@ class information(commands.Cog):
         except:
             await ctx.send(embed=e)
 
-    @commands.command(name="channelinfo", aliases=["chinfo"], description="```チャンネルの情報```")
+    @commands.command(name="channelinfo", aliases=["chinfo"], description="```チャンネルの情報```",brief="誰でも")
     async def channelinfo(self, ctx, target=None):
         """`誰でも`"""
         if target is None:
@@ -932,6 +1038,34 @@ class information(commands.Cog):
             return await ctx.send(f"```{obj}\n\n{dir(obj)}```")
 
         await ctx.send(f"```{obj}\n\n{dir(obj)}```")
+
+    @commands.group(name="purges", description="システムコマンド")
+    async def purges(self, ctx):
+        """`Bot運営のみ`"""
+        return
+
+    @purges.command()
+    async def all(self,ctx):
+        if ctx.author.guild_permissions.administrator:
+            await ctx.channel.purge()
+            embed = discord.Embed(title="成功",description="",color=0x00ff7f)
+            embed.add_field(name="すべてメッセージを削除しました。",value="残っている場合はもう一度実行してみてください。",inline=True)
+            await ctx.channel.send(embed=embed)
+        else:
+            embed = discord.Embed(title="失敗",description="理由:権限不足",color=0xff0000)
+            embed.add_field(name="__以下の権限があなたに振り分けされていますか？__",value="`管理者`",inline=True)
+            await ctx.channel.send(embed=embed)
+
+    @purges.command()
+    async def amount(self, ctx, messages: int):
+        if messages > 99:
+            messages = 99
+        await ctx.channel.purge(limit=messages + 1)
+        await ctx.send(f'{messages} messages 削除しました', delete_after=3)
+
+
+
+
 
 
 def setup(bot):

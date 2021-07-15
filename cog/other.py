@@ -3,11 +3,14 @@ import codecs
 import datetime
 import time
 import dns
+
 import dns.resolver
 import socket
 from urllib.parse import unquote
 import wikipedia
+from discord.ext.commands import Bot
 import io
+from discord_slash.utils.manage_commands import create_option, create_choice
 from discord_components import DiscordComponents, Button
 from datetime import datetime
 from discord.ext import menus as dmenus
@@ -16,10 +19,15 @@ import discord
 import discordlists
 from bs4 import BeautifulSoup
 from discord.ext import commands
+
 from discord_slash import cog_ext, SlashContext
 import aiohttp
 from util.Error import ErrorMessage
+from discord_components import DiscordComponents, Button, Select, SelectOption
 
+time_window_milliseconds = 5000
+max_msg_per_window = 5
+author_msg_times = {}
 class EmbedBuilderMenu(dmenus.Menu):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -49,16 +57,11 @@ class EmbedBuilderMenu(dmenus.Menu):
 
     @dmenus.button("\N{LABEL}")
     async def set_title(self, payload):
-        """Sets the title for the embed"""
-        await self.message.edit(content="Send the message you want to add as a title.\n**Limits**: Text can only be 256"
-                                        "characters or less")
-        msg = await self.wait_for_message()
+        ctx = self.update_context(payload)
+        command = self.bot.get_command('info')
+        ctx.command = command
 
-        if len(msg.content) > 256:
-            await self.ctx.send("Title can only be 256 characters or less.")
-            return
-
-        self.embed.title = msg.content
+        await self.bot.invoke(ctx)
 
     @dmenus.button("\N{INFORMATION SOURCE}\ufe0f", position=dmenus.Last(3))
     async def info_page(self, payload) -> None:
@@ -86,7 +89,7 @@ class everyone(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+        DiscordComponents(bot)
         self.api = discordlists.Client(self.bot)
         self.api.set_auth("bots.ondiscord.xyz", "dsag38_auth_token_fda6gs") # Set authorisation token for a bot list
         self.api.set_auth("discordbots.group", "qos56a_auth_token_gfd8g6") # Set authorisation token for a bot list
@@ -119,7 +122,71 @@ class everyone(commands.Cog):
                                                                              len(result["success"].keys()),
                                                                              len(result["failure"].keys())))
 
+    @commands.command(name="select")
+    async def test(self, ctx):
+        await ctx.reply(  # Replying to message
+            "Test select components",
+            components=[  # List of components
+                [
+                    Select(  # Denotes a select box
+                        placeholder="Please Choose A Car",  # Text displayed in the select (default box)
+                        options=[
+                            SelectOption(  # Creating an option
+                                label="Ferrari",  # Name displayed on top
+                                value="fer",  # Distinguishes in the interaction response
+                                description="Italian Automaker",  # Extra info
+                                emoji='🚙'
+                            ),
+                            SelectOption(  # Same as above
+                                label="Bugatti",
+                                value="bug",
+                                description="French Automaker",
+                                emoji='🚗'
+                            ),
+                            SelectOption(  # Same as above
+                                label="Audi",
+                                value="aud",
+                                description="German Automaker",
+                                emoji='🚘'
+                            ),
+                        ]
+                    )
+                ]
+            ]
+        )
 
+        # Waiting for response...
+        # Using try and except loop for the timeout
+        try:
+            # Wait_for statement
+            ##Event is on_select_option
+            interaction = await self.bot.wait_for(
+                "select_option",  # Once someone selects and clicks out of the dropdown
+                check=None,
+                timeout=10.0  # 10 Second timeout
+            )
+            optValue = interaction.raw_data['d']['data']['values'][
+                0]  # Their select returns the value of the option, fetching that
+
+            # Library will add support for getting button label and so forth easily soon, this is a bit of dict stuff for now
+            for value in interaction.raw_data['d']['message']['components'][0][
+                'components']:  # Cycling through actionrows, if multiple
+                for i in range(len(interaction.raw_data['d']['message']['components'][0]['components'][
+                                       0])):  # For component in the first actionrow
+                    if value['options'][i]['value'] == optValue:  # Checking if value matches select
+                        name = value['options'][i]['label']  # Label of the selected option is here
+                        break
+
+                        # Responding with the option they chose
+            await interaction.respond(
+                type=4,  # New Message in channel
+                ephemeral=False,  # Not hidden
+                content=f"Thank you for using selects! \n> Your favourite car brand is **{name}**"
+                # Telling them what they chose
+            )
+        except:
+            # The disabling of select should come soon, rn its buggy so avoid it
+            pass
 
     @commands.command(name="screenshot",aliases=["ss"],description="サイトのssを表示します")
     async def screenshot(self, ctx, url):
@@ -135,7 +202,24 @@ class everyone(commands.Cog):
                 text=f"{ctx.author} | TransHelper | {current_time} ")
             await ctx.send(file=discord.File(io.BytesIO(res), filename="ss.png"), embed=embed)
 
-    
+    @commands.command()
+    async def button(self,ctx):
+
+        await ctx.send(
+
+            "Hello, World!",
+
+            components=[
+
+                Button(label="WOW button!")
+
+            ]
+
+        )
+
+        interaction = await self.bot.wait_for("button_click", check=lambda i: i.component.label.startswith("WOW"))
+
+        await interaction.respond(content="Button clicked!")
 
     @commands.command(pass_context=True,description="翻訳します")
     async def translate(self, ctx, to_language, *, msg):
@@ -277,6 +361,9 @@ class everyone(commands.Cog):
         else:
             await ctx.send(arg)
 
+        e = discord.Embed(title=arg)
+        await ctx.send(embed=e)
+
 
     @commands.command(name="invite", description="botの招待リンクを表示します")
     async def invite(self, ctx):
@@ -330,6 +417,80 @@ class everyone(commands.Cog):
         bot_invite.add_field(name="管理者権限",value=str(discord.utils.oauth_url(bot.id, discord.Permissions(8))))
         await ctx.send(embed=bot_invite)
 
+    @commands.command(name="test_1")
+    async def test_1(self,ctx):
+        msg = await ctx.reply(  # Replying to message
+            "Singular Selects Below.",
+            components=[  # List of components
+                [
+                    Select(  # Denotes a select box
+                        placeholder="Please Choose A Car",  # Text displayed in the select (default box)
+                        options=[
+                            SelectOption(  # Creating an option
+                                label="Ferrari",  # Name displayed on top
+                                value="fer",  # Distinguishes in the interaction response
+                                description="Italian Automaker",  # Extra info
+                            ),
+                            SelectOption(  # Same as above
+                                label="Bugatti", value="bug", description="French Automaker"
+                            ),
+                            SelectOption(  # Same as above
+                                label="Audi", value="aud", description="German Automaker"
+                            ),
+                        ],
+                    )
+                ]
+            ],
+        )
+
+        # Waiting for response...
+        # Using try and except loop for the timeout
+        try:
+            # Wait_for statement
+            ##Event is on_select_option
+            interaction = await self.bot.wait_for(
+                "select_option",  # Once someone selects and clicks out of the dropdown
+                check=None,
+                timeout=10.0,  # 10 Second timeout
+            )
+            name = interaction.component[0].label  # Getting label of select
+
+            # Responding with the option they chose
+            await interaction.respond(
+                type=4,  # New Message in channel
+                ephemeral=False,  # Not hidden
+                content=f"Thank you for using selects! \n> Your favourite car brand is **{name}**",
+                # Telling them what they chose
+            )
+        except asyncio.TimeoutError:
+            # The disabling of select should come soon, rn its buggy so avoid it
+            await msg.edit(
+                components=[  # List of components
+                    [
+                        Select(  # Denotes a select box
+                            placeholder="Please Choose A Car",  # Text displayed in the select (default box)
+                            disabled=True,  # Disabling it
+                            options=[
+                                SelectOption(  # Creating an option
+                                    label="Ferrari",  # Name displayed on top
+                                    value="fer",  # Distinguishes in the interaction response
+                                    description="Italian Automaker",  # Extra info
+                                ),
+                                SelectOption(  # Same as above
+                                    label="Bugatti",
+                                    value="bug",
+                                    description="French Automaker",
+                                ),
+                                SelectOption(  # Same as above
+                                    label="Audi",
+                                    value="aud",
+                                    description="German Automaker",
+                                ),
+                            ],
+                        )
+                    ]
+                ]
+            )
 
 
 

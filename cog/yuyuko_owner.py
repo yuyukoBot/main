@@ -13,6 +13,7 @@ import json
 import math
 import time
 import traceback
+from typing import Union
 import typing
 from util.config import get_config
 import aiohttp
@@ -112,6 +113,93 @@ class owner(commands.Cog):  # pylint: disable=too-many-public-methods
         if not await ctx.bot.is_owner(ctx.author):
             raise commands.NotOwner("You must own this bot to use Jishaku.")
         return True
+
+    @commands.command(name="globalban",aliases=["gban"])
+    async def globalban(self, ctx, member: discord.Member, reason=None):
+        embed = discord.Embed(description='ユーザーをGBAN申請しますか？')
+        embed.add_field(name="対象者", value=member)
+        mes = await ctx.send(embed=embed)
+        [self.bot.loop.create_task(mes.add_reaction(i))
+         for i in ("\u2705", "\u274c")]
+
+        def check(react, usr):
+            return (
+                    react.message.channel == mes.channel
+                    and usr == ctx.author
+                    and react.message.id == mes.id
+                    and react.me
+            )
+
+        reaction, user = await self.bot.wait_for('reaction_add', check=check)
+        if reaction.emoji == '\u2705':
+            e = discord.Embed(title=f"{member}のGBAN申請がきました",description=f"**実行者**\n{ctx.author}\n**理由**\n{reason}")
+            ch = self.bot.get_channel(761607914418208819)
+            await ch.send(embed=e)
+        else:
+            await ctx.send("キャンセルしました")
+
+    @commands.command()
+    async def sea(self, ctx, *, user: Union[discord.Member, discord.User,] = None):
+        owners = [478126443168006164]
+        user = user or ctx.author
+        e = discord.Embed(color=0xb300ff)
+        roles = [r.mention for r in user.roles]
+        e.set_author(name="ユーザー情報")
+
+        since_created = (ctx.message.created_at - user.created_at).days
+        since_joined = (ctx.message.created_at - user.joined_at).days
+        user_created = user.created_at.strftime("%d %b %Y %H:%M")
+        user_joined = user.joined_at.strftime("%d %b %Y %H:%M")
+
+        created_at = f"{user_created}\n({since_created} days ago)"
+        joined_at = f"{user_joined}\n({since_joined} days ago)"
+
+        e.add_field(name="ユーザー名", value=f"{user}({user.id})", inline=True)
+
+        if user.bot:
+            e.add_field(name="Botですか", value="はい")
+        else:
+            e.add_field(name="Botですか", value="いいえ")
+
+        e.add_field(name="ニックネーム", value=user.display_name)
+        if owners:
+            e.add_field(name="owne", value="オーバー")
+        else:
+
+            return
+
+        if bool(user.premium_since):
+            e.add_field(name="ブースト？", value="してます")
+        else:
+            e.add_field(name="ブースト", value="してない")
+
+        if str(user.status) == "online":
+            e.add_field(name="ステータス", value='<:online:851116467097567252>')
+        elif str(user.status) == "offline":
+            e.add_field(name="ステータス", value='<:offline:855833807311077396>')
+        elif str(user.status) == "idle":
+            e.add_field(name="ステータス", value='<:afk:855833807360622592>')
+        elif str(user.status) == "dnd":
+            e.add_field(name="ステータス", value='<:dnd:855833807424192532> ')
+
+        e.add_field(name="Discord参加日:", value=created_at, inline=True)
+        e.add_field(name="サーバー参加日", value=joined_at, inline=True)
+
+        e.add_field(name="Highest Role:", value=user.top_role.mention)
+        print(user.top_role.mention)
+
+        if roles:
+            e.add_field(name=f"Roles({len(roles)})",
+                        value=', '.join(roles) if len(roles) < 40 else f'{len(roles)} roles', inline=False)
+
+        e.add_field(name='Avatar Link', value=user.avatar_url, inline=False)
+        if user.avatar:
+            e.set_thumbnail(url=user.avatar_url)
+
+        if isinstance(user, discord.User):
+            e.set_footer(text='指定したユーザーはサーバーにはいません')
+
+        await ctx.send(embed=e)
 
     @commands.command(pass_context=True)
     async def uptime(self, ctx):

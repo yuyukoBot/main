@@ -35,18 +35,24 @@ class GuildSetting(commands.Cog):
         usage="<role> <channel name>",
     )
     @commands.has_permissions(manage_channels=True)
-    async def channel(self, ctx, role: discord.Role, *, name):
-        overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            ctx.guild.me: discord.PermissionOverwrite(read_messages=True),
-            role: discord.PermissionOverwrite(read_messages=True),
-        }
-        channel = await ctx.guild.create_text_channel(
-            name=name,
-            overwrites=overwrites,
-            category=self.bot.get_channel(707945693582590005),
-        )
-        await ctx.send(f"Hey dude, I made {channel.name} for ya!")
+    async def channel(self, ctx,*,name):
+        await ctx.send("logとして設定したいチャンネルidを送信してください")
+        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+        category = [await commands.converter.CategoryChannelConverter().convert(ctx, logtext) for logtext
+                       in message.content.split()]
+        for category in category:
+            category = category
+        await ctx.send('トピックを設定してください')
+        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+        slowmode = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                    in message.content.split()]
+
+        await ctx.guild.create_text_channel(name, category=category,slowmode=slowmode)
+
+
+
+        await ctx.send(f"Hey dude, I made for ya!")
+
 
     @commands.group(invoke_without_command=True)
     @commands.has_permissions(manage_channels=True)

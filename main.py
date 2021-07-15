@@ -15,7 +15,7 @@ import io
 import sqlite3
 import traceback
 from traceback import format_exception
-
+from discord_components import *
 updateinfos = "・コマンド追加"
 import time
 import asyncpg
@@ -23,8 +23,10 @@ release = "0.2"
 status = "Beta"
 
 intents = discord.Intents.default()
+intents.presences = True
 intents.members = True
 intents.emojis = True
+
 with open('./config.json', 'r') as cjson:
     config = json.load(cjson)
 ver = "2.1"
@@ -39,6 +41,7 @@ DATABASE = config["database"]
 
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
 db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
+DiscordComponents(bot)
 slash = SlashCommand(bot,sync_commands=True,sync_on_cog_reload=True)
 bot.db=db
 bot.close_=bot.close

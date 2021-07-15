@@ -15,7 +15,7 @@ import io
 import sqlite3
 import re
 logger = getLogger(__name__)
-
+from discord.ext import menus
 
 class ServerSetting(commands.Cog):
     def __init__(self,bot):
@@ -80,6 +80,7 @@ class ServerSetting(commands.Cog):
 
     @commands.group()
     async def settings(self, ctx):
+
         await ctx.send_help(ctx.command)
 
     @settings.command()
@@ -95,36 +96,41 @@ class ServerSetting(commands.Cog):
             await ctx.message.delete()
 
 
-
-
-
     @settings.command(description="指定したチャンネルにログを送信します")
-    async def log(self, ctx, channel: discord.TextChannel):
-        """`チャンネルの管理`"""
+    async def logs(self,ctx):
         if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
-                val = (ctx.guild.id, channel.id)
-                e = discord.Embed(title="ログチャンネルをセットしました")
-                e.add_field(name="取得できる内容",value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
-                e.add_field(name="該当チャンネル",value=channel.mention)
-                await ctx.send(embed=e)
+            await ctx.send("logとして設定したいチャンネルidを送信してください")
+            message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+            channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                       in message.content.split()]
+            for channel in channel:
+                db = sqlite3.connect('main.sqlite')
+                cursor = db.cursor()
+                cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                result = cursor.fetchone()
+                if result is None:
+                    sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
+                    val = (ctx.guild.id, channel.id)
+                    e = discord.Embed(title="ログチャンネルをセットしました")
+                    e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                    e.add_field(name="該当チャンネル", value=channel.mention)
+                    await ctx.send(embed=e)
 
-            elif result is not None:
-                sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
-                val = (channel.id, ctx.guild.id)
-                e = discord.Embed(title="ログチャンネルをセットしました")
-                e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
-                e.add_field(name="該当チャンネル", value=channel.mention)
-                await ctx.send(embed=e)
-            cursor.execute(sql, val)
-            db.commit()
-            cursor.close()
-            db.close()
+                elif result is not None:
+                    sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
+                    val = (channel.id, ctx.guild.id)
+                    e = discord.Embed(title="ログチャンネルをセットしました")
+                    e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                    e.add_field(name="該当チャンネル", value=channel.mention)
+                    await ctx.send(embed=e)
+                cursor.execute(sql, val)
+                db.commit()
+                cursor.close()
+                db.close()
+
+
+
+
 
     @settings.command(description="指定したチャンネルにウェルカムメッセージを設定します")
     async def welcome_text(self, ctx, *, text):
@@ -237,6 +243,85 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
+    @settings.command()
+    async def accept(self, ctx):
+        embed = discord.Embed(description="ServerSettings menu",color = self.bot.color)
+        embed.add_field(name="1️⃣",value="logチャンネルを設定します",inline=False)
+        embed.add_field(name="2️⃣",value="welcomeチャンネルを設定します",inline=False)
+        mes = await ctx.send(embed=embed)
+        [self.bot.loop.create_task(mes.add_reaction(i))
+         for i in ("1️⃣", "2️⃣")]
+
+        def check(react, usr):
+            return (
+                    react.message.channel == mes.channel
+                    and usr == ctx.author
+                    and react.message.id == mes.id
+                    and react.me
+            )
+
+        reaction, user = await self.bot.wait_for('reaction_add', check=check)
+        if reaction.emoji == "1️⃣":
+            if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                e = discord.Embed(title="logとして設定したいチャンネルidを送信してください",color = self.bot.color)
+                await mes.edit(content=None, embed=e)
+                message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                           in message.content.split()]
+                for channel in channel:
+                    db = sqlite3.connect('main.sqlite')
+                    cursor = db.cursor()
+                    cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                    result = cursor.fetchone()
+                    if result is None:
+                        sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
+                        val = (ctx.guild.id, channel.id)
+                        e = discord.Embed(title="ログチャンネルをセットしました",color=self.bot.color)
+                        e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                        e.add_field(name="該当チャンネル", value=channel.mention)
+                        await mes.edit(content=None, embed=e)
+
+
+                    elif result is not None:
+                        sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
+                        val = (channel.id, ctx.guild.id)
+                        e = discord.Embed(title="ログチャンネルをセットしました")
+                        e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                        e.add_field(name="該当チャンネル", value=channel.mention)
+                        await mes.edit(content=None, embed=e)
+                    cursor.execute(sql, val)
+                    db.commit()
+                    cursor.close()
+                    db.close()
+            else:
+                await ctx.send("権限がありません")
+
+        elif reaction.emoji == "2️⃣":
+            if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                await ctx.send("welcome_channelとして設定したいチャンネルidを送信してください")
+                message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                           in message.content.split()]
+                for channel in channel:
+                    db = sqlite3.connect('main.sqlite')
+                    cursor = db.cursor()
+                    cursor.execute(f"SELECT welcome_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                    result = cursor.fetchone()
+                    if result is None:
+                        sql = ("INSERT INTO ServerSetting(guild_id,welcome_channel_id) VALUES(?,?)")
+                        val = (ctx.guild.id, channel.id)
+                        await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
+                    elif result is not None:
+                        sql = ("UPDATE ServerSetting SET welcome_channel_id = ? WHERE guild_id = ?")
+                        val = (channel.id, ctx.guild.id)
+                        await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
+                    cursor.execute(sql, val)
+                    db.commit()
+                    cursor.close()
+                    db.close()
+
+
+
     @settings.command(name='list')
     async def _list(self, ctx):
         import sqlite3
@@ -339,7 +424,6 @@ class ServerSetting(commands.Cog):
                 if str(payload.emoji)[-1:] in x[2] and int(x[3]) == payload.message_id:
                     role = discord.utils.get(self.bot.get_guild(payload.guild_id).roles, id=x[1])
                     await self.bot.get_guild(payload.guild_id).get_member(payload.user_id).remove_roles(role)
-
 
 
 

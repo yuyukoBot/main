@@ -64,8 +64,15 @@ class welcome_leave(commands.Cog):
             e = discord.Embed(title="新規参加")
             e.set_author(name=f"{member.name}", icon_url=f"{member.avatar_url}")
             e.set_thumbnail(url=f"{member.avatar_url}")
-            e.add_field(name="招待した人", value=inviter)
-            e.add_field(name="招待コード", value=invite_code)
+            bm = 0
+            ubm = 0
+            for m in member.guild.members:
+                if m.bot:
+                    bm = bm + 1
+                else:
+                    ubm = ubm + 1
+            e.add_field(name="メンバー数",
+                        value=f"{len(member.members)}(<:bot:798877222638845952>:{bm}/:busts_in_silhouette::{ubm})")
             e.set_footer(text=f"{member.guild}", icon_url=f"{member.guild.icon_url}")
             channel = self.bot.get_channel(id=int(result[0]))
 

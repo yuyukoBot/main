@@ -3,6 +3,9 @@ from typing import Union
 import logging
 import textwrap
 from datetime import time
+
+from datetime import datetime, timedelta
+from discord_components import DiscordComponents,Button,ButtonStyle,InteractionType, Select, SelectOption
 import datetime
 import asyncio
 import random
@@ -96,38 +99,6 @@ class ServerSetting(commands.Cog):
             await ctx.message.delete()
 
 
-    @settings.command(description="指定したチャンネルにログを送信します")
-    async def logs(self,ctx):
-        if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
-            await ctx.send("logとして設定したいチャンネルidを送信してください")
-            message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
-            channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
-                       in message.content.split()]
-            for channel in channel:
-                db = sqlite3.connect('main.sqlite')
-                cursor = db.cursor()
-                cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
-                result = cursor.fetchone()
-                if result is None:
-                    sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
-                    val = (ctx.guild.id, channel.id)
-                    e = discord.Embed(title="ログチャンネルをセットしました")
-                    e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
-                    e.add_field(name="該当チャンネル", value=channel.mention)
-                    await ctx.send(embed=e)
-
-                elif result is not None:
-                    sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
-                    val = (channel.id, ctx.guild.id)
-                    e = discord.Embed(title="ログチャンネルをセットしました")
-                    e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
-                    e.add_field(name="該当チャンネル", value=channel.mention)
-                    await ctx.send(embed=e)
-                cursor.execute(sql, val)
-                db.commit()
-                cursor.close()
-                db.close()
-
 
 
 
@@ -154,28 +125,6 @@ class ServerSetting(commands.Cog):
             db.close()
 
 
-
-    @settings.command(description="T指定したチャンネルにログを送信します")
-    async def welcome_channel(self, ctx, channel: discord.TextChannel):
-        """`チャンネルの管理`"""
-        if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT welcome_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                sql = ("INSERT INTO ServerSetting(guild_id,welcome_channel_id) VALUES(?,?)")
-                val = (ctx.guild.id, channel.id)
-                await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
-            elif result is not None:
-                sql = ("UPDATE ServerSetting SET welcome_channel_id = ? WHERE guild_id = ?")
-                val = (channel.id, ctx.guild.id)
-                await ctx.send(f"{channel.mention}をウェルカムチャンネルとして設定しました")
-            cursor.execute(sql, val)
-            db.commit()
-            cursor.close()
-            db.close()
-
     @settings.command(description="退出時のメッセージを設定します")
     async def remove_text(self, ctx, *, text):
         if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
@@ -197,26 +146,7 @@ class ServerSetting(commands.Cog):
             cursor.close()
             db.close()
 
-    @settings.command(description="参加時に付与する役職を設定します")
-    async def welcome_role(self, ctx, role: discord.Role):
-        if ctx.author.guild_permissions.manage_roles or ctx.author.id == 478126443168006164:
-            """`役職の管理`"""
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
-            cursor.execute(f"SELECT welcome_role FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
-            result = cursor.fetchone()
-            if result is None:
-                sql = ("INSERT INTO ServerSetting(guild_id,welcome_role) VALUES(?,?)")
-                val = (ctx.guild.id, role.id)
-                await ctx.send("セットしました")
-            elif result is not None:
-                sql = ("UPDATE ServerSetting SET welcome_role = ? WHERE guild_id = ?")
-                val = (role.id, ctx.guild.id)
-                await ctx.send(f"アップデート")
-            cursor.execute(sql, val)
-            db.commit()
-            cursor.close()
-            db.close()
+
 
 
 
@@ -243,44 +173,60 @@ class ServerSetting(commands.Cog):
         else:
             await ctx.send("権限がありません")
 
-    @settings.command()
-    async def accept(self, ctx):
-        embed = discord.Embed(description="ServerSettings menu",color = self.bot.color)
-        embed.add_field(name="1️⃣",value="logチャンネルを設定します",inline=False)
-        embed.add_field(name="2️⃣",value="welcomeチャンネルを設定します",inline=False)
-        mes = await ctx.send(embed=embed)
-        [self.bot.loop.create_task(mes.add_reaction(i))
-         for i in ("1️⃣", "2️⃣")]
 
-        def check(react, usr):
-            return (
-                    react.message.channel == mes.channel
-                    and usr == ctx.author
-                    and react.message.id == mes.id
-                    and react.me
+
+    @settings.command()#button式
+    async def menu(self, ctx):
+        embed = discord.Embed(title="セッティングメニュー",color=self.bot.color)
+        msg = await ctx.send(
+            embed=embed,
+            components=[
+                [
+                    Button(style=ButtonStyle.red, label="ログチャンネルを設定", emoji='🗨️'),
+                    Button(style=ButtonStyle.green, label="ウェルカムチャンネルを設定", emoji='🏴󠁧󠁢󠁥󠁮󠁧󠁿'),
+                    Button(style=ButtonStyle.blue, label="ログチャンネルをリセット"),
+                    Button(style=ButtonStyle.gray, label="ウェルカムチャンネルをリセット"),
+                ],
+            ],
+        )
+
+        def check(res):
+            return ctx.author == res.user and res.channel == ctx.channel
+
+        try:
+            res = await self.bot.wait_for("button_click", check=check, timeout=30)
+        except asyncio.exceptions.TimeoutError:
+            tembed = discord.Embed(title="Timeout")
+            await msg.edit(
+                embed=tembed,
+                components=[
+                    Button(style=ButtonStyle.red, label="Timeout", disabled=True)
+                ],
             )
-
-        reaction, user = await self.bot.wait_for('reaction_add', check=check)
-        if reaction.emoji == "1️⃣":
+            await asyncio.sleep(3)
+            await msg.delete()
+            return
+        if res.component.label == "ログチャンネルを設定":
             if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
                 e = discord.Embed(title="logとして設定したいチャンネルidを送信してください",color = self.bot.color)
-                await mes.edit(content=None, embed=e)
+                await msg.edit(content=None, embed=e)
                 message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
                 channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
                            in message.content.split()]
+                await msg.delete()
                 for channel in channel:
                     db = sqlite3.connect('main.sqlite')
                     cursor = db.cursor()
                     cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
                     result = cursor.fetchone()
                     if result is None:
+
                         sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
                         val = (ctx.guild.id, channel.id)
                         e = discord.Embed(title="ログチャンネルをセットしました",color=self.bot.color)
                         e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
                         e.add_field(name="該当チャンネル", value=channel.mention)
-                        await mes.edit(content=None, embed=e)
-
+                        await ctx.send(embed=e)
 
                     elif result is not None:
                         sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
@@ -288,7 +234,8 @@ class ServerSetting(commands.Cog):
                         e = discord.Embed(title="ログチャンネルをセットしました")
                         e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
                         e.add_field(name="該当チャンネル", value=channel.mention)
-                        await mes.edit(content=None, embed=e)
+                        await ctx.send(embed=e)
+
                     cursor.execute(sql, val)
                     db.commit()
                     cursor.close()
@@ -296,12 +243,13 @@ class ServerSetting(commands.Cog):
             else:
                 await ctx.send("権限がありません")
 
-        elif reaction.emoji == "2️⃣":
+        elif res.component.label == "ウェルカムチャンネルを設定":
             if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
                 await ctx.send("welcome_channelとして設定したいチャンネルidを送信してください")
                 message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
                 channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
                            in message.content.split()]
+                await msg.delete()
                 for channel in channel:
                     db = sqlite3.connect('main.sqlite')
                     cursor = db.cursor()
@@ -320,6 +268,315 @@ class ServerSetting(commands.Cog):
                     cursor.close()
                     db.close()
 
+        elif res.component.label == "ログチャンネルをリセット":
+            if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                e = discord.Embed(title="設定されているlog_channelを入力してください\nlog_channelの確認方法は`y/settings list`で確認できます",color = self.bot.color)
+                await msg.edit(content=None, embed=e)
+                message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                           in message.content.split()]
+                for channel in channel:
+                    db = sqlite3.connect('main.sqlite')
+                    cursor = db.cursor()
+
+                    cursor.execute("DELETE FROM ServerSetting "
+                                   "WHERE log_guild_id = ? AND log_channel  = ?",
+                                   [int(ctx.guild.id), int(channel.id)])
+
+                    await ctx.send(f"{channel.mention}を削除しました")
+                    db.commit()
+                    cursor.close()
+                    db.close()
+                else:
+                    await ctx.send("権限がありません")
+
+        elif res.component.label == "ウェルカムチャンネルをリセット":
+            if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                e = discord.Embed(title="設定されているwelcome_channelを入力してください\nwelcome_channelの確認方法は`y/settings list`で確認できます",color = self.bot.color)
+                await msg.edit(content=None, embed=e)
+                message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                           in message.content.split()]
+                for channel in channel:
+                    db = sqlite3.connect('main.sqlite')
+                    cursor = db.cursor()
+
+                    cursor.execute("DELETE FROM ServerSetting "
+                                   "WHERE guild_id = ? AND welcome_channel_id = ?",
+                                   [int(ctx.guild.id), int(channel.id)])
+
+                    await ctx.send(f"{channel.mention}を削除しました")
+                    db.commit()
+                    cursor.close()
+                    db.close()
+                else:
+                    await ctx.send("権限がありません")
+
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        def _check(m):
+            return (m.author == message.author
+                    and len(m.mentions)
+                    and (datetime.utcnow() - m.created_at).seconds < 60)
+
+        if not message.author.bot:
+            if len(list(filter(lambda m: _check(m), self.bot.cached_messages))) >= 3:
+                await message.channel.send("Don't spam mentions!", delete_after=10)
+
+    @commands.command(name='select-test')
+    async def select_test(self, ctx):
+        await ctx.send("Sever Setting",
+                       components=
+                       [Select(placeholder="settingsするものを選んでください",
+                               options=[
+                                   SelectOption(
+                                       label="Set Log",
+                                       value="logチャンネルを作成します",
+                                       description="logチャンネルを作成します",
+                                       emoji="😄"
+                                   ),
+                                   SelectOption(
+                                       label="Set Welcome_channel",
+                                       value="入出チャンネルを作成します",
+                                       description="入出チャンネルを作成します",
+                                       emoji="😄"
+                                   ),
+                                   SelectOption(
+                                       label="Set Leave_channel",
+                                       value="option3",
+                                       description="退出チャンネルを作成します",
+                                       emoji="😄"
+                                   ),
+                                   SelectOption(
+                                       label="Reset log_channel",
+                                       value="options4",
+                                       description="ログチャンネルをリセットします"
+                                   ),
+                                   SelectOption(
+                                       label="Reset Welcome_channel",
+                                       value="options5",
+                                       description="入出チャンネルをリセットします"
+                                   ),
+                                   SelectOption(
+                                       label="Reset Leave_channel",
+                                       value="options6",
+                                       description="退出チャンネルをリセットします",
+                                   ),
+                               ])]
+                       )
+        e1 = discord.Embed(title="logをセット", description="下記の指示に沿ってセットしてください",color=self.bot.color)
+        e2 = discord.Embed(title="入出チャンネルをセット", description="下記の指示に沿ってセットしてください",color=self.bot.color)
+        e3 = discord.Embed(title="退出チャンネルをセット", description="下記の指示に沿ってセットしてください",color=self.bot.color)
+        e4 = discord.Embed(title="logチャンネルをリセット",description="下記の指示に沿ってセットしてください",color=self.bot.color)
+        e5 = discord.Embed(title="入出チャンネルをリセット",description="下記の指示に沿ってセットしてください",color=self.bot.color)
+        e6 = discord.Embed(title="退出チャンネルをリセット", description="下記の指示に沿ってセットしてください", color=self.bot.color)
+
+        while True:
+            try:
+                event = await self.bot.wait_for("select_option", check=None)
+
+                label = event.component[0].label
+
+                if label == "Set Log":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=True,  # we dont want to spam someone
+                        embed=e1
+                    )
+                    if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        e = discord.Embed(title="logとして設定したいチャンネルidを送信してください", color=self.bot.color)
+                        msg = await ctx.send(embed=e)
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+                        await msg.delete()
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+                            cursor.execute(f"SELECT log_channel FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                            result = cursor.fetchone()
+                            if result is None:
+
+                                sql = ("INSERT INTO ServerSetting(guild_id,log_channel) VALUES(?,?)")
+                                val = (ctx.guild.id, channel.id)
+                                e = discord.Embed(title="ログチャンネルをセットしました", color=self.bot.color)
+                                e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                                e.add_field(name="該当チャンネル", value=channel.mention)
+                                await ctx.send(embed=e)
+
+                            elif result is not None:
+                                sql = ("UPDATE ServerSetting SET log_channel = ? WHERE guild_id = ?")
+                                val = (channel.id, ctx.guild.id)
+                                e = discord.Embed(title="ログチャンネルをセットしました")
+                                e.add_field(name="取得できる内容", value="ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...")
+                                e.add_field(name="該当チャンネル", value=channel.mention)
+                                await ctx.send(embed=e)
+
+                            cursor.execute(sql, val)
+                            db.commit()
+                            cursor.close()
+                            db.close()
+                    else:
+                        await ctx.send("権限がありません")
+
+
+                elif label == "Set Welcome_channel":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=True,  # we dont want to spam someone
+                        embed=e2
+                    )
+                    if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        msg = await ctx.send("入出チャンネルとして設定したいチャンネルidを送信してください")
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+                        await msg.delete()
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+                            cursor.execute(
+                                f"SELECT welcome_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                            result = cursor.fetchone()
+                            if result is None:
+                                sql = ("INSERT INTO ServerSetting(guild_id,welcome_channel_id) VALUES(?,?)")
+                                val = (ctx.guild.id, channel.id)
+                                await ctx.send(f"{channel.mention}を入出チャンネルとして設定しました")
+                            elif result is not None:
+                                sql = ("UPDATE ServerSetting SET welcome_channel_id = ? WHERE guild_id = ?")
+                                val = (channel.id, ctx.guild.id)
+                                await ctx.send(f"{channel.mention}を入出チャンネルとして設定しました")
+                            cursor.execute(sql, val)
+                            db.commit()
+                            cursor.close()
+                            db.close()
+
+                elif label == "Set Leave_channel":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,  # we dont want to spam
+                        embed=e3
+                    )
+                    if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        msg = await ctx.send("退出チャンネルとして設定したいチャンネルidを送信してください")
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+                        await msg.delete()
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+                            cursor.execute(
+                                f"SELECT remove_channel_id FROM ServerSetting WHERE guild_id = {ctx.guild.id}")
+                            result = cursor.fetchone()
+                            if result is None:
+                                sql = ("INSERT INTO ServerSetting(guild_id,remove_channel_id) VALUES(?,?)")
+                                val = (ctx.guild.id, channel.id)
+                                await ctx.send(f"{channel.mention}を退出チャンネルとして設定しました")
+                            elif result is not None:
+                                sql = ("UPDATE ServerSetting SET remove_channel_id = ? WHERE guild_id = ?")
+                                val = (channel.id, ctx.guild.id)
+                                await ctx.send(f"{channel.mention}を退出チャンネルとして設定しました")
+                            cursor.execute(sql, val)
+                            db.commit()
+                            cursor.close()
+                            db.close()
+                        else:
+                            await ctx.send("権限がありません")
+
+                elif label == "Reset log_channel":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,  # we dont want to spam
+                        embed=e4
+                    )
+                    if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        e = discord.Embed(
+                            title="設定されているlog_channelを入力してください\nlog_channelの確認方法は`y/settings list`で確認できます",
+                            color=self.bot.color)
+                        msg = await ctx.send(embed=e)
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+
+                            cursor.execute("DELETE FROM ServerSetting "
+                                           "WHERE log_guild_id = ? AND log_channel  = ?",
+                                           [int(ctx.guild.id), int(channel.id)])
+                            await msg.delete()
+                            await ctx.send(f"{channel.mention}を削除しました")
+                            db.commit()
+                            cursor.close()
+                            db.close()
+                        else:
+                            await ctx.send("権限がありません")
+
+                elif label == "Reset Welcome_channel":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,
+                        embed=e5
+                    )
+                    if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        e = discord.Embed(
+                            title="設定されている入出チャンネルのidを入力してください\nwelcome_channelの確認方法は`y/settings list`で確認できます",
+                            color=self.bot.color)
+                        msg = await ctx.send(embed=e)
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+                            cursor.execute("DELETE FROM ServerSetting "
+                                           "WHERE guild_id = ? AND welcome_channel_id = ?",
+                                           [int(ctx.guild.id), int(channel.id)])
+                            await msg.delete()
+                            await ctx.send(f"{channel.mention}を削除しました")
+                            db.commit()
+                            cursor.close()
+                            db.close()
+                    else:
+                        await ctx.send("権限がありません")
+
+                elif label == "Reset Leave_channel":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,
+                        embed=e6
+                    )
+                    if ctx.message.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
+                        e = discord.Embed(
+                            title="設定されている退出チャンネルのidを入力してください\nleave_channelの確認方法は`y/settings list`で確認できます",
+                            color=self.bot.color)
+                        msg = await ctx.send(embed=e)
+                        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
+                        channel = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
+                                   in message.content.split()]
+
+                        for channel in channel:
+                            db = sqlite3.connect('main.sqlite')
+                            cursor = db.cursor()
+
+                            cursor.execute("DELETE FROM ServerSetting "
+                                           "WHERE guild_id = ? AND remove_channel_id  = ?",
+                                           [int(ctx.guild.id), int(channel.id)])
+
+                            await msg.delete()
+
+                            await ctx.send(f"{channel.mention}を削除しました")
+                            db.commit()
+                            cursor.close()
+                            db.close()
+                    else:
+                        await ctx.send("権限がありません")
+
+
+            except discord.NotFound:
+                print("error.")  # s
 
 
     @settings.command(name='list')
@@ -339,23 +596,7 @@ class ServerSetting(commands.Cog):
 
 
 
-    @settings.command(description="入出時のチャンネルをリセットします")
-    async def welcome_reset_channel(self,ctx, channel: discord.TextChannel):
-        """`チャンネルの管理`"""
-        if ctx.author.guild_permissions.manage_messages or ctx.author.id == 478126443168006164:
-            db = sqlite3.connect('main.sqlite')
-            cursor = db.cursor()
 
-            cursor.execute("DELETE FROM ServerSetting "
-                                      "WHERE guild_id = ? AND welcome_channel_id = ?",
-                                      [int(ctx.guild.id), int(channel.id)])
-
-            await ctx.send(f"{channel.mention}を削除しました")
-            db.commit()
-            cursor.close()
-            db.close()
-        else:
-            await ctx.send("権限がありません")
 
     @settings.command(description="退出時のチャンネルをリセットします")
     async def remove_reset_channel(self, ctx, channel: discord.TextChannel):

@@ -7,7 +7,7 @@ import sqlite3
 from typing import Union
 import time, struct,subprocess
 import asyncio
-
+from discord_components import DiscordComponents,Button,ButtonStyle,InteractionType, Select, SelectOption
 import platform
 from discord.ext import commands
 from platform import python_version
@@ -75,6 +75,262 @@ class information(commands.Cog):
             e.add_field(name="結果！", value=omikuzi[random.randrange(len(omikuzi))])
             await asyncio.sleep(2)
         await msg.edit(content=None, embed=e)
+
+    @commands.command(name='infos')
+    async def select_test(self, ctx, *, user: Union[discord.Member, discord.User,] = None):
+        await ctx.send("We are testing selects!",
+                       components=
+                       [Select(placeholder="Choose what you want to see!",
+                               options=[
+                                   SelectOption(
+                                       label="基本的な情報",
+                                       value="option1",
+                                       description="See option 1",
+                                       emoji="😄"
+                                       # you can use discord.Parti ... emoji to use a custom one (i dont know what its called)
+                                   ),
+                                   SelectOption(
+                                       label="ステータス等",
+                                       value="option2",
+                                       description="See option 2",
+                                       emoji="😄"
+                                       # you can use discord.Parti ... emoji to use a custom one (i dont know what its called)
+                                   ),
+                                   SelectOption(
+                                       label="役職",
+                                       value="option3",
+                                       description="See option 3",
+                                       emoji="😄"
+                                       # you can use discord.Parti ... emoji to use a custom one (i dont know what its called)
+                                   ),
+                                   SelectOption(
+                                       label="権限",
+                                       value="option4",
+                                       description="See option 4",
+                                       emoji="😄"
+                                       # you can use discord.Parti ... emoji to use a custom one (i dont know what its called)
+                                   ),
+                               ])]
+                       )
+        e1 = discord.Embed(title="ui", description="下記参照")
+        e2 = discord.Embed(title="embed2", description="a really exciting embed")
+        e3 = discord.Embed(title="embed3", description="a really exciting embed")
+        e4 = discord.Embed(title="embede")
+        user = user or ctx.author
+
+        badges = {
+            "staff": "<:staff:836951948745900063>",
+            "partner": "<:partner:836950588536127508>",
+            "hypesquad": "<:hypesquadevents:724328584789098639>",
+            "hypesquad_balance": "<:balance:855966162483281940>",
+            "hypesquad_bravery": "<:bravery:855966487956684821>",
+            "hypesquad_brilliance":
+                "<:brilince:855966748250341396>",
+            "premium_since": "test",
+            "bug_hunter": "<:bughunt:724588087052861531>",
+            "bug_hunter_level_2": "<:bug2:699986097694048327>",
+            "verified_bot_developer": "<:verifed:836952740818976770>",
+            "early_supporter": "<:earlysupporter:724588086646014034>",
+
+        }
+        flags = [
+            flag for flag, value in dict(user.public_flags).items() if
+            value is True
+        ]
+        flagstr = ""
+        for badge in badges.keys():
+            if badge in flags:
+                flagstr += f" {badges[badge]} "
+        n = False
+
+        roles = [r.mention for r in user.roles]
+
+
+        while True:
+            try:  # try except is not required but i would recommend using it
+                event = await self.bot.wait_for("select_option", check=None)
+
+                label = event.component[0].label
+
+                if label == "基本的な情報":
+                    msg = await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=True,  # we dont want to spam someone
+                        embed=e1
+                    )
+                    since_created = (ctx.message.created_at - user.created_at).days
+                    since_joined = (ctx.message.created_at - user.joined_at).days
+                    user_created = user.created_at.strftime("%d %b %Y %H:%M")
+                    user_joined = user.joined_at.strftime("%d %b %Y %H:%M")
+
+                    created_at = f"{user_created}\n({since_created} days ago)"
+                    joined_at = f"{user_joined}\n({since_joined} days ago)"
+                    e = discord.Embed(title="ユーザー情報",description=f"{user}({user.id})")
+                    e.add_field(name="Discord参加日:", value=created_at, inline=True)
+                    e.add_field(name="サーバー参加日", value=joined_at, inline=True)
+                    e.add_field(name="ニックネーム",value=user.display_name)
+                    if user.bot:
+                        e.add_field(name="Botですか", value="はい")
+                    else:
+                        e.add_field(name="Botですか", value="いいえ")
+
+                    if user.avatar:
+                        e.set_thumbnail(url=user.avatar_url)
+                    await ctx.send(embed=e)
+
+
+                elif label == "ステータス等":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=True,  # we dont want to spam someone
+                        embed=e2
+                    )
+                    if n:
+                        flagstr += f" <:nitro:724328585418113134>"
+                    e = discord.Embed(title="ステータス等",description=f'{user}({user.id}{flagstr})')
+
+                    if len(flagstr) != 0:
+                        e.add_field(name="Badges", value=flagstr)
+
+                    if str(user.status) == "online":
+                        e.add_field(name="ステータス", value='<:online:855965213156311091>  ')
+                    elif str(user.status) == "offline":
+                        e.add_field(name="ステータス", value='<:offline:855965198221180968>')
+                    elif str(user.status) == "idle":
+                        e.add_field(name="ステータス", value='<:afk:855965231740878878>')
+                    elif str(user.status) == "dnd":
+                        e.add_field(name="ステータス", value='<:dnd:855965222640156682> ')
+
+                    if user.avatar:
+                        e.set_thumbnail(url=user.avatar_url)
+
+                    if user.mobile_status:
+                        e.add_field(name="使用デバイス(モバイル)", value=':mobile_phone:')
+                    elif user.desktop_status:
+                        e.add_field(name="使用デバイス(デスクトップ)", value=':desktop:')
+
+                    elif user.web_status:
+                        e.add_field(name="使用デバイス(web)", value=':computer:')
+
+                    if user.activity is not None:
+                        try:
+                            if user.activity.type == discord.ActivityType.custom:
+                                e.add_field(name="プレイ中", value=user.activity)
+                            else:
+                                e.add_field(name="プレイ中", value=f'{user.activity.name}')
+                        except:
+                            e.add_field(name="プレイ中", value=user.activity)
+
+                    if bool(user.premium_since):
+                        e.add_field(name="ブースト？", value="してます")
+                    else:
+                        e.add_field(name="ブースト", value="してない")
+
+                    await ctx.send(embed=e)
+                elif label == "役職":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,  # we dont want to spam
+                        embed=e3
+                    )
+                    e = discord.Embed(title="ユーザー情報",description=f'{user}({user.id})')
+                    e.add_field(name="Highest Role:", value=user.top_role.mention)
+                    print(user.top_role.mention)
+
+                    if roles:
+                        e.add_field(name=f"Roles({len(roles)})",
+                                    value=', '.join(roles) if len(roles) < 40 else f'{len(roles)} roles', inline=False)
+
+                    if user.avatar:
+                        e.set_thumbnail(url=user.avatar_url)
+                    await ctx.send(embed=e)
+
+                elif label == "権限":
+                    await event.respond(
+                        type=InteractionType.ChannelMessageWithSource,
+                        ephemeral=False,  # we dont want to spam
+                        embed=e4
+                    )
+                    user_permission = user.guild_permissions
+
+                    server_permission = {
+                        'administrator': '管理者', 'read_messages': 'チャンネルを見る', 'manage_channels': 'チャンネルの管理',
+                        'manage_roles': 'ロールの管理', 'manage_emojis': '絵文字の管理',
+                        'view_audit_log': 'サーバーログの表示', 'view_guild_insights': 'サーバーインサイトを見る',
+                        'manage_webhooks': 'webhookの管理', 'manage_guild': 'サーバー管理'
+                    }
+                    member_permission = {
+                        'create_instant_invite': '招待リンクを作成', 'change_nickname': 'ニックネームの変更',
+                        'manage_nicknames': 'ニックネームの管理', 'kick_members': 'メンバーをキック',
+                        'ban_members': 'メンバーをBAN'
+                    }
+                    ch_permission = {
+                        'send_messages': 'メッセージを送信', 'embed_links': '埋め込みリンク', 'attach_files': 'ファイルを添付',
+                        'add_reactions': 'リアクションの追加', 'external_emojis': '外部の絵文字の利用',
+                        'mention_everyone': '@everyone、@here、全てのロールにメンション', 'manage_messages': 'メッセージの管理',
+                        'read_message_history': 'メッセージ履歴を読む', 'send_tts_messages': 'テキスト読み上げメッセージを送信する',
+                        'use_slash_commands': 'スラッシュコマンドを使用'
+                    }
+                    voice_permission = {
+                        'connect': '接続', 'speak': '発言', 'stream': '動画',
+                        'use_voice_activation': '音声検出を使用', 'priority_speaker': '優先スピーカー',
+                        'mute_members': 'メンバーをミュート', 'deafen_members': 'メンバーのスピーカーをミュート',
+                        'move_members': 'メンバーを移動', 'request_to_speak': 'スピーカー参加をリクエスト'
+                    }
+
+                    s_perm_text = ''
+                    m_perm_text = ''
+                    c_perm_text = ''
+                    not_vperm_text = ''
+                    not_cperm_text = ''
+                    not_mperm_text = ''
+                    not_sperm_text = ''
+                    v_perm_text = ''
+                    user_permission_list = []
+                    for rp in list(user_permission):
+                        if rp[1]:
+                            user_permission_list.append(rp[0])
+
+                    for sp in list(server_permission):
+                        if sp in user_permission_list:
+                            s_perm_text += f"✅:{server_permission[sp]}"
+                        else:
+                            not_sperm_text += f"❌:{server_permission[sp]}"
+                    for sp in list(member_permission):
+                        if sp in user_permission_list:
+                            m_perm_text += f"✅:{member_permission[sp]}"
+                        else:
+                            not_mperm_text += f"❌:{member_permission[sp]}"
+                    for sp in list(ch_permission):
+                        if sp in user_permission_list:
+                            c_perm_text += f"✅:{ch_permission[sp]}"
+                        else:
+                            not_cperm_text += f"❌:{ch_permission[sp]}"
+                    for sp in list(voice_permission):
+                        if sp in user_permission_list:
+                            v_perm_text += f"✅:{voice_permission[sp]}"
+                        else:
+                            not_vperm_text += f"❌:{voice_permission[sp]}"
+                    e = discord.Embed(title="ユーザー情報",description=f'{user}({user.id})',color=self.bot.color)
+                    e.add_field(name='サーバー全般', value=f'`{s_perm_text}`,`{not_sperm_text}`')
+                    e.add_field(name='メンバー', value=f'`{m_perm_text}`,`{not_mperm_text}`')
+                    e.add_field(name='テキストチャンネル', value=f'`{c_perm_text}`,`{not_cperm_text}`')
+                    e.add_field(name='ボイス', value=f'`{v_perm_text}`,`{not_vperm_text}`')
+                    if user.avatar:
+                        e.set_thumbnail(url=user.avatar_url)
+                    await ctx.send(embed=e)
+
+
+            except discord.NotFound:
+                print(
+                    "error.")  # since this is bugged, we cant send an error. this error raises every time you use a select, but if this is fixed you can send what ever you want.
+
+    @commands.command()
+    async def requests(self, ctx, command, info):
+        e = discord.Embed(title="要望", description=f"リクエストした人\n{ctx.author}")
+        e.add_field(name="コマンド名", value=command)
+        e.add_field(name="内容", value=info)
+        await ctx.send(embed=e)
 
     @commands.command(aliases=["si"], name="serverinfo", usage='')
     @commands.guild_only()
@@ -476,7 +732,7 @@ class information(commands.Cog):
         if isinstance(user, discord.User):
             e.set_footer(text='This member is not in this server.')
 
-        role_permission = user.guild_permissions
+        user_permission = user.guild_permissions
 
 
 
@@ -514,7 +770,7 @@ class information(commands.Cog):
         not_sperm_text = ''
         v_perm_text = ''
         user_permission_list = []
-        for rp in list(role_permission):
+        for rp in list(user_permission):
             if rp[1]:
                 user_permission_list.append(rp[0])
 
@@ -538,6 +794,8 @@ class information(commands.Cog):
                 v_perm_text += f"✅:{voice_permission[sp]}"
             else:
                 not_vperm_text += f"❌:{voice_permission[sp]}"
+
+        e = discord.Embed()
 
         e.add_field(name='サーバー全般', value=f'`{s_perm_text}`,`{not_sperm_text}`')
         e.add_field(name='メンバー', value=f'`{m_perm_text}`,`{not_mperm_text}`')

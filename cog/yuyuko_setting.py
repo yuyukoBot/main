@@ -42,12 +42,17 @@ class GuildSetting(commands.Cog):
                        in message.content.split()]
         for category in category:
             category = category
-        await ctx.send('トピックを設定してください')
-        message = await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel)
-        slowmode = [await commands.converter.TextChannelConverter().convert(ctx, logtext) for logtext
-                    in message.content.split()]
+        mes = await ctx.send('トピックを設定してください')
+        def check(react, usr):
+            return (
+                    react.message.channel == mes.channel
+                    and usr == ctx.author
+                    and react.message.id == mes.id
+                    and react.me
+            )
+        topic = await self.bot.wait_for("message", check=check)
 
-        await ctx.guild.create_text_channel(name, category=category,slowmode=slowmode)
+        await ctx.guild.create_text_channel(name, category=category,topic=topic)
 
 
 

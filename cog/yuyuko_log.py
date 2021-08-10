@@ -151,7 +151,7 @@ class log(commands.Cog):
 
                     await ch.send(embed=e)
                 elif isinstance(after, discord.StageChannel):
-                    e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-カテゴリ変更- ",description="カテゴリーの名前を変更しました", color=0x5d00ff)
+                    e = discord.Embed(title="<:update_channel:840914594058600448> -サーバーログ-ステージ変更- ",description="カテゴリーの名前を変更しました", color=0x5d00ff)
                     e.add_field(name="設定前", value=f'`{before.name}`', inline=True)
                     e.add_field(name="設定後", value=f'`{after.name}`', inline=False)
                     e.add_field(name="実行者", value=str(bl[0].user))
@@ -373,7 +373,7 @@ class log(commands.Cog):
             pem = [f"`{c}`" for c in dict(after.permissions) if dict(after.permissions)[c] is True]
             bl = await after.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_update).flatten()
             if before.name != after.name:
-                embed = discord.Embed(title="-サーバーログ-役職変更- ",description="役職名を変更しました", color=0x5d00ff)
+                embed = discord.Embed(title=get_lan_server(after.guild.id,""),description="役職名を変更しました", color=0x5d00ff)
 
                 embed.add_field(name="名前", value=f'{after.name}({after.id})')
                 embed.add_field(name="位置", value=after.position)

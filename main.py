@@ -1,27 +1,18 @@
 import discord
 import json
-import os
-import textwrap
-import collections
-import contextlib
-import asyncio
-from util.utils import Pag,clean_code
-import util.utils as ut
 from discord.ext import commands
-from discord_slash import SlashCommand
-
-import contextlib
-import io
 import sqlite3
-import traceback
-from traceback import format_exception
+import os
 from discord_components import *
+intents = discord.Intents.default()
+intents.presences = True
+intents.members = True
+
 updateinfos = "・コマンド追加"
-import time
-import asyncpg
+
 release = "0.2"
 status = "Beta"
-
+sss = "aaa"
 intents = discord.Intents.default()
 intents.presences = True
 intents.members = True
@@ -32,17 +23,12 @@ with open('./config.json', 'r') as cjson:
 ver = "2.1"
 token = config["TOKEN"]
 prefix = config["prefix"]
-USERNAME = config["user"]
-PASSWORD = config['password']
-DATABASE = config["database"]
 
 
 
 
 bot = commands.Bot(command_prefix=prefix,activety=discord.Game(name="yuyuko"), intents=intents,help_command=None)
-db=sqlite3.connect("main.sqlite",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
-DiscordComponents(bot)
-slash = SlashCommand(bot,sync_commands=True,sync_on_cog_reload=True)
+db=sqlite3.connect("main.db",detect_types=sqlite3.PARSE_DECLTYPES, isolation_level=None)
 bot.db=db
 bot.close_=bot.close
 async def newclose():
@@ -54,15 +40,16 @@ def savedb():
 bot.close=newclose
 bot.savedb=savedb
 bot.cursor=db.cursor()
+DiscordComponents(bot)
+
 bot.load_extension('jishaku')
-bot.load_extension('private.server_manage')
-bot.load_extension('private.team')
+bot.load_extension('utils.error')
 
 
 if __name__ == '__main__':
-    for filename in os.listdir("cog"):
+    for filename in os.listdir("cogs"):
         if filename.endswith(".py"):
-            bot.load_extension(f"cog.{filename[:-3]}")
+            bot.load_extension(f"cogs.{filename[:-3]}")
 
 
 
@@ -205,4 +192,3 @@ async def on_command_error(ctx, error):
     m = await bot.get_channel(ch).send(embed=embed)
     await ctx.send("エラーが発生しました")
 bot.run(token)
-

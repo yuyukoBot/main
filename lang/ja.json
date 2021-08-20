@@ -1,0 +1,348 @@
+{
+  "set_language_pack_not_exist":"言語をセットしました",
+  "set_language_complete": "言語をセットしました",
+
+
+  "about_bot_info": "**Bot概要**",
+  "bot_name": "幽々子",
+  "bot_servers": "サーバー数",
+  "bot_users": "ユーザー数",
+  "about_bot_command": "コマンド数",
+  "about_channel_count": "チャンネル数",
+  "discord.py_version": "discord.pyのバージョン",
+  "python_version": "pythonのバージョン",
+  "about_invite": "導入",
+  "about_status": "ステータス",
+  "all_memory": "全てのメモリ容量",
+  "memory": "メモリ",
+  "use_amount": "使用量",
+  "empty_use": "空き容量",
+  "Processor": "プロセッサ",
+
+
+
+  "ui_about": "ユーザー情報",
+  "ui_voice": "ボイスチャンネル",
+  "ui_not_voice": "入ってません",
+  "ui_perm": "権限",
+  "ui_owner": "管理者",
+  "ui_admin": "運営",
+  "ui_ippan": "一般",
+
+  "ui_bot": "Botですか",
+  "ui_bot_yes": "はい",
+  "ui_bot_no": "いいえ",
+
+  "ui_status": "ステータス",
+  "ui_use_mobile": "使用デバイス(モバイル)",
+  "ui_use_desktop": "使用デバイス(デスクトップ)",
+  "ui_use_web": "使用デバイス(web)",
+  "ui_playing": "プレイ中",
+  "ui_display": "ニックネーム",
+  "ui_boost": "ブースト",
+  "ui_boost_yes": "してます",
+  "ui_boost_no": "してない",
+  "ui_join_discord": "アカウント作成日",
+  "ui_join_server": "サーバー参加日",
+  "ui_high_role": "トップロール",
+  "ui_role": "役職",
+  "ui_avatar": "アバターリンク",
+
+  "ui_isnot": "指定したユーザーはサーバーにはいません",
+  "ui_administrator": "管理者",
+  "ui_read_messages": "チャンネルを見る",
+  "ui_manage_channels": "チャンネルの管理",
+  "ui_manage_roles": "ロールの管理",
+  "ui_manage_emojis": "絵文字の管理",
+  "ui_view_audit_log": "監査ログの表示",
+  "ui_view_guild_insights": "サーバーインサイトの表示",
+  "ui_manage_webhook": "webhookの管理",
+  "ui_manage_guild": "サーバー管理",
+
+
+  "ui_create_instant_invite": "招待リンクを作成",
+  "ui_change_nickname": "ニックネームの変更",
+  "ui_manage_nicknames": "ニックネームの管理",
+  "ui_kick_members": "メンバーをキック",
+  "ui_ban_members": "メンバーをバン",
+
+  "ui_send_messages": "メッセージを送信",
+  "ui_embed_links": "埋め込みリンクの送信",
+  "ui_attach_files": "ファイルを添付",
+  "ui_add_reactions": "リアクションの追加",
+  "ui_external_emojis": "外部の絵文字の利用",
+  "ui_mention_everyone": "@everyone,@here、全てのロールにメンション",
+  "ui_manage_messages": "メッセージの管理",
+  "ui_read_message_history": "メッセージ履歴を読む",
+  "ui_send_tts_message": "テキスト読み上げメッセージを送信する",
+  "ui_use_slash_commands": "スラッシュコマンドの使用",
+
+
+  "ui_connect": "接続",
+  "ui_speak": "発言",
+  "ui_stream": "配信",
+  "ui_use_voice_activation": "音声検出を使用",
+  "ui_priority_speaker":"優先スピーカー",
+  "ui_mute_members": "メンバーをミュート",
+  "ui_deafen_members": "メンバ-のスピーカーをミュート",
+  "ui_move_members": "メンバーを移動",
+  "ui_request_to_speak": "スピーカー参加をリクエスト",
+
+
+  "ui_all_server": "サーバー全般",
+  "ui_perm_member": "メンバー",
+  "ui_perm_text": "テキストチャンネル",
+  "ui_perm_voice": "ボイスチャンネル",
+  "ui_lang": "日本語",
+
+
+  "si_no_guild": "IDが間違っています",
+  "si_about": "サーバー情報",
+  "si_name": "サーバー名",
+  "si_owner": "サーバー所有者",
+  "si_member": "メンバー数",
+  "si_channel": "チャンネル数",
+  "si_emoji": "絵文字",
+  "si_region": "地域",
+  "si_verfiy": "認証度",
+  "si_verfiy_none": "なし",
+  "si_verfiy_1":"メール認証がされているアカウントのみ",
+  "si_verfiy_2": "Discordに登録してから5分以上経過してるアカウントのみ",
+  "si_verfiy_3": "このサーバーのメンバーとなってから10分以上経過したメンバーのみ",
+  "si_verfiy_4": "電話認証がされているアカウントのみ",
+  "si_filter": "不適切なメディアコンテンツフィルター",
+  "si_filter_none": "使用しない",
+  "si_filter_role": "役職を与えてないメンバー",
+  "si_filter_member": "すべてのメンバー",
+
+  "si_afk": "休止チャンネル",
+  "si_afk_timeout": "非アクティブタイムアウト時間",
+  "si_afk_none": "設定されていません",
+
+  "si_welcome_channel": "ウェルカムチャンネル",
+  "si_boost_channel": "ブーストチャンネル",
+  "si_system_channel": "システムチャンネル",
+  "si_custom_emoji": "カスタム絵文字",
+  "si_roles": "役職",
+  "si_features":"特徴",
+  "si_nsfw": "ギルドのNSFWレベルを表します",
+  "si_nsfw_1":"ギルドはまだ分類されていません.",
+  "si_nsfw_2":"ギルドにはNSFWコンテンツが含まれています.",
+  "si_nsfw_3":"ギルドにはNSFWのコンテンツは含まれていません.",
+  "si_nsfw_4":"ギルドにはNSFWコンテンツが含まれている可能性があります.",
+
+  "ei_none": "絵文字が含まれていません",
+  "ei_about": "絵文字情報",
+  "ei_user": "絵文字を追加した人",
+  "ei_animated": "絵文字がアニメーション化されているかどうか",
+  "ei_managed": "この絵文字がTwitch統合によって管理されているかどうか",
+  "ei_yes": "されています",
+  "ei_no": "されていません",
+  "ei_can_use": "絵文字が使えるかどうか",
+  "ei_yes_use": "使えます",
+  "ei_no_use": "使えません",
+
+  "ri_none": "役職が見つかりません",
+  "ri_about": "役職の情報",
+  "ri_hoist": "別表示？",
+  "ri_mention": "メンション可能?",
+  "ri_yes": "はい",
+  "ri_no": "いいえ",
+  "ri_members": "メンバー数",
+  "ri_color": "カラーコード",
+  "ri_create": "作成時刻",
+  "ri_member": "メンバ-",
+  "ri_too": "メンバーが多すぎます",
+  "ri_none_member": "メンバーが見つかりません",
+
+
+  "ch_not_see": "チャンネルが見つかりませんでした",
+  "ch_betu": "別のサーバーのチャンネルです",
+  "ch_name": "チャンネル名",
+  "ch_about": "チャンネル情報",
+  "ch_type_ann": "タイプ:アナウンス",
+  "ch_type_ann_no": "タイプ:アナウンス(フォロー不可)",
+  "ch_type_voice": "タイプ:ボイス",
+  "ch_type_text": "タイプ:テキスト",
+  "ch_type_categori": "タイプ:カテゴリ",
+  "ch_join_category": "所属するカテゴリー",
+  "ch_topic": "チャンネルトピック",
+  "ch_topic_no": "なし",
+  "ch_slowmode": "スローモードの時間",
+  "ch_nsfw": "閲覧注意チャンネルですか？",
+  "ch_yes": "はい",
+  "ch_no": "いいえ",
+  "ch_voice_region": "地域",
+  "ch_limite": "ユーザー数制限",
+  "ch_able": "参加可能なメンバー",
+  "ch_bitrate": "ビットレート",
+  "ch_ann": "アナウンス",
+  "ch_ann_no": "アナウンス(フォロー不可)",
+  "ch_news_store": "ストア",
+  "ch_news_voice": "ボイス",
+  "ch_news_text": "テキスト",
+  "ch_join_channel": "所属するチャンネル",
+  "ch_stage": "ステージチャンネル",
+
+  "server_lang": "日本語",
+  "serverlang": "設定されている言語",
+
+   "thread_about":"スレッド情報",
+  "thread_name":"スレッド名",
+  "thread_owner":"スレッド所有者",
+  "thread_guild":"スレッドが所属してるサーバー",
+  "parent_id":"所属してるテキストチャンネル",
+  "thread_slomode":"低速モード",
+  "thread_archived?":"このスレッドはアーカイブになってますか?",
+  "thread_lock":"このスレッドはロックされていますか？",
+  "thread_yes":"はい",
+  "thread_no":"いいえ" ,
+  "thread_time":"アーカイブになるまでの時間",
+
+
+  "no_perm": "権限がありません",
+  "setting_1": "logチャンネルを作成します",
+  "setting_2": "入出チャンネルを設定",
+  "setting_3": "退出チャンネルを作成します",
+  "setting_4": "ログチャンネルをリセットします",
+  "setting_5": "入出チャンネルをリセットします",
+  "setting_6": "退出チャンネルをリセットします",
+  "setting_desc": "下記の指示に沿ってセットしてください",
+
+  "set_log_1": "logとして設定したいチャンネルidを送信してください",
+  "set_log_2": "ログチャンネルをセットしました",
+  "set_log_3": "取得できる内容",
+  "set_log_4": "ユーザーの退出(入出)や役職の付与剥奪\nチャンネル(役職/メッセージの作成削除や設定変更等...",
+  "set_log_5": "該当チャンネル",
+
+
+  "set_welcome_1": "入出チャンネルとして設定したいチャンネルidを送信してください",
+  "set_welcome_2": "を入出チャンネルとして設定しました",
+
+
+  "set_leave_1": "退出チャンネルとして設定したいチャンネルidを送信してください",
+  "set_leave_2": "を退出チャンネルとして設定しました",
+
+  "reset_log_1": "設定されているlog_channelを入力してください\\nlog_channelの確認方法は`y/settings list`で確認できます",
+  "reset_log_2": "を削除しました",
+
+  "reset_welcome_1":"設定されている入出チャンネルのidを入力してください\\入出チャンネルの確認方法は`y/settings list`で確認できます",
+  "reset_leave": "設定されている退出チャンネルのidを入力してください\\退出チャンネルの確認方法は`y/settings list`で確認できます",
+
+
+  "set_none": "データが見つかりませんでした",
+  "set_list_1": "ログチャンネル",
+  "set_list_none": "見つかりませんでした",
+  "set_list_2": "入出チャンネル",
+  "set_list_3": "退出チャンネル",
+
+  "user_arg_error": "指定したIDをメンバーまたはユーザーに変換できませんでした",
+  "command_not_found": "コマンドが見つかりません",
+  "error_perms": "あなたは以下の権限を持っていません",
+  "error_information": "エラー情報",
+  "error_owner": "オーナー限定コマンドです",
+  "too_arg": "引数が多すぎます",
+  "bad_arg": "無効な引数です",
+
+
+  "argment": "引数",
+  "reply": "返信",
+  "msg_command": "コマンド実行メッセージ",
+  "msg": "メッセージ",
+
+  "log_edit_before": "変更前",
+  "log_edit_after": "変更後",
+  "log_author": "実行者",
+  "log_yes": "はい",
+  "log_no": "いいえ",
+
+  "log_msg_delete": "サーバーログ-メッセージ削除",
+  "log_msg_delete_msg": "削除されたメッセージ",
+  "log_msg_delete_author": "メッセージ送信者",
+  "log_msg_delete_author1": "メッセージ削除者",
+  "log_msg_channel": "メッセージチャンネル",
+
+  "log_msg_edit": "サーバーログ-メッセージ変更-",
+  "log_msg_url": "メッセージのurl",
+  "log_msg_edit_author": "変更したユーザー",
+  "log_channel_delete": "-サーバーログ-チャンネル削除- <:delete_channel:840907400394833930> ",
+  "log_channel_create": "<:create_channel:840913176819662858> -サーバーログ-チャンネル作成-",
+  "log_create_channel": "チャンネル名",
+  "log_create_channel_text": "<:create_channel:840913176819662858> -サーバーログ -テキストチャンネル作成",
+  "log_create_channel_voice": "<:create_channel:840913176819662858> -サーバーログ-ボイスチャンネル作成-",
+  "log_crate_channel_category": "<:create_channel:840913176819662858> -サーバーログ-カテゴリ-作成- ",
+  "log_create_channel_stage": "<:create_channel:840913176819662858> -サーバーログ-ステージチャンネル作成- ",
+  "log_update_channel": "<:update_channel:840914594058600448> -サーバーログ-テキストチャンネル変更-",
+  "log_update_channel_voice":"<:update_channel:840914594058600448> -サーバーログ-ボイスチャンネル変更- ",
+  "log_update_channel_stage": "<:update_channel:840914594058600448> -サーバーログ-ステージチャンネル変更-",
+  "log_update_channel_topic": "チャンネルトピックを変更しました",
+  "log_update_name": "現在のチャンネル名",
+  "log_update_slowmode": "現在の低速モード",
+  "log_update_category": "現在のカテゴリー",
+  "log_update_topic": "現在のトピック",
+  "log_update_nsfw": "このチャンネルは閲覧注意？",
+
+  "log_update_channel_name": "チャンネル名を変更しました",
+  "log_update_channel_nsfw": "このチャンネルを閲覧注意or可能にしました",
+  "log_update_channel_category": "カテゴリーを変更しました",
+  "log_update_channel_slowmode": "低速モードを設定しました",
+  "log_update_channel_type": "チャンネルタイプが変わりました",
+
+
+  "log_create_category": "所属してるカテゴリー",
+  "log_create_topic": "チャンネルトピック",
+
+
+
+  "log_role_update": "サーバーログ-役職変更",
+  "log_role_update_name": "役職の名前を変更しました",
+  "log_role_update_color": "役職の色を変更しました",
+  "log_role_update_hoist": "役職を個別表示or非表示にしました",
+  "log_role_update_mention": "言及可能or不可能にしました",
+  "log_role_update_perms": "権限を変更しました",
+
+  "log_role_name": "役職名",
+  "log_position": "役職の位置",
+  "log_hoist": "役職は個別表示ですか？",
+  "log_mention": "言及可能ですか？",
+
+
+  "log_role_create": "サーバーログ- 役職作成",
+  "log_role_delete": "サーバーログ- 役職削除",
+
+  "log_invite": "サーバーログ -招待リンク作成",
+  "log_invite_user": "作成ユーザー",
+  "log_invite_many": "使用可能回数",
+  "log_invite_times": "使用可能時間",
+  "log_invite_channel": "チャンネル",
+  "log_invite_code": "コード",
+
+  "log_guild_update": "サーバーログ -サーバーアップデート",
+  "log_guild_update_name": "サーバー名変更",
+  "log_guild_update_region": "サーバー地域変更",
+  "log_guild_update_afk": "AFKチャンネル変更",
+  "log_guild_update_owner": "サーバーの所有者を変更",
+
+
+  "log_voice_update_1": "サーバーログ -ボイスチャンネル退出",
+  "log_voice_update_2": "サーバーログ -ボイスチャンネル入出",
+  "log_voice_update_3": "サーバーログ -サーバーミュート設定(解除)",
+  "log_voice_update_4": "サーバーログ -サーバー側スピーカーミュート",
+  "log_voice_update_5": "サーバーログ -ユーザー側ミュート設定",
+  "log_voice_update_6": "サーバーログ-ユーザー側ミュート解除",
+  "log_voice_update_7": "サーバーログ -ユーザースピーカーミュート設定",
+  "log_voice_update_8": "サーバーログ-ユーザー側スピーカーミュート解除",
+  "log_voice_update_9": "サーバーログ -配信開始",
+  "log_voice_update_10": "サーバーログ -配信終了"
+
+
+
+
+
+
+
+
+
+
+
+}
